@@ -1,0 +1,343 @@
+---
+title: "Download Data"
+output:
+  html_document:
+    toc: false
+---
+
+```{r}
+
+library(GEOquery)
+library(dplyr)
+library(rentrez)
+library(readr)
+library(stringr)
+library(fs)
+library(R.utils)
+library(purrr)
+library(tibble)
+library(tools)
+library(tidyr)
+
+sra_tmp=file.path("/workspace", "nci_r25", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
+sra_dir=file.path("/workspace", "nci_r25", "sra_data"); dir.create(sra_dir, recursive = TRUE)
+```
+
+# Make Metadata Table with SRA and GEO Accesion Numbers
+## Get SRA Metadata
+This chunk doesn't need to be run because info is loaded from a file in the repo
+```{r}
+entrez_search(db="sra", term="PRJNA668393",retmax=1000) ->
+  sra_search
+
+# check that we got everything
+stopifnot(sra_search[["count"]]==length(sra_search[["ids"]]))
+
+entrez_fetch(db="sra", id=sra_search[["ids"]], rettype="runinfo") %>%
+  read_csv %>%
+  dplyr::select(Run, Experiment, SampleName) %>%
+  filter(Run!="Run") ->
+  sra_df
+sra_df
+```
+
+## Get GEO Metadata
+This chunk doesn't need to be run because info is loaded from a file in the repo
+```{r}
+getGEO("GSE159344",GSEMatrix=TRUE) ->
+  gse
+pData(gse[[1]]) %>%
+  dplyr::select(geo_accession,
+                title,
+                `cell line:ch1`,
+                `treatment:ch1`) %>%
+  rename_with(str_remove, .cols = everything(), ":ch1") %>%
+  rename_with(str_replace_all, .cols = everything(), " ", "_") ->
+  geo_df
+geo_df
+```
+
+## Join SRA and GEO Metadata
+This chunk doesn't need to be run because info is loaded from a file in the repo
+```{r}
+right_join(sra_df, 
+          geo_df, 
+          by=c("SampleName"="geo_accession")) ->
+  accessions_with_meta
+
+accessions_with_meta %>%
+  filter(str_detect(treatment, "anti-PD-1"))
+
+# Drop triple therapy samples
+accessions_with_meta %>%
+  filter(str_detect(treatment, 
+                    fixed("anti-PD-1 + ablative fractional photothermolysis + imiquimod"),
+                    negate=TRUE)) ->
+  accessions_with_meta
+
+accessions_with_meta %>%
+  rename(cell_line_long=cell_line, 
+         treatment_long=treatment) %>%
+  separate(col=title,
+           sep=" ",
+           into=c("cell_line", "treatment", "replicate"))
+
+# accessions_with_meta %>%
+#   write_csv(accessions_file)
+```
+
+
+
+# Download FASTQs from SRA
+## Make NCBI config File
+
+  - https://github.com/ncbi/sra-tools/issues/409#issuecomment-801344783
+    - https://github.com/ncbi/sra-tools/blob/e2117adf073f748cc48412c55acdc9bfe679a2d1/build/docker/Dockerfile.delite#L50-L52    
+
+```{bash}
+NCBI_CONFIG=${HOME}/.ncbi/user-settings.mkfg
+if [ -f "$NCBI_CONFIG" ]; then
+    echo "$NCBI_CONFIG exists."
+    cat $NCBI_CONFIG
+else 
+    echo "Need to make $NCBI_CONFIG . . ."
+    mkdir -p $(basename $NCBI_CONFIG)
+    vdb-config --set "/LIBS/GUID =`uuidgen`"
+    vdb-config --set "/repository/user/main/public/root =/workspace/sra_cache" 
+    cat $NCBI_CONFIG
+fi
+```
+
+## fasterqDump Definition
+```{r}
+fasterqDump = function(accession,
+                       outdir,
+                       tempdir = NULL,
+                       gzip = TRUE,
+                       md5_df = NULL) {
+  # Check if file is downloaded and OK
+  accession %>%
+    path_ext_set("fastq") ->
+    fastq_file
+  
+  fastq_file %>%
+    paste0(".gz") ->
+    fastq_gz_file
+  
+  fastq_gz_file %>%
+    file.path(outdir, .) ->
+    fastq_gz_path
+  
+  fastq_file %>%
+    file.path(outdir, .) ->
+    fastq_path
+  
+  if (gzip == TRUE) {
+    final_path = fastq_gz_path
+  }
+  else {
+    final_path = fastq_path
+  }
+  
+  if(!is.null(md5_df)){
+    final_path %>%
+      basename ->
+      final_file
+    
+    final_path %>%
+      md5sum ->
+      observed_md5
+    
+    md5_df %>%
+      filter(filename == final_file) %>%
+      pull(md5sum) ->
+      true_md5
+    
+    if (file.exists(final_path) && true_md5 == observed_md5){
+      cat("MD5sum match", fastq_gz_path, true_md5, fill = TRUE)
+      return(final_path)
+    }
+  }
+  cat("Need to download", accession, fill = TRUE)
+  fasterq_args =  c(accession, "--outdir", outdir)
+  if (!is.null(tempdir)){
+    # dir.create(tempdir, recursive = TRUE)
+    fasterq_args =  c(fasterq_args, "--temp", tempdir)
+  }
+  system2(command="fasterq-dump",
+          args=fasterq_args,
+          stdout = TRUE,
+          stderr = TRUE) ->
+    std_err_out
+  
+  print(std_err_out)
+  
+  if (gzip == TRUE){
+    if (file.exists(fastq_path)){
+      final_path = gzip(fastq_path)
+    } else {
+      # check for paired reads
+      r1_path = str_replace(fastq_path,".fastq", "_1.fastq")
+      r2_path = str_replace(fastq_path,".fastq", "_2.fastq")
+      final_path = c()
+      if (file.exists(r1_path)){
+        final_path = c(final_path, gzip(r1_path))
+      }
+      if (file.exists(r2_path)){
+        final_path = c(final_path, gzip(r2_path))
+      }
+    }
+  }
+  return(final_path)
+}
+```
+
+
+```{r eval=FALSE, include=FALSE}
+
+# fasterqDump(accession="SRR12804463", outdir=sra_dir, tempdir=sra_tmp)
+```
+
+
+## Load "True" MD5sums from file
+```{r}
+srafastq_md5file %>%
+  read_delim(delim=" ", 
+             trim_ws = TRUE,
+             col_names = c("md5sum", "filename")) ->
+  srafastq_md5s
+```
+
+
+
+```{r}
+sra_df %>%
+  pull(Run) %>%
+  map(function(x) fasterqDump(accession=x, outdir=sra_dir, tempdir=sra_tmp, md5_df=srafastq_md5s)) ->
+  downloaded_fastqs
+```
+
+
+```{r}
+universal_adapter="AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT"
+index_adapter_suffix="ATCTCGTATGCCGTCTTCTGCTTG"
+c(universal_adapter,index_adapter_suffix) %>%
+  str_sub(-10)
+```
+
+```{r}
+
+qc_dir="/workspace/nci_r25/qc"
+Sys.setenv(ADAPTERS="adapter_seqs.fasta")
+Sys.setenv(FASTQ_DIR="/workspace/nci_r25/sra_data")
+Sys.setenv(TRIMMED_DIR="/workspace/nci_r25/trimmed")
+Sys.setenv(QC_DIR=qc_dir)
+Sys.setenv(TOTAL_THREADS="55")
+
+sra_dir %>%
+  list.files(pattern=".fastq.gz$", full.names=TRUE) %>%
+  paste(collapse = " ") %>%
+  Sys.setenv(FASTQS=.)
+
+dir.create(qc_dir)
+```
+
+```{bash}
+set -u
+
+mkdir -p $TRIMMED_DIR
+for R1_FASTQ in ${FASTQ_DIR}/*_1.fastq.gz; do
+  FASTQ_BASE=$(basename $R1_FASTQ _1.fastq.gz)
+  echo $FASTQ_BASE
+  fastq-mcf \
+    $ADAPTERS \
+    ${FASTQ_DIR}/${FASTQ_BASE}_1.fastq.gz \
+    ${FASTQ_DIR}/${FASTQ_BASE}_2.fastq.gz \
+    -o ${TRIMMED_DIR}/${FASTQ_BASE}_1_trimmed.fastq.gz \
+    -o ${TRIMMED_DIR}/${FASTQ_BASE}_2_trimmed.fastq.gz \
+    -q 20 -x 0.5 > ${TRIMMED_DIR}/${FASTQ_BASE}_fastqmcf_out.txt
+done
+```
+
+
+```{bash engine.path="/bin/bash"}
+fastqc --quiet --threads $TOTAL_THREADS $FASTQS --outdir $QC_DIR
+```
+
+```{bash engine.path="/bin/bash"}
+multiqc --force $QC_DIR --outdir ${QC_DIR} --filename multiqc_some.html
+```
+
+
+```{bash}
+set -u
+fastq-mcf \
+  $ADAPTERS \
+  /workspace/nci_r25/sra_data/SRR12804473_1.fastq.gz \
+  -o /workspace/nci_r25/sra_data/SRR12804473_1_trimmed.fastq.gz \
+  -q 20 -x 0.5
+```
+
+```{bash}
+set -u
+fastq-mcf \
+  $ADAPTERS \
+  /workspace/nci_r25/sra_data/SRR12804473_2.fastq.gz \
+  -o /workspace/nci_r25/sra_data/SRR12804473_2_trimmed.fastq.gz \
+  -q 20 -x 0.5
+```
+
+```{bash}
+set -u
+fastq-mcf \
+  $ADAPTERS \
+  /workspace/nci_r25/sra_data/SRR12804473_1.fastq.gz \
+  /workspace/nci_r25/sra_data/SRR12804473_2.fastq.gz \
+  -o /workspace/nci_r25/sra_data/SRR12804473_1_trimmed.fastq.gz \
+  -o /workspace/nci_r25/sra_data/SRR12804473_2_trimmed.fastq.gz \
+  -q 20 -x 0.5
+```
+
+```{bash}
+set -u
+
+fastq-mcf \
+  $ADAPTERS \
+  /data/sra_fastqs/SRR12933525.fastq.gz \
+  -o /workspace/nci_r25/sra_data/SRR12933525_trimmed.fastq.gz \
+  -q 20 -x 0.5
+```
+
+
+
+
+
+## Generate MD5 table
+Only need to do this at the beginning
+```{r eval=FALSE, include=FALSE}
+sra_dir %>%
+  list.files(full.names = TRUE, pattern = "fastq.gz$") %>%
+  md5sum %>%
+  enframe %>%
+  dplyr::rename(fullpath=name, md5sum=value) %>%
+  mutate(filename=basename(fullpath)) %>%
+  select(md5sum, filename) %>%
+  write_delim(file.path(sra_dir, "md5_checksums.txt"), col_names = FALSE)
+```
+
+
+```{r}
+downloaded_fastqs %>%
+  unlist %>%
+  md5sum %>%
+  enframe %>%
+  dplyr::rename(fullpath=name, md5sum=value) %>%
+  mutate(filename=basename(fullpath)) %>%
+  select(md5sum, filename) %>%
+  write_delim(file.path(sra_dir, "md5_checksums.txt"), col_names = FALSE)
+```
+
+# SessionInfo
+```{r}
+sessionInfo()
+```

@@ -6,7 +6,6 @@ output:
 ---
 
 ```{r}
-
 library(GEOquery)
 library(dplyr)
 library(rentrez)
@@ -21,6 +20,10 @@ library(tidyr)
 
 sra_tmp=file.path("/workspace", "nci_r25", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
 sra_dir=file.path("/workspace", "nci_r25", "sra_data"); dir.create(sra_dir, recursive = TRUE)
+accessions_file = file.path(sra_dir,"accession_table.csv")
+
+library(here)
+srafastq_md5file = here("info/sra_fastq_md5checksums.txt")
 ```
 
 # Make Metadata Table with SRA and GEO Accesion Numbers
@@ -80,10 +83,12 @@ accessions_with_meta %>%
          treatment_long=treatment) %>%
   separate(col=title,
            sep=" ",
-           into=c("cell_line", "treatment", "replicate"))
+           into=c("cell_line", "treatment", "replicate")) ->
+  accessions_with_meta
 
-# accessions_with_meta %>%
-#   write_csv(accessions_file)
+accessions_with_meta %>%
+  write_csv(accessions_file)
+accessions_with_meta
 ```
 
 
@@ -207,8 +212,6 @@ srafastq_md5file %>%
              col_names = c("md5sum", "filename")) ->
   srafastq_md5s
 ```
-
-
 
 ```{r}
 sra_df %>%
@@ -334,7 +337,7 @@ downloaded_fastqs %>%
   dplyr::rename(fullpath=name, md5sum=value) %>%
   mutate(filename=basename(fullpath)) %>%
   select(md5sum, filename) %>%
-  write_delim(file.path(sra_dir, "md5_checksums.txt"), col_names = FALSE)
+  write_delim(file.path(srafastq_md5file), col_names = FALSE)
 ```
 
 # SessionInfo

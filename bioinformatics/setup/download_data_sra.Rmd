@@ -49,8 +49,9 @@ sra_df
 
 ## Get GEO Metadata
 This chunk doesn't need to be run because info is loaded from a file in the repo
+
 ```{r}
-getGEO(geo_accession,GSEMatrix=TRUE) ->
+getGEO(geo_accession,GSEMatrix=TRUE, parseCharacteristics=FALSE, getGPL=FALSE) ->
   gse
 pData(gse[[1]]) %>%
   dplyr::select(geo_accession,
@@ -123,6 +124,7 @@ fasterqDump = function(accession,
                        tempdir = NULL,
                        gzip = TRUE,
                        md5_df = NULL) {
+  warning("Not handling MD5sum check correctly for paired-end data")
   # Check if file is downloaded and OK
   accession %>%
     path_ext_set("fastq") ->

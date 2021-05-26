@@ -22,6 +22,9 @@ sra_tmp=file.path("/workspace", "nci_r25", "sra_tmp"); dir.create(sra_tmp, recur
 sra_dir=file.path("/workspace", "nci_r25", "sra_data"); dir.create(sra_dir, recursive = TRUE)
 accessions_file = file.path(sra_dir,"accession_table.csv")
 
+bioproject_accession="PRJNA668393"
+geo_accession="GSE159344"
+
 library(here)
 srafastq_md5file = here("info/sra_fastq_md5checksums.txt")
 ```
@@ -30,7 +33,7 @@ srafastq_md5file = here("info/sra_fastq_md5checksums.txt")
 ## Get SRA Metadata
 This chunk doesn't need to be run because info is loaded from a file in the repo
 ```{r}
-entrez_search(db="sra", term="PRJNA668393",retmax=1000) ->
+entrez_search(db="sra", term=bioproject_accession,retmax=1000) ->
   sra_search
 
 # check that we got everything
@@ -47,7 +50,7 @@ sra_df
 ## Get GEO Metadata
 This chunk doesn't need to be run because info is loaded from a file in the repo
 ```{r}
-getGEO("GSE159344",GSEMatrix=TRUE) ->
+getGEO(geo_accession,GSEMatrix=TRUE) ->
   gse
 pData(gse[[1]]) %>%
   dplyr::select(geo_accession,

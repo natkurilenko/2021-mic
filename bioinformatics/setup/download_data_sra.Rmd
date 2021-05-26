@@ -18,8 +18,8 @@ library(tibble)
 library(tools)
 library(tidyr)
 
-sra_tmp=file.path("/workspace", "nci_r25", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
-sra_dir=file.path("/workspace", "nci_r25", "sra_data"); dir.create(sra_dir, recursive = TRUE)
+sra_tmp=file.path("/workspace", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
+sra_dir=file.path("/data", "sra_data"); dir.create(sra_dir, recursive = TRUE)
 accessions_file = file.path(sra_dir,"accession_table.csv")
 
 bioproject_accession="PRJNA668393"

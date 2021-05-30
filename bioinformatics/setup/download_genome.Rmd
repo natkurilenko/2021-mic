@@ -1,0 +1,80 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+```{r}
+library(readr)
+library(tibble)
+library(dplyr)
+library(tools)
+
+source("common_config.r")
+dir.create(genome_dir,recursive = TRUE)
+options(timeout=6000) # need FASTA takes a long time to download!
+```
+
+## Download FASTA, GFF3, and MD5sums
+
+```{r}
+download.file(url=mouse_md5sum_url,destfile=mouse_md5sum_path)
+```
+
+```{r}
+download.file(url=mouse_gff3_url,destfile=mouse_gff3_gz)
+```
+
+```{r}
+download.file(url=mouse_fasta_url,destfile=mouse_fasta_gz)
+```
+
+# Validate Downloaded Files
+## Calculate MD5sums of downloaded files
+
+```{r}
+genome_dir %>%
+    list.files(full.names=TRUE) %>%
+    md5sum()%>%
+    enframe %>%
+    rename(filename=name, observed_md5=value) %>%
+    mutate(filename=basename(filename)) ->
+    observed_md5
+observed_md5
+```
+
+## Load True MD5sums from file
+
+```{r}
+read_delim(mouse_md5sum_path, delim=" ", col_names=c("md5sum", "filename"),trim_ws=TRUE) %>%
+    filter(filename %in% basename(c(mouse_fasta_gz, mouse_gff3_gz))) ->
+    true_md5_df
+true_md5_df
+```
+
+## Check MD5sums
+
+```{r}
+left_join(true_md5_df, observed_md5, by="filename") %>%
+    rowwise %>%
+    mutate(match=identical(md5sum,observed_md5)) ->
+    md5check
+
+md5check %>%
+    pull(match) %>%
+    all ->
+    all_md5s_ok
+
+md5check
+
+all_md5s_ok
+stopifnot(all_md5s_ok)
+```

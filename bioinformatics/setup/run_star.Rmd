@@ -1,0 +1,66 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+```{bash}
+source config.sh
+mkdir -p ${STAROUT_DIR}
+```
+
+```{bash}
+# R1_FASTQ="/workspace/trimmed_fastq/SRR12804466_1_paired.fastq.gz"
+# SRA_ACCESSION=$(basename $R1_FASTQ "_1_paired.fastq.gz")
+# R2_FASTQ="${TRIM_DIR}/${SRA_ACCESSION}_2_paired.fastq.gz"
+# echo $SRA_ACCESSION
+# echo $R1_FASTQ $R2_FASTQ 
+
+# STAR \
+#     --runMode alignReads \
+#     --runThreadN $TOTAL_THREADS \
+#     --genomeDir $GENOME_DIR \
+#     --outSAMtype BAM SortedByCoordinate \
+#     --quantMode GeneCounts \
+#     --genomeLoad NoSharedMemory \
+#     --twopassMode None \
+#     --limitBAMsortRAM ${TOTAL_RAM} \
+#     --outFileNamePrefix ${STAROUT_DIR}/${SRA_ACCESSION}_ \
+#     --readFilesCommand zcat \
+#     --readFilesIn $R1_FASTQ $R2_FASTQ       
+        
+#     samtools index -@ $TOTAL_THREADS ${STAROUT_DIR}/${SRA_ACCESSION}_Aligned.sortedByCoord.out.bam
+```
+
+```{bash}
+# for R1_FASTQ in ${TRIM_DIR}/SRR128044??_1_paired.fastq.gz ; do
+for R1_FASTQ in ${TRIM_DIR}/SRR12804466_1_paired.fastq.gz ; do
+    SRA_ACCESSION=$(basename $R1_FASTQ "_1_paired.fastq.gz")
+    R2_FASTQ="${TRIM_DIR}/${SRA_ACCESSION}_2_paired.fastq.gz"
+    echo $SRA_ACCESSION
+    echo $R1_FASTQ $R2_FASTQ
+    
+    STAR \
+        --runMode alignReads \
+        --runThreadN $TOTAL_THREADS \
+        --genomeDir $GENOME_DIR \
+        --outSAMtype BAM SortedByCoordinate \
+        --quantMode GeneCounts \
+        --genomeLoad NoSharedMemory \
+        --twopassMode None \
+        --limitBAMsortRAM ${TOTAL_RAM} \
+        --outFileNamePrefix ${STAROUT_DIR}/${SRA_ACCESSION}_ \
+        --readFilesCommand zcat \
+        --readFilesIn $R1_FASTQ $R2_FASTQ       
+        
+    samtools index -@ $TOTAL_THREADS ${STAROUT_DIR}/${SRA_ACCESSION}_Aligned.sortedByCoord.out.bam
+done
+```

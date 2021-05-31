@@ -19,6 +19,7 @@ set -u
 echo "NEED TO SHARE VARS BETWEEN R AND BASH!!"
 
 DATA_DIR="/data"
+OUT_DIR="/workspace"
 
 GENOME_DIR="${DATA_DIR}/genome"
 # FASTA_GZ="${GENOME_DIR}/GRCm39.primary_assembly.genome.fa.gz"
@@ -28,7 +29,8 @@ FASTA_PATH="${GENOME_DIR}/GRCm39.primary_assembly.genome.fa"
 GFF_PATH="${GENOME_DIR}/gencode.vM27.primary_assembly.annotation.gff3"
 
 TOTAL_THREADS=80
+TOTAL_RAM=400000000000
 
-OUT_DIR="/workspace"
 RAW_FASTQ_DIR="${DATA_DIR}/sra_data"
 TRIM_DIR="${OUT_DIR}/trimmed_fastq"
+STAROUT_DIR="${OUT_DIR}/starout"

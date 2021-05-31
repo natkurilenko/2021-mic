@@ -1,0 +1,78 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+```{bash}
+source config.sh
+
+mkdir -p ${TRIM_DIR}
+```
+
+```{bash}
+ADAPTER_FASTA="${OUT_DIR}/adapter.fasta"
+
+# https://support-docs.illumina.com/SHARE/AdapterSeq/Content/SHARE/AdapterSeq/TruSeq/CDIndexes.htm
+echo ">truseq_read_1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+>truseq_read_2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+" > $ADAPTER_FASTA
+```
+
+```{bash}
+SRA_ACCESION="SRR12804466"
+TrimmomaticPE \
+    -threads $TOTAL_THREADS \
+    -phred33 \
+    -summary ${TRIM_DIR}/${SRA_ACCESION}_summary.txt \
+    ${RAW_FASTQ_DIR}/${SRA_ACCESION}_1.fastq.gz \
+    ${RAW_FASTQ_DIR}/${SRA_ACCESION}_2.fastq.gz \
+    ${TRIM_DIR}/${SRA_ACCESION}_1_paired.fastq.gz \
+    ${TRIM_DIR}/${SRA_ACCESION}_1_unpaired.fastq.gz \
+    ${TRIM_DIR}/${SRA_ACCESION}_2_paired.fastq.gz \
+    ${TRIM_DIR}/${SRA_ACCESION}_2_unpaired.fastq.gz \
+    ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+```
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/ | wc
+```
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz | wc
+```
+
+```{bash}
+for R1_FASTQ in ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz ; do
+    echo $R1_FASTQ
+    SRA_ACCESSION=$(basename $R1_FASTQ "_1.fastq.gz")
+    echo $R1_FASTQ $SRA_ACCESSION
+    TrimmomaticPE \
+        -threads $TOTAL_THREADS \
+        -phred33 \
+        -summary ${TRIM_DIR}/${SRA_ACCESION}_summary.txt \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESION}_1.fastq.gz \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESION}_2.fastq.gz \
+        ${TRIM_DIR}/${SRA_ACCESION}_1_paired.fastq.gz \
+        ${TRIM_DIR}/${SRA_ACCESION}_1_unpaired.fastq.gz \
+        ${TRIM_DIR}/${SRA_ACCESION}_2_paired.fastq.gz \
+        ${TRIM_DIR}/${SRA_ACCESION}_2_unpaired.fastq.gz \
+        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+done
+```
+
+java -jar trimmomatic-0.39.jar PE input_forward.fq.gz input_reverse.fq.gz output_forward_paired.fq.gz output_forward_unpaired.fq.gz output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+
+for reference only (less sensitive for adapters)
+
+java -jar trimmomatic-0.35.jar PE -phred33 input_forward.fq.gz input_reverse.fq.gz output_forward_paired.fq.gz output_forward_unpaired.fq.gz output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36

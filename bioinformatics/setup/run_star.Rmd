@@ -18,8 +18,7 @@ mkdir -p ${STAROUT_DIR}
 ```
 
 ```{bash}
-# for R1_FASTQ in ${TRIM_DIR}/SRR128044??_1_paired.fastq.gz ; do
-for R1_FASTQ in ${TRIM_DIR}/SRR12804466_1_paired.fastq.gz ; do
+for R1_FASTQ in ${TRIM_DIR}/SRR128044??_1_paired.fastq.gz ; do
     SRA_ACCESSION=$(basename $R1_FASTQ "_1_paired.fastq.gz")
     R2_FASTQ="${TRIM_DIR}/${SRA_ACCESSION}_2_paired.fastq.gz"
     echo $SRA_ACCESSION

@@ -3,7 +3,7 @@
 set -u
 
 # +
-DATA_BASE_DIR="/work/$USER"
+DATA_BASE_DIR="/work/mic2021"
 WORKSPACE_BASE_DIR="/work/$USER"
 
 SINGULARITY_DIR="$HOME/container_images"
@@ -20,9 +20,9 @@ export SINGULARITY_PULLFOLDER
 
 SINGULARITY_IMAGE="${1:-library://granek/published/rna_enrichment:latest}"
 
-DATA="$DATA_BASE_DIR/mic2021/rawdata"
+DATA="$DATA_BASE_DIR/rawdata"
 WORKSPACE="$WORKSPACE_BASE_DIR/mic2021/workspace"
-mkdir -p $DATA $WORKSPACE
+mkdir -p $WORKSPACE
 
 
 if [ -d "${DATA}" ]; then

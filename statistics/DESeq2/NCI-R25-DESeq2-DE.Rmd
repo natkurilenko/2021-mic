@@ -144,31 +144,6 @@ ddsadd
 
 Note that there is a **sizeFactor** added to **colData**. Let's look at it more carefully
 
-```
-> dds # (before estimateSizeFactors)
-class: DESeqDataSet 
-class: DESeqDataSet 
-dim: 8499 24 
-metadata(1): version
-assays(1): counts
-rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
-rowData names(0):
-colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
-colData names(22): Label sample_year ... RIN_normal_threshold
-  RIN_lowered_threshold
-
-> dds # (after estimateSizeFactors)
-class: DESeqDataSet 
-dim: 8499 24 
-metadata(1): version
-assays(1): counts
-rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
-rowData names(0):
-colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
-colData names(23): Label sample_year ... RIN_lowered_threshold
-  sizeFactor
-
-
 You can also get the size factors directly
 
 ```{r}
@@ -243,29 +218,7 @@ dds2021
 ```
 
 Can you notice the difference?
-```
-> dds (before dispersion)
-class: DESeqDataSet 
-dim: 8499 24 
-metadata(1): version
-assays(1): counts
-rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
-rowData names(0):
-colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
-colData names(23): Label sample_year ... RIN_lowered_threshold
-  sizeFactor
-  
-> dds (after dispersion)
-class: DESeqDataSet 
-dim: 8499 24 
-metadata(1): version
-assays(2): counts mu
-rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
-rowData names(10): baseMean baseVar ... dispOutlier dispMAP
-colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
-colData names(23): Label sample_year ... RIN_lowered_threshold
-  sizeFactor
-```
+
 
 
 Note that the dispersionfunction slot is now populated
@@ -290,20 +243,6 @@ length(alphas)
 ```{r}
 round(alphas[1:4], 4)
 ```
-
-Extract the metadata using mcols() for the first four genes
-
-| Terms       | Description                                   |
-|-------------|-----------------------------------------------|
-| baseMean    |     mean of normalized counts for all samples |
-| baseVar     | variance of normalized counts for all samples |
-| allZero     |                all counts for a gene are zero |
-| dispGeneEst |             gene-wise estimates of dispersion |
-| dispFit     |                   fitted values of dispersion |
-| dispersion  |                  final estimate of dispersion |
-| dispIter    |                          number of iterations |
-| dispOut     |                 dispersion flagged as outlier |
-| dispMAP     |                 maximum a posteriori estimate |
 
 
 ```{r}

@@ -1,0 +1,417 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+# DESeq2: Basic Differential Expression (DE) analysis
+
+
+## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
+
+
+### Load packages
+
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(dendextend)
+library(RColorBrewer)
+```
+
+### Load the PRJNA668393 dds object from image file
+
+```{r}
+procdir <- normalizePath("./proc/")
+ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RData")
+
+PRJNA668393ddsData <- readRDS(ddsfile)
+
+tools::md5sum(ddsfile)
+```
+
+### Check dimensions of the two objects
+
+
+# Inspect object & Slots of an S4 class
+
+
+Let's has a look at the object we have created.
+
+```{r}
+PRJNA668393ddsData
+```
+
+see the class of dds object
+
+```{r}
+class(PRJNA668393ddsData)
+```
+
+DESeqDataSet is a S4 object. Recall that a S4 object was taught when introducing bioconductor. Note that S4 objects allow users to wrap up multiple elements into a single variables where each element is called a slot.
+
+```{r}
+slotNames(PRJNA668393ddsData)
+```
+
+The metadata (columnData) is stored in the slot `colData`
+
+```{r}
+colData(PRJNA668393ddsData) %>% as.data.frame %>% head(3)
+```
+
+The design formula is stored in the slot `design`. The design holds the R formula which expresses how the counts depend on the variables in colData.
+
+```{r}
+design(PRJNA668393ddsData)
+```
+
+The first thing you may want to do is **have a look at the raw counts** you have imported. The `DESeq2::counts` function extracts a matrix of counts (with the genes along the rows and samples along the columns). Let us first verify the dimension of this matrix.
+
+```{r}
+dim(DESeq2::counts(PRJNA668393ddsData))
+```
+
+```{r}
+head(DESeq2::counts(PRJNA668393ddsData),3)
+```
+
+This slot returns gene specific information (it will be populated later)
+
+```{r}
+dispersionFunction(PRJNA668393ddsData)
+```
+
+Get size factors
+
+```{r}
+sizeFactors(PRJNA668393ddsData)
+```
+
+# Differential expression analysis
+
+```{r}
+ddsadd <- PRJNA668393ddsData
+```
+
+```{r}
+design(ddsadd) <- formula(~trt+cline)
+```
+
+```{r}
+design(ddsadd)
+```
+
+## Estimate Size Factors and Dispersion Parameters
+
+
+You recall that DESeq requires that  we have estimates for sample specific size factors and gene specific dispersion factors. More specifically, recall that DESeq models the count $K_{ij}$ (gene $i$, sample $j$) as negative binomial with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$. Here $\mu_{ij}=s_j q_{ij}$ where $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j$. Here $s_j$ is the sample $j$ specific size factor.
+
+**Summarize of notation**
+- $K_{ij}$ denotes the observed **number of reads** mapped to gene $i$ for sample $j$
+- $K_{ij}$ follows a **negative binomial distribution** with
+    - **Mean** $\mu_{ij}$
+    - **Dispersion parameter** $\alpha_i$
+- Modelling
+    - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$
+    - $\mu_{ij} = s_{j}q_{ij}$
+        - $s_j$ is sample $j$ specific normalization constant
+    - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j$
+        - $x_j=0$ if condition = ph4 or 
+        - $x_j=1$ if condition = ph8
+
+
+## 01 Size Factors
+ We begin by estimating the size factors $s_1,\ldots,s_n$:
+
+```{r}
+ddsadd <- estimateSizeFactors(ddsadd)
+```
+
+Now, compare the dds object to that of before applying the estimateSizeFactors() function. What has changed? What remains unchanged?
+
+```{r}
+ddsadd
+```
+
+Note that there is a **sizeFactor** added to **colData**. Let's look at it more carefully
+
+```
+> dds # (before estimateSizeFactors)
+class: DESeqDataSet 
+class: DESeqDataSet 
+dim: 8499 24 
+metadata(1): version
+assays(1): counts
+rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
+rowData names(0):
+colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
+colData names(22): Label sample_year ... RIN_normal_threshold
+  RIN_lowered_threshold
+
+> dds # (after estimateSizeFactors)
+class: DESeqDataSet 
+dim: 8499 24 
+metadata(1): version
+assays(1): counts
+rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
+rowData names(0):
+colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
+colData names(23): Label sample_year ... RIN_lowered_threshold
+  sizeFactor
+
+
+You can also get the size factors directly
+
+```{r}
+sizeFactors(ddsadd)
+```
+
+ It is preferable to limit the number of decimal places. Next show the size factors rounded to 3 decimal places
+
+```{r}
+round(sizeFactors(dds2021),3)
+```
+
+Summarize size factors
+
+```{r}
+summary(sizeFactors(ddsadd))
+```
+
+Now that the size factors have been estimated, we can get "normalized" counts (DESeq2 normalizes against size factor)
+
+```{r}
+# original counts for samples 1 and 3
+counts(ddsadd)[1:5,c(1,3)]
+```
+
+```{r}
+# Size factors for samples 1 and 3
+
+sizeFactors(dds2021)[c(1,3)]
+```
+
+```{r}
+# normalized count for samples 1 and 3
+counts(dds2021, normalize = TRUE)[1:5, c(1,3)]
+```
+
+```{r}
+# normalized manually using size factors for sample 1
+counts(dds2021)[1:5, 1] / sizeFactors(dds2021)[1]
+```
+
+```{r}
+# normalized manually using size factors for sample 3
+counts(dds2021)[1:5, 3] / sizeFactors(dds2021)[3]
+```
+
+How do you get the raw counts for gene  "GeneID: CNAG_05845"?
+
+```{r}
+counts(dds2021, normalize = FALSE)["CNAG_05845",]
+```
+
+```{r}
+counts(dds2021, normalize = TRUE)["CNAG_05845",]
+```
+
+## 02 Dispersion Parameters
+Next, we get the dispersion factors $\alpha_1,\ldots,\alpha_{m}$
+
+```{r}
+ddsadd <- estimateDispersions(dds2021)
+```
+
+Now inspect the dds object again and note that the rowRanges slot has extra information ("metadata column names(0):" before versus "column names(9): baseMean baseVar ... dispOutlier dispMAP")
+- before: 
+    - `metadata column names(0):`
+- after:  
+    - `column names(9): baseMean baseVar ...`
+
+```{r}
+dds2021
+```
+
+Can you notice the difference?
+```
+> dds (before dispersion)
+class: DESeqDataSet 
+dim: 8499 24 
+metadata(1): version
+assays(1): counts
+rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
+rowData names(0):
+colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
+colData names(23): Label sample_year ... RIN_lowered_threshold
+  sizeFactor
+  
+> dds (after dispersion)
+class: DESeqDataSet 
+dim: 8499 24 
+metadata(1): version
+assays(2): counts mu
+rownames(8499): CNAG_00001 CNAG_00002 ... large_MTrRNA small_MTrRNA
+rowData names(10): baseMean baseVar ... dispOutlier dispMAP
+colnames(24): 1_2019_P_M1 2_2019_P_M1 ... 23_2019_P_M1 24_2019_P_M1
+colData names(23): Label sample_year ... RIN_lowered_threshold
+  sizeFactor
+```
+
+
+Note that the dispersionfunction slot is now populated
+
+```{r}
+dispersionFunction(dds2021)
+```
+
+We can extract the gene specific dispersion factors using dispersions(). Note that there will be one number per gene. We look at the first four genes (rounded to 4 decimal places)
+
+```{r}
+alphas <- dispersions(dds2021)
+```
+
+Verify that the number of dispersion factors equals the number of genes
+
+```{r}
+# number of disperion factors
+length(alphas)
+```
+
+```{r}
+round(alphas[1:4], 4)
+```
+
+Extract the metadata using mcols() for the first four genes
+
+| Terms       | Description                                   |
+|-------------|-----------------------------------------------|
+| baseMean    |     mean of normalized counts for all samples |
+| baseVar     | variance of normalized counts for all samples |
+| allZero     |                all counts for a gene are zero |
+| dispGeneEst |             gene-wise estimates of dispersion |
+| dispFit     |                   fitted values of dispersion |
+| dispersion  |                  final estimate of dispersion |
+| dispIter    |                          number of iterations |
+| dispOut     |                 dispersion flagged as outlier |
+| dispMAP     |                 maximum a posteriori estimate |
+
+
+```{r}
+mcols(dds2021)[1:4,] %>% as.data.frame
+```
+
+Summarize the dispersion factors using a box plot (may want to log transform)
+
+```{r}
+boxplot(log(dispersions(dds2021)))
+```
+
+# Differential Expression Analysis
+We can now conduct a differential expression analysis using the DESeq() function. Keep in mind that to get to this step, we first estimated the size factors and then the dispersion parameters.
+
+```{r}
+### Carry out DE analysis
+ddsDE <- DESeq(dds2021)
+```
+
+```{r}
+### Look at object
+ddsDE
+```
+
+```{r}
+### Look at some of the results
+results(ddsDE)
+```
+
+Note that currently, the model we have is an additive model, which does not include the interaction term of `Media` and `Strain`
+
+
+### Look at some of the results (tidy version)
+
+
+```{r}
+results(ddsDE, tidy = TRUE)
+```
+
+We can get the results for the differential expression analysis using results(). Here, we can compare two group of samples specified by the contrast. (If not, the default contrast would be the last term in your additive model `design(dds)`).
+
+```{r}
+# DE with respect to condition
+myres_condition4v8 <- results(ddsDE, contrast = c("condition", "pH4", "pH8"))
+myres_condition4v8
+```
+
+```{r}
+# DE with respect to condition (flip order)
+myres_condition8v4 <- results(ddsDE, contrast = c("condition", "pH8", "pH4"))
+myres_condition8v4
+```
+
+Let's look at the results for the first four genes
+
+```{r}
+### Tidy the results
+myres_condition8v4 <- results(ddsDE, contrast = c("condition", "pH8", "pH4"), tidy = TRUE)
+myres_condition8v4
+```
+
+```{r}
+### Tidy the results for DE with respect to condition
+### Results are sorted in ascending order by adjusted p-value
+### Here ph4 is the reference level
+### log2FC > 0 suggests that higher pH (pH8) is associated with increased expression
+### log2FC < 0 suggests that higher pH (pH8) is associated with lower expression
+myres_condition8v4 <- results(ddsDE, contrast = c("condition", "pH8", "pH4"), tidy = TRUE)
+
+myres_condition8v4 %>% 
+    dplyr::arrange(dplyr::desc(-padj)) %>% 
+        head(10)
+```
+
+### Visualize DE effect
+
+
+Looking at the results for these two genes: 
+
+* The estimated log2FC for CNAG_00275 is negative. We will verify visually that ph8, compared to pH4,  is associated with lower expression
+
+* The estimated log2FC for CNAG_00531 is positive. We will verify visually that ph8, compared to pH4, is associated with higher expression
+
+
+```{r}
+results(ddsDE, tidy = TRUE) %>%
+    dplyr::filter(row %in% c("CNAG_00275","CNAG_00531"))
+```
+
+```{r}
+### This dot plot verify visually that exposure to ph8, compared to pH4,  is associated with lower expression
+plotCounts(dds2021, "CNAG_00275", intgroup = "condition")
+```
+
+```{r}
+### This dot plot verify visually that exposure to ph8, compared to pH4,  is associated with higher expression
+plotCounts(dds2021, "CNAG_00531", intgroup = "condition")
+```
+
+Volcano plot
+
+```{r}
+### Volcano plot for con effect
+ggplot(results(ddsDE, contrast = c("condition", "pH4", "pH8"), tidy = TRUE), 
+       aes(x = log2FoldChange, y = -log10(padj))) + geom_point()
+```
+
+```{r}
+sessionInfo()
+```

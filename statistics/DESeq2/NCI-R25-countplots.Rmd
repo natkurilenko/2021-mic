@@ -1,0 +1,134 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+### Load packages
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+### Import Counts
+
+```{r}
+procdir <- normalizePath("./proc/")
+qcfile <- file.path(procdir, "PRJNA668393-qcdata.RData")
+
+PRJNA668393qcData <- readRDS(qcfile)
+
+tools::md5sum(qcfile)
+```
+
+### Specify a theme for the plots
+
+```{r}
+mytheme <-  ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualize proportion of mapped reads
+
+
+### Simple plot
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
+        ggplot2::geom_point()
+```
+
+### Add a theme
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
+        ggplot2::geom_point() +
+            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Annotate treatment information with colors
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt)) + 
+        ggplot2::geom_point() + 
+           ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Annotate treatment information with colors and cell line levels with shape
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt, shape = cline)) + 
+        ggplot2::geom_point() + 
+            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+2+2
+```
+
+### Annotate treatment information with colors and cell line levels with shape(with additional customization)
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt, shape = cline)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Run Label") + 
+                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
+                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualize depth
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = depth, col = trt, shape = cline)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Run Label") + 
+                        ggplot2::ylab("Total reads (depth)") +
+                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = depth, y = prop.mapped, col = trt, shape = cline)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Run Label") + 
+                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualize proportion of uniquely mapped reads with facets
+
+```{r}
+PRJNA668393qcData %>% ggplot(aes(x=Run, y=prop.mapped, shape =cline, color=trt))+
+    ggplot2::geom_point(size = 3) +
+        ggplot2::labs(col = "Treatment") +
+            ggplot2::labs(shape = "Cell Line") +
+                ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                    ggplot2::facet_grid(trt~ cline, drop=TRUE, scales="free_x", space="free") +
+                        ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+sessionInfo()
+```

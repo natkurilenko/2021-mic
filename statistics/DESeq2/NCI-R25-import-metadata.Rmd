@@ -1,0 +1,126 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+# DESeq2: Import SRA meta data
+
+
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# meta data file from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA668393&o=acc_s%3Aa
+metadir <- normalizePath("./data/metadata/")
+
+
+srametafile <- file.path(metadir, "SraRunTable.csv")
+tools::md5sum(srametafile)
+```
+
+```{r}
+# Import meta data
+readr::read_csv(srametafile) ->
+    mtdata
+```
+
+```{r}
+## Inspect imported object
+mtdata
+```
+
+```{r}
+## Get distinct combination of cell line and treament
+mtdata %>%
+    dplyr::distinct(cell_line, treatment)
+```
+
+```{r}
+# Create cross tabulation
+mtdata %>%
+    dplyr::group_by(treatment, cell_line) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
+    tidyr::spread(cell_line, n)
+```
+
+```{r}
+## Exclude if treatment
+## "anti-PD-1 + ablative fractional photothermolysis + imiquimod"
+
+mtdata %>%
+    dplyr::filter(treatment != "anti-PD-1 + ablative fractional photothermolysis + imiquimod") %>%
+    dplyr::select(Run, cell_line, treatment)
+```
+
+```{r}
+## or equivalently include if treatment
+## "anti-PD-1" or "isotype control antibody
+mtdata %>%
+    dplyr::filter(treatment %in% c("anti-PD-1", "isotype control antibody")) %>%
+    dplyr::select(Run, cell_line, treatment)
+```
+
+```{r}
+## Create more a succinct treament label for `isotype control antibody` (simplify to 'control')
+## convert the new variable as a factor (for use for DESeq2)
+mtdata %>%
+    dplyr::filter(treatment %in% c("anti-PD-1", "isotype control antibody")) %>%
+    dplyr::mutate(trt = as.factor(dplyr::recode(treatment, `isotype control antibody` = "control"))) %>%
+    dplyr::select(Run, cell_line, treatment, trt)
+```
+
+```{r}
+## Create more succinct cell line labels:
+## relabel "D4M.3A.3 (parental) melanoma" vs "D3UV2 (UV2) melanoma" as
+## "parental" vs "UV2"
+mtdata %>%
+    dplyr::filter(treatment %in% c("anti-PD-1", "isotype control antibody")) %>%
+    dplyr::mutate(trt = as.factor(dplyr::recode(treatment, `isotype control antibody` = "control"))) %>%
+    dplyr::mutate(cline = as.factor(dplyr::recode(cell_line,
+                                        `D4M.3A.3 (parental) melanoma` = "parental",
+                                        `D3UV2 (UV2) melanoma` = "UV2"))) %>%
+    dplyr::select(Run, cell_line, cline, treatment, trt)
+```
+
+```{r}
+# or equivalently
+mtdata %>%
+    dplyr::filter(treatment %in% c("anti-PD-1", "isotype control antibody")) %>%
+    dplyr::mutate(trt = as.factor(dplyr::recode(treatment, `isotype control antibody` = "control"))) %>%
+    dplyr::mutate(cline = as.factor(stringr:: str_extract(cell_line, '\\((.*?)\\)')))%>%
+    dplyr::select(Run, cell_line, cline, treatment, trt)
+```
+
+```{r}
+## Putting it all together
+readr::read_csv(srametafile) %>%
+    dplyr::filter(treatment %in% c("anti-PD-1", "isotype control antibody")) %>%
+        dplyr::mutate(trt = as.factor(dplyr::recode(treatment, `isotype control antibody` = "control"))) %>%
+        dplyr::mutate(cline = as.factor(stringr:: str_extract(cell_line, '\\((.*?)\\)'))) -> 
+        mtdata
+```
+
+```{r}
+outdir <- normalizePath("./proc/")
+mtfile <- file.path(outdir, "PRJNA668393-metadata.RDS")
+
+saveRDS(mtdata, mtfile)
+
+tools::md5sum(mtfile)
+```
+
+```{r}
+sessionInfo()
+```

@@ -19,6 +19,7 @@ jupyter:
 
 ```{r}
 library(tidyverse)
+library(DESeq2)
 ```
 
 ```{r}

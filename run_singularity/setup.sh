@@ -19,7 +19,7 @@ SINGULARITY_IMAGE="/hpc/group/chsi/container_images/mic_course/jupyter-mic-2021_
 
 export SINGULARITY_CACHEDIR
 export SINGULARITY_PULLFOLDER
-export SINGULARITY_IMAGE="${1:-$SINGULARITY_IMAGE}"
+# export SINGULARITY_IMAGE="${1:-$SINGULARITY_IMAGE}"
 
 DATA="$DATA_BASE_DIR/rawdata"
 WORKSPACE="$WORKSPACE_BASE_DIR/mic2021/workspace"

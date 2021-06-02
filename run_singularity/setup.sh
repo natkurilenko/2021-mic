@@ -9,6 +9,8 @@ WORKSPACE_BASE_DIR="/work/$USER"
 SINGULARITY_DIR="$HOME/container_images"
 SINGULARITY_CACHEDIR="${SINGULARITY_CACHEDIR:-$SINGULARITY_DIR/cachedir}"
 SINGULARITY_PULLFOLDER="${SINGULARITY_PULLFOLDER:-$SINGULARITY_DIR/pulldir}"
+SINGULARITY_IMAGE="/hpc/group/chsi/container_images/mic_course/jupyter-mic-2021_latest.sif"
+
 # -
 
 # -------------------------------------------------
@@ -17,8 +19,7 @@ SINGULARITY_PULLFOLDER="${SINGULARITY_PULLFOLDER:-$SINGULARITY_DIR/pulldir}"
 
 export SINGULARITY_CACHEDIR
 export SINGULARITY_PULLFOLDER
-
-SINGULARITY_IMAGE="${1:-library://granek/published/rna_enrichment:latest}"
+export SINGULARITY_IMAGE="${1:-$SINGULARITY_IMAGE}"
 
 DATA="$DATA_BASE_DIR/rawdata"
 WORKSPACE="$WORKSPACE_BASE_DIR/mic2021/workspace"

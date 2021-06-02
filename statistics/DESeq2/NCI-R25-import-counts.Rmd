@@ -31,13 +31,21 @@ library(foreach)
 ### Set directory containing count files
 
 ```{r}
-cntdir <- normalizePath("./data/starout")
+cntdir <- normalizePath("/work/mic2021/rawdata/starout/")
+
+# Output directory for R image files
+outdir <- "./proc/"
+
+if (!dir.exists(outdir)) {
+  dir.create(outdir)
+}
+
 ```
 
 ### Get count file names
 
 ```{r}
-cntfiles <- list.files(path = cntdir, pattern = "*.out.tab")
+cntfiles <- list.files(path = cntdir, pattern = "*_ReadsPerGene.out.tab")
 ```
 
 ### Inspect file names
@@ -162,7 +170,6 @@ countdata %>% head(10)
 ```
 
 ```{r}
-outdir <- normalizePath("./proc/")
 countfile <- file.path(outdir, "PRJNA668393-countdata.RData")
 
 saveRDS(countdata, file = countfile)

@@ -1,4 +1,5 @@
 ---
+title: Import SRA meta data
 jupyter:
   jupytext:
     text_representation:
@@ -12,8 +13,6 @@ jupyter:
     name: ir
 ---
 
-# DESeq2: Import SRA meta data
-
 
 
 
@@ -22,9 +21,7 @@ library(tidyverse)
 ```
 
 ```{r}
-# meta data file from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA668393&o=acc_s%3Aa
-metadir <- normalizePath("/work/mic2021/rawdata/sra_data/")
-
+metadir <- normalizePath("/data/sra_data/")
 
 srametafile <- file.path(metadir, "accession_table.csv")
 tools::md5sum(srametafile)
@@ -35,7 +32,6 @@ outdir <- "./proc/"
 if (!dir.exists(outdir)) {
   dir.create(outdir)
 }
-
 ```
 
 ```{r}

@@ -1,4 +1,5 @@
 ---
+title: QC plots
 jupyter:
   jupytext:
     text_representation:
@@ -16,7 +17,6 @@ jupyter:
 
 ```{r}
 library(tidyverse)
-library(ggplot2)
 ```
 
 ### Import Counts
@@ -72,10 +72,6 @@ PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt, shape = cline)) + 
         ggplot2::geom_point() + 
             ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-```{r}
-2+2
 ```
 
 ### Annotate treatment information with colors and cell line levels with shape(with additional customization)

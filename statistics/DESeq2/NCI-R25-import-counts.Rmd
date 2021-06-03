@@ -1,4 +1,5 @@
 ---
+title: Import STAR counts
 jupyter:
   jupytext:
     text_representation:
@@ -11,12 +12,6 @@ jupyter:
     language: R
     name: ir
 ---
-
-# DESeq2: Create count matrix and metadata data frame
-
-
-## Objective: Import STAR count files
-
 
 The objective of this notebook is to import the project's STAR count files into an R object.
 
@@ -31,7 +26,7 @@ library(foreach)
 ### Set directory containing count files
 
 ```{r}
-cntdir <- normalizePath("/work/mic2021/rawdata/starout/")
+cntdir <- normalizePath("/data/starout/")
 
 # Output directory for R image files
 outdir <- "./proc/"

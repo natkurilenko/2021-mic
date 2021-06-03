@@ -1,4 +1,5 @@
 ---
+title: Create analysis ready data sets
 jupyter:
   jupytext:
     text_representation:
@@ -11,8 +12,6 @@ jupyter:
     language: R
     name: ir
 ---
-
-# DESeq2: Create analysis ready data sets
 
 
 ## Import metadata

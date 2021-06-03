@@ -60,7 +60,7 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt)) + 
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment)) + 
         ggplot2::geom_point() + 
            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -69,7 +69,7 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt, shape = cline)) + 
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) + 
         ggplot2::geom_point() + 
             ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -78,7 +78,7 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = trt, shape = cline)) +
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) +
         ggplot2::geom_point(size = 3) +
             ggplot2::labs(col = "Treatment") +
                 ggplot2::labs(shape = "Cell Line") +
@@ -92,7 +92,7 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = Run, y = depth, col = trt, shape = cline)) +
+    ggplot2::ggplot(aes(x = Run, y = depth, col = treatment, shape = cell_line)) +
         ggplot2::geom_point(size = 3) +
             ggplot2::labs(col = "Treatment") +
                 ggplot2::labs(shape = "Cell Line") +
@@ -104,7 +104,7 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = depth, y = prop.mapped, col = trt, shape = cline)) +
+    ggplot2::ggplot(aes(x = depth, y = prop.mapped, col = treatment, shape = cell_line)) +
         ggplot2::geom_point(size = 3) +
             ggplot2::labs(col = "Treatment") +
                 ggplot2::labs(shape = "Cell Line") +
@@ -116,12 +116,12 @@ PRJNA668393qcData %>%
 ## Visualize proportion of uniquely mapped reads with facets
 
 ```{r}
-PRJNA668393qcData %>% ggplot(aes(x=Run, y=prop.mapped, shape =cline, color=trt))+
+PRJNA668393qcData %>% ggplot(aes(x=Run, y=prop.mapped, shape =cell_line, color=treatment))+
     ggplot2::geom_point(size = 3) +
         ggplot2::labs(col = "Treatment") +
             ggplot2::labs(shape = "Cell Line") +
                 ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
-                    ggplot2::facet_grid(trt~ cline, drop=TRUE, scales="free_x", space="free") +
+                    ggplot2::facet_grid(treatment~ cell_line, drop=TRUE, scales="free_x", space="free") +
                         ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 

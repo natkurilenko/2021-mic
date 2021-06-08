@@ -31,7 +31,7 @@ library(RColorBrewer)
 
 ```{r}
 procdir <- normalizePath("./proc/")
-ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RData")
+ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
 
 PRJNA668393ddsData <- readRDS(ddsfile)
 
@@ -103,7 +103,7 @@ ddsadd <- PRJNA668393ddsData
 ```
 
 ```{r}
-design(ddsadd) <- formula(~trt+cline)
+design(ddsadd) <- formula(~ treatment + cell_line)
 ```
 
 ```{r}

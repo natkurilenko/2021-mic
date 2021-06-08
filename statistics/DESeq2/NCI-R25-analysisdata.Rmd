@@ -96,10 +96,15 @@ starcountData[1:3,1:3]
 
 ## Create STAR column data
 
+
+In this step we create the DESeq2 "colum" data set from the metadata. The rows of this data object have to coincide with the columns of the count matrix.
+The DESeq2 package expects the experimental variables (in this case treatment and cell_line) to be "factors". We add two new variables (trt and cline) as factors.
+
 ```{r}
 tibble::tibble(Run = colnames(starcountData)) %>%
-    full_join(mtdata, by = "Run") -> 
-        starcolData
+    dplyr::full_join(mtdata, by = "Run") %>%
+        dplyr::mutate(trt = factor(treatment=), cline = factor(cell_line)) -> 
+            starcolData
 ```
 
 ```{r}

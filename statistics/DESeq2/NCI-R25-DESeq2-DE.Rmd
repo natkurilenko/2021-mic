@@ -365,12 +365,9 @@ myinteractplot <- function(mydds, geneid) {
     }
 
 
-myinteractplot(ddsobj, "ENSMUSG00000071724.6")
+#myinteractplot(ddsobj, "ENSMUSG00000071724.6")
 ```
 
-```{r}
-? colData
-```
 
 ### Volcano plot
 

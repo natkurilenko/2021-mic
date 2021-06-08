@@ -23,7 +23,7 @@ library(tidyverse)
 
 ```{r}
 procdir <- normalizePath("./proc/")
-qcfile <- file.path(procdir, "PRJNA668393-qcdata.RData")
+qcfile <- file.path(procdir, "PRJNA668393-qcdata.RDS")
 
 PRJNA668393qcData <- readRDS(qcfile)
 

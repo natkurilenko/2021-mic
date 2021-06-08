@@ -213,8 +213,8 @@ PRJNA668393qcData %>% head(3)
 ```{r}
 outdir <- normalizePath("./proc/")
 
-qcfile <- file.path(outdir, "PRJNA668393-qcdata.RData")
-ddsfile <- file.path(outdir, "PRJNA668393-ddsdata.RData")
+qcfile <- file.path(outdir, "PRJNA668393-qcdata.RDS")
+ddsfile <- file.path(outdir, "PRJNA668393-ddsdata.RDS")
 
 saveRDS(PRJNA668393qcData, file = qcfile)
 saveRDS(PRJNA668393ddsData, file = ddsfile)

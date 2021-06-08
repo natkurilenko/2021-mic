@@ -1,4 +1,5 @@
 ---
+title: DEseq2 differential expression analysis
 jupyter:
   jupytext:
     text_representation:
@@ -11,8 +12,6 @@ jupyter:
     language: R
     name: ir
 ---
-
-# DESeq2: Basic Differential Expression (DE) analysis
 
 
 ## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results

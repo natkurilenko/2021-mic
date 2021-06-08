@@ -97,18 +97,28 @@ starcountData[1:3,1:3]
 ## Create STAR column data
 
 
-In this step we create the DESeq2 "colum" data set from the metadata. The rows of this data object have to coincide with the columns of the count matrix.
-The DESeq2 package expects the experimental variables (in this case treatment and cell_line) to be "factors". We add two new variables (trt and cline) as factors.
+In this step we create the DESeq2 "column" data set from the metadata. The rows of this data object have to coincide with the columns of the count matrix.
+
+The DESeq2 package expects the experimental variables (in this case treatment and cell_line) to be "factors". We add two new variables (trt and cline) as factors. DESeq2 does not like the "-" characters in the levels of its factors (e.g., as in the "anti-PD-1" level). We will remove these
 
 ```{r}
 tibble::tibble(Run = colnames(starcountData)) %>%
     dplyr::full_join(mtdata, by = "Run") %>%
-        dplyr::mutate(trt = factor(treatment=), cline = factor(cell_line)) -> 
+        dplyr::mutate(trt = factor(gsub("-", "",treatment), levels = c("isotype", "antiPD1")), 
+                      cline = factor(cell_line, levels = c("Parental", "UV2"))) -> 
             starcolData
 ```
 
 ```{r}
-starcolData %>% head(3)
+starcolData
+```
+
+```{r}
+
+```
+
+```{r}
+
 ```
 
 ### Create DESeq2 data object

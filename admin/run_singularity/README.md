@@ -17,7 +17,7 @@ tmux new -s jupyter
 ```
 3. Once you have started a tmux session you can start up Jupyter by running this command in the *top directory of this repository*:
 ```
-srun -A chsi -p chsi --cpus-per-task=5 --mem=10G run_singularity/run_singularity_jupyter.sh
+srun -A chsi -p chsi --cpus-per-task=5 --mem=10G admin/run_singularity/run_singularity_jupyter.sh
 ```
 > Note: the first time you run this, it might take a VERY long time to download the Docker image and build the Singularity image from it
 
@@ -56,24 +56,24 @@ ssh -L 8889:dcc-chsi-01.rc.duke.edu:8889 NetID@dcc-login-03.oit.duke.edu
 
 3. If you need more memory or more cpus you can use the `--mem` and/or `--cpus-per-task` arguments to in the “srun”, for example to request 4 CPUs and 10GB of RAM:
 ```
-srun --cpus-per-task=4 --mem=10G run_singularity/run_singularity_jupyter.sh
+srun --cpus-per-task=4 --mem=10G admin/run_singularity/run_singularity_jupyter.sh
 ```
 
 4. If you have high priority access to a partition you can request that partition be used with the `-A` and `-p` arguments to `srun`:
 ```
-srun -A chsi -p chsi run_singularity/run_singularity_jupyter.sh
+srun -A chsi -p chsi admin/run_singularity/run_singularity_jupyter.sh
 ```
 
 6. You can combine several of these command line flags:
 ```
-srun -A chsi -p chsi --cpus-per-task=4 --mem=10G run_singularity/run_singularity_jupyter.sh
+srun -A chsi -p chsi --cpus-per-task=4 --mem=10G admin/run_singularity/run_singularity_jupyter.sh
 ```
 
 6. It is strongly recommended to set the `SINGULARITY_CACHEDIR` environment variables in your .bashrc or when running `srun`. This environment variable specifies where the Docker image (and the Singularity image built from it) are saved. If this variable is not specified, singularity will cache images in `$HOME/.singularity/cache`, which can fill up quickly. This is discussed in the [Singularity Documentation](https://sylabs.io/guides/3.7/user-guide/build_env.html#cache-folders)
 
 ```
 mkdir -p "/work/${USER}"
-export SINGULARITY_CACHEDIR="/work/${USER}/singularity_cache"; srun -A chsi -p chsi --cpus-per-task=4 --mem=10G run_singularity/run_singularity_jupyter.sh
+export SINGULARITY_CACHEDIR="/work/${USER}/singularity_cache"; srun -A chsi -p chsi --cpus-per-task=4 --mem=10G admin/run_singularity/run_singularity_jupyter.sh
 ```
 
 ### Install Singularity

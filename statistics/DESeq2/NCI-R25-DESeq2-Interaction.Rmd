@@ -193,6 +193,17 @@ This output only provides the estimate for the treament effect $\beta_{1i}$ for 
 coef(ddsDE)[c("ENSMUSG00000022351.15","ENSMUSG00000055653.14") , ]
 ```
 
+* trt == 0 and cline == 0  => $\log2(q_{ij})$= 4.569495
+* trt == 1 and cline == 0  => $\log2(q_{ij})$= 4.569495 + 0.7452770
+* trt == 0 and cline == 1  => $\log2(q_{ij})$= 4.569495 + (-0.9673204)
+* trt == 1 and cline == 1  => $\log2(q_{ij})$= 4.569495 + 0.7452770	+ (-0.9673204)+ 2.680054
+
+The treatment DE effect under the multiplicative model depends on cell line: Under cell line 0, the treatment effect is the cell line log2 fold change, under cell line 1, the treatment effect is the cell line loig2 fold chnage + the interaction log 2 fold change
+
+* if cline == 0 => (4.569495 + 0.7452770) - 4.569495 = 0.7452770
+* if cline == 1 => (4.569495 + 0.7452770	+ (-0.9673204)+ 2.680054) - (4.569495 + (-0.9673204))   = 0.7452770	+  2.680054
+
+
 ## Visualize DE effect
 
 

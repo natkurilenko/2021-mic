@@ -146,7 +146,7 @@ design(ddsobj)
  We begin by estimating the size factors $s_1,\ldots,s_n$:
 
 ```{r}
-ddsobj <- estimateSizeFactors(ddsobj)
+ddsobj <- DESeq2::estimateSizeFactors(ddsobj)
 ```
 
 Now, compare the dds object to that of before applying the estimateSizeFactors() function. What has changed? What remains unchanged?
@@ -329,6 +329,17 @@ This output only provides the estimate for the treament effect $\beta_{1i}$ for 
 ```{r}
 coef(ddsDE, se = TRUE)["ENSMUSG00000071724.6", , drop = FALSE]
 ```
+
+* trt == 0 and cline == 0  => $\log2(q_{ij})$= 2.085754
+* trt == 1 and cline == 0  => $\log2(q_{ij})$= 2.085754 + 1.704187
+* trt == 0 and cline == 1  => $\log2(q_{ij})$= 2.085754 + 1.071143	
+* trt == 1 and cline == 1  => $\log2(q_{ij})$= 2.085754 + 1.071143	+ 1.704187
+
+The treatment DE effect unnder teh additive model does NOT depend on cell line
+
+* if cline == 0 => (2.085754 + 1.704187) - 2.085754 = 1.704187 
+* if cline == 1 => (2.085754 + 1.071143	+ 1.704187 ) -(2.085754 + 1.071143) = 1.704187
+
 
 ## Visualize DE effect
 

@@ -1,0 +1,407 @@
+# File archival and recovery
+
+Create files to play with.
+
+
+```bash
+echo "aaaaa" > a.txt
+echo "bbbbb" > b.txt
+echo "ccccc" > c.txt
+```
+
+## File compression and archival
+
+
+```bash
+ls ?.txt
+```
+
+    a.txt  b.txt  c.txt
+
+
+### Combine multiple files into single file
+
+
+```bash
+tar -cvf abc.tar ?.txt
+```
+
+    a.txt
+    b.txt
+    c.txt
+
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;31mabc.tar[0m
+    a.txt
+    b.txt
+    c.txt
+    [01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+### Compress concatenated file
+
+
+```bash
+gzip abc.tar
+```
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;31mabc.tar.gz[0m
+    a.txt
+    b.txt
+    c.txt
+    [01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+rm abc.tar.gz
+```
+
+### In one step
+
+
+```bash
+tar -czvf abc.tar.gz ?.txt 
+```
+
+    a.txt
+    b.txt
+    c.txt
+
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;31mabc.tar.gz[0m
+    a.txt
+    b.txt
+    c.txt
+    [01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+rm ?.txt
+```
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;31mabc.tar.gz[0m
+    [01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+### Recover files
+
+
+```bash
+tar -xzvf abc.tar.gz
+```
+
+    a.txt
+    b.txt
+    c.txt
+
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;31mabc.tar.gz[0m
+    a.txt
+    b.txt
+    c.txt
+    [01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+rm abc.tar.gz
+```
+
+## Checksums
+
+When working with genomic data, we deal with very large files. There is a small risk that these files will be corrupted over time or during data transfer. To ensure that files are not changed, we use a “checksum” function. This is a function that generates an long, essentially random number called a checksum that represents the contents of the file. When the file contents change, so will the checksum. In theory, there is a very small probability that two different files generate the same checksum, but in practice the probability is too small to worry about.
+
+There are several different algorithms for generating the checksums, and at least 3 Unix commands to do so, but they all work very similarly for our purposes.
+
+The strategy is:
+
+- Generate and store a checksum together with a data file whose integrity you care about
+- When you use or download the data, re-generate the checksum (using the same algorithm e.g. MD5) and compare with the checksum
+
+
+
+```bash
+cat > hello.txt << EOF
+1 Hello, bash
+2 Hello, again
+3 Hello
+4 again
+EOF
+```
+
+
+```bash
+cat hello.txt
+```
+
+    1 Hello, bash
+    2 Hello, again
+    3 Hello
+    4 again
+
+
+### Different algorithms to generate checkusms
+
+
+```bash
+cksum hello.txt
+```
+
+    1567754519 45 hello.txt
+
+
+
+```bash
+md5sum hello.txt
+```
+
+    a68554400613f5445c13c57907e976ed  hello.txt
+
+
+
+```bash
+sha1sum hello.txt
+```
+
+    57eae725420bf0075d17f849cc8e75379bea6eb6  hello.txt
+
+
+### If we alter hello.txt in any way the checksum will be different
+
+
+```bash
+cat hello.txt
+```
+
+    1 Hello, bash
+    2 Hello, again
+    3 Hello
+    4 again
+
+
+
+```bash
+md5sum hello.txt > hello.md5
+```
+
+
+```bash
+cat hello.md5
+```
+
+    a68554400613f5445c13c57907e976ed  hello.txt
+
+
+
+```bash
+cat > hello.txt << EOF
+1 Hello, bash
+2 Hello, again
+2 Hello
+4 again
+EOF
+```
+
+
+```bash
+cat hello.txt
+```
+
+    1 Hello, bash
+    2 Hello, again
+    2 Hello
+    4 again
+
+
+
+```bash
+md5sum -c hello.md5
+```
+
+    hello.txt: FAILED
+    md5sum: WARNING: 1 computed checksum did NOT match
+
+
+
+
+### Working with multiple files
+
+
+```bash
+md5sum ?.txt > MD5SUM
+```
+
+
+```bash
+echo "ccacc" > c.txt
+```
+
+
+```bash
+md5sum -c MD5SUM
+```
+
+    a.txt: OK
+    b.txt: OK
+    c.txt: FAILED
+    md5sum: WARNING: 1 computed checksum did NOT match
+
+
+
+
+## Exercises
+
+1. Create an MD5 checksum for all notebooks (files with extension .ipynb) and store as MD5_CHECKSUM
+
+
+```bash
+
+```
+
+2. Archive all notebooks (files with extension .ipynb) in this directory ANd the checksum file as notebooks.tar.gz.
+
+
+```bash
+
+```
+
+3. Delete all (files with extension .ipynb).
+
+
+```bash
+
+```
+
+4. Recover the notebooks from the archived file, and check that the files have not changed during the process of tarring and untarring.
+
+
+```bash
+
+```

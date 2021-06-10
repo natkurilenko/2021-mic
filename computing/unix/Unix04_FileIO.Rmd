@@ -1,0 +1,656 @@
+# File I/O
+
+## Creating a file
+
+### Using redirection
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+echo "Hello Unix"
+```
+
+    Hello Unix
+
+
+
+```bash
+echo "Hello Unix" > foo.txt
+```
+
+### Using `heredocs`
+
+
+```bash
+cat > bar.txt << EOF
+This old man he played one
+He played knick knack on my thumb
+EOF
+```
+
+## View file contents
+
+
+```bash
+cat foo.txt
+```
+
+    Hello Unix
+
+
+
+```bash
+cat bar.txt
+```
+
+    This old man he played one
+    He played knick knack on my thumb
+
+
+## More redirection
+
+
+```bash
+echo "I love bash" >> foo.txt
+```
+
+
+```bash
+cat >> bar.txt << EOF
+This old man he played two
+He played knick knack on my shoe
+EOF
+```
+
+## View file contents
+
+
+```bash
+cat foo.txt
+```
+
+    Hello Unix
+    I love bash
+
+
+
+```bash
+cat bar.txt
+```
+
+    This old man he played one
+    He played knick knack on my thumb
+    This old man he played two
+    He played knick knack on my shoe
+
+
+## More redirection
+
+
+```bash
+echo "Many people hate bash" > foo.txt
+```
+
+Oops, you've over-written the original contents of foo.txt and they are lost forever.
+
+
+```bash
+cat foo.txt
+```
+
+    Many people hate bash
+
+
+### Safety
+
+If you file contents are precious and should not be changed (e..g raw data), you can change permisions to read-only.
+
+
+```bash
+ls -l foo.txt
+```
+
+    -rw-r--r-- 1 jovyan users 22 Jun 22 18:50 foo.txt
+
+
+
+```bash
+chmod -w foo.txt
+```
+
+
+```bash
+ls -l foo.txt
+```
+
+    -r--r--r-- 1 jovyan users 22 Jun 22 18:50 foo.txt
+
+
+
+```bash
+echo "Try to overwrite" > foo.txt
+```
+
+    bash: foo.txt: Permission denied
+
+
+
+
+## Redirecting command output
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    [0m[01;34mfigs[0m
+    foo.txt
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+ls > contents.txt
+```
+
+
+```bash
+cat contents.txt
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    contents.txt
+    figs
+    foo.txt
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+### Redirecting error messages
+
+
+```bash
+cat foobar.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+
+
+
+```bash
+cat foobar.txt > error.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+
+
+
+```bash
+ls e*txt
+```
+
+    error.txt
+
+
+
+```bash
+cat error.txt
+```
+
+### Why is error.txt it empty?
+
+The standard `>` is  short for `1>` which means re-direct the standard output stream.
+
+
+```bash
+cat foobar.txt 1> stdout.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+
+
+
+```bash
+cat stdout.txt
+```
+
+To redirect the standard error stream, you need `2>``.
+
+
+```bash
+cat foobar.txt 2> stderr.txt
+```
+
+
+
+
+```bash
+cat stderr.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+You can redirect to both.
+
+
+```bash
+cat foobar.txt > results.txt 2> errors.txt
+```
+
+
+
+
+```bash
+cat results.txt
+```
+
+
+```bash
+cat errors.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+You can also redirect both streams to the same file with `&>`.
+
+
+```bash
+cat foobar.txt &> combined.txt
+```
+
+
+
+
+```bash
+cat combined.txt
+```
+
+    cat: foobar.txt: No such file or directory
+
+
+### Simple text operations
+
+
+```bash
+cat contents.txt
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    contents.txt
+    figs
+    foo.txt
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+head -3 contents.txt
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    contents.txt
+
+
+
+```bash
+tail -3 contents.txt
+```
+
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+
+```bash
+wc contents.txt
+```
+
+     24  24 622 contents.txt
+
+
+
+```bash
+wc -l contents.txt
+```
+
+    24 contents.txt
+
+
+
+```bash
+wc -w contents.txt
+```
+
+    24 contents.txt
+
+
+
+```bash
+wc -c contents.txt
+```
+
+    622 contents.txt
+
+
+If you don't want the filename, force it to read from standard input.
+
+
+```bash
+wc -c < contents.txt
+```
+
+    622
+
+
+### Piping
+
+
+```bash
+head -3 contents.txt | wc -c
+```
+
+    45
+
+
+
+```bash
+head -3 contents.txt | wc -c > word_count.txt
+```
+
+
+```bash
+cat word_count.txt
+```
+
+    45
+
+
+### Clean up
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    combined.txt
+    contents.txt
+    errors.txt
+    error.txt
+    [0m[01;34mfigs[0m
+    foo.txt
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    results.txt
+    stderr.txt
+    stdout.txt
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+    word_count.txt
+
+
+### Fancy globbing
+
+
+```bash
+shopt -s extglob
+```
+
+Specifying what NOT to list.
+
+
+```bash
+ls !(*.ipynb)
+```
+
+    bar.txt       contents.txt  error.txt  results.txt  stdout.txt
+    combined.txt  errors.txt    foo.txt    stderr.txt   word_count.txt
+    
+    figs:
+    [0m[01;35mbox.png[0m  g3.pdf  [01;35mg3.png[0m  [01;35mlm.png[0m
+
+
+
+```bash
+ls !(*.txt)
+```
+
+    1_IntroToCompBoot.ipynb
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+    
+    figs:
+    [0m[01;35mbox.png[0m  g3.pdf  [01;35mg3.png[0m  [01;35mlm.png[0m
+
+
+Specifying alternatives.
+
+
+```bash
+ls *{.txt,.ipynb}
+```
+
+    1_IntroToCompBoot.ipynb
+    bar.txt
+    combined.txt
+    contents.txt
+    errors.txt
+    error.txt
+    foo.txt
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    results.txt
+    stderr.txt
+    stdout.txt
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+    word_count.txt
+
+
+### Clean up
+
+
+```bash
+rm -f !(*.ipynb)
+```
+
+    rm: cannot remove 'figs': Is a directory
+
+
+
+
+
+```bash
+ls
+```
+
+    1_IntroToCompBoot.ipynb
+    [0m[01;34mfigs[0m
+    R01_IntroductionToR.ipynb
+    R02_Dplyr.ipynb
+    R03_Tidyr.ipynb
+    R04_Multiple_Files.ipynb
+    R05_Graphics_Overview.ipynb
+    R06_Graphics_Base.ipynb
+    R07_Tidyverse_With_Pilot_Counts.ipynb
+    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
+    R08_Graphics_ggplot2.ipynb
+    R09_Libraries_and_Bioconductor.ipynb
+    Unix01_Intro_to_Unix_and_bash.ipynb
+    Unix02_Files_And_Directories.ipynb
+    Unix03_File_Storage.ipynb
+    Unix04_FileIO.ipynb
+    Unix05_Text_Manipulation.ipynb
+    Unix06_Variables.ipynb
+    Unix07_Regular_Expresssions.ipynb
+    Unix08_Capstone_Exercises.ipynb
+    Unix08_Capstone_Exercises_Solutions.ipynb
+
+
+## Exercises
+
+1. Create 3 files with the same contents (say `lsd1.txt`, `lsd2.txt`, `lsd3.txt`)
+
+```
+Two of the most famous products of Berkeley are LSD and Unix. 
+I don’t think that this is a coincidence.
+```
+
+using 
+
+- Echo
+- A HereDoc
+
+
+```bash
+
+```
+
+2. Count the number of words in the second sentence only of lsd1.txt
+
+
+```bash
+
+```

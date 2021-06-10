@@ -1,0 +1,404 @@
+# The Unix Shell: Regular Expressions
+
+## Regular Expressions
+
+A regular expression (regex) is a text **pattern** that can be used for searching and replacing. Regular expressions are similar to Unix wild cards used in globbing, but much more powerful, and can be used to search, replace and validate text.
+
+Regular expressions are used in many Unix commands such as `find` and  `grep`, and also within most programming languages such as R and Python.
+
+We only show basic usage here to get you started. To get practice, first spend some time at <https://regex101.com> to get a better understanding of how to use regular expressions, then find out how to use them in your text editor to do a search and replace.
+
+### Matching characters
+
+We will practice using `grep`. If a successful match is found, the line of text will be returned; otherwise nothing.
+
+
+```bash
+grep --help | head -n 20
+```
+
+    Usage: grep [OPTION]... PATTERN [FILE]...
+    Search for PATTERN in each FILE or standard input.
+    PATTERN is, by default, a basic regular expression (BRE).
+    Example: grep -i 'hello world' menu.h main.c
+    
+    Regexp selection and interpretation:
+      -E, --extended-regexp     PATTERN is an extended regular expression (ERE)
+      -F, --fixed-strings       PATTERN is a set of newline-separated strings
+      -G, --basic-regexp        PATTERN is a basic regular expression (BRE)
+      -P, --perl-regexp         PATTERN is a Perl regular expression
+      -e, --regexp=PATTERN      use PATTERN for matching
+      -f, --file=FILE           obtain PATTERN from FILE
+      -i, --ignore-case         ignore case distinctions
+      -w, --word-regexp         force PATTERN to match only whole words
+      -x, --line-regexp         force PATTERN to match only whole lines
+      -z, --null-data           a data line ends in 0 byte, not newline
+    
+    Miscellaneous:
+      -s, --no-messages         suppress error messages
+      -v, --invert-match        select non-matching lines
+
+
+#### Literal character match
+
+
+```bash
+echo abcd | grep abcd
+```
+
+    abcd
+
+
+
+```bash
+echo abcd | grep bc
+```
+
+    abcd
+
+
+#### No match for `ac`
+
+
+```bash
+echo abcd | grep ac
+```
+
+
+
+### Case insensitive match
+
+
+```bash
+echo abcd | grep -i A
+```
+
+    abcd
+
+
+
+```bash
+echo abcd | grep A
+```
+
+
+
+### Matching any single character
+
+The `.` matches exactly one character.
+
+
+```bash
+echo abcd | grep a.c
+```
+
+    abcd
+
+
+
+```bash
+echo abcd | grep a..c
+```
+
+
+
+
+```bash
+echo abcd | grep a..d
+```
+
+    abcd
+
+
+### Matching a character set
+
+
+```bash
+echo a2b | grep [0123456789]
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep [0-9]
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep [abc]
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep [def]
+```
+
+
+
+
+```bash
+echo a2b | grep [a-z]
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep [A-Z]
+```
+
+
+
+### Exceptions
+
+The `^` within a character set says match anything NOT in the set.
+
+
+```bash
+echo a2b | grep [A-Z]
+```
+
+
+
+
+```bash
+echo a2b | grep [^A-Z]
+```
+
+    a2b
+
+
+### Pre-defined character sets
+
+Many useful sets of characters (e.g. all digits) have been pre-defined as [character classes](https://www.gnu.org/software/grep/manual/html_node/Character-Classes-and-Bracket-Expressions.html) that you can use in your regular expressions. Character classes are a bit clumsy in the Unix shell, but simpler forms are often used in programming languages (e.g. '\d' instead of '[:digit:]').
+
+
+```bash
+echo a2b | grep ['[:alpha:]']
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep ['[:digit:]']
+```
+
+    a2b
+
+
+
+```bash
+echo a2b | grep ['[:punct:]']
+```
+
+
+
+
+```bash
+echo a2,b | grep ['[:punct:]']
+```
+
+    a2,b
+
+
+### Alternative expressions
+
+We use the -E argument here to avoid having to escape special characters
+```
+     -E, --extended-regexp
+             Interpret pattern as an extended regular expression (i.e. force
+             grep to behave as egrep).'
+```
+
+
+```bash
+echo cat | grep -E '(cat|dog)'
+```
+
+    cat
+
+
+#### Without `-E`
+
+We need to escape the special characters `(`, `|` and `)`.
+
+
+```bash
+echo cat | grep '\(cat\|dog\)'
+```
+
+    cat
+
+
+#### We love dogs as well
+
+
+```bash
+echo dog | grep -E '(cat|dog)'
+```
+
+    dog
+
+
+#### But not foxes
+
+
+```bash
+echo fox | grep -E '(cat|dog)'
+```
+
+
+
+#### Be careful - use of square brackets means something different
+
+
+```bash
+echo fox | grep -E '[cat|dog]'
+```
+
+    fox
+
+
+## Character set modifiers
+
+### Anchors
+
+`^` indicates start of line and `$` indicates end of line.
+
+
+```bash
+echo abcd | grep ^ab
+```
+
+    abcd
+
+
+
+```bash
+echo abcd | grep ab$
+```
+
+
+
+
+```bash
+echo abcd | grep ^cd
+```
+
+
+
+
+```bash
+echo abcd | grep cd$
+```
+
+    abcd
+
+
+### Repeating characters
+
+- `+` matches one or more of the preceding character set
+- '*' matches zero or more of the preceding character set
+- '{m, n}' matches between m and n repeats of the preceding character set.
+
+
+```bash
+echo abbbcd | grep abcd
+```
+
+
+
+
+```bash
+echo abbbcd | grep -E ab+cd
+```
+
+    abbbcd
+
+
+
+```bash
+echo abbbcd | grep -E ab*cd
+```
+
+    abbbcd
+
+
+
+```bash
+echo abbbcd | grep -E 'ab{1,5}cd'
+```
+
+    abbbcd
+
+
+
+```bash
+echo abbbcd | grep -E a[bc]+d
+```
+
+    abbbcd
+
+
+### Matching words with word boundaries
+
+`\<` and `\>` indicate word boundaries. That is, `\<foo\>` will only match `foo bar` or `bar foo` but not `foobar` or `barfoo`.
+
+
+```bash
+echo 'other ones go together' | grep 'the'
+```
+
+    other ones go together
+
+
+
+```bash
+echo 'other ones go together' | grep '\<the\>'
+```
+
+
+
+
+```bash
+echo 'other ones go together' | grep '\<other\>'
+```
+
+    other ones go together
+
+
+### Capture groups and back references
+
+
+```bash
+echo "123_456_123_456" | grep -E '([0-9]+).*\1'
+```
+
+    123_456_123_456
+
+
+
+```bash
+echo "123_456_123_456" | grep -E '([0-9]+)_([0-9]+)_\1_\2'
+```
+
+    123_456_123_456
+
+
+
+```bash
+echo "123_456_123_123" | grep -E '([0-9]+)_([0-9]+)_\1_\2'
+```
+
+

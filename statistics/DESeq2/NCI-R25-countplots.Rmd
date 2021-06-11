@@ -92,6 +92,13 @@ PRJNA668393qcData %>%
 
 ```{r}
 PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = depth)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::theme_bw()
+```
+
+```{r}
+PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = depth, col = treatment, shape = cell_line)) +
         ggplot2::geom_point(size = 3) +
             ggplot2::labs(col = "Treatment") +

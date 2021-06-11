@@ -45,7 +45,7 @@ countdata %>% dim
 ```
 
 ```{r}
-countdata %>% head(3)
+countdata %>% head(3) # rows are genes, cols are samples
 ```
 
 ## Import meta data
@@ -62,6 +62,7 @@ tools::md5sum(metafile)
 
 ```{r}
 mtdata %>% dim
+head(mtdata) # rows are samples, columns are sample metadata
 ```
 
 ## Create STAR count matrix
@@ -79,16 +80,22 @@ cleancolname("SRR12804464_ReadsPerGene.out.tab")
 STAR requires a count matrix with the genes across the rows and libraries across the columns. The first four rows will need to removed. The gene column will also need to be removed and assigned as row names
 
 ```{r}
+head(countdata)
+```
+
+```{r}
 ### Labels for first four rows of STAR count files
 starlabs <- c("N_ambiguous", "N_multimapping", "N_noFeature", "N_unmapped")
 
 countdata %>% 
     dplyr::filter(!gene %in% starlabs) %>%
+# drop rows with starlabs
         data.frame() %>% 
             tibble::column_to_rownames("gene") %>%
+# modify the table so that the "gene" column is in the rownames slot
                 dplyr::rename_with(cleancolname) %>%
-                    as.matrix -> 
-                        starcountData
+# rename the columns using the function cleancolname we just created
+                    as.matrix -> starcountData
     
 ```
 
@@ -96,31 +103,38 @@ Inspect the dimension of the matrix
 
 ```{r}
 starcountData %>% dim
+# now there are 12 columns, same as a the number of samples
 ```
 
 Inspect the matrix
 
 ```{r}
-starcountData[1:3,1:3]
+starcountData[1:3,1:3] # rows = genes, cols = samples
 ```
 
 ## Create STAR column data
 
 
-In this step we create the DESeq2 "column" data set from the metadata. The rows of this data object have to coincide with the columns of the count matrix.
+In this step, we create the DESeq2 "column" data set from the metadata. The rows of this data object have to coincide with the columns of the count matrix.
 
-The DESeq2 package expects the experimental variables (in this case treatment and cell_line) to be "factors". We add two new variables (trt and cline) as factors. DESeq2 does not like the "-" characters in the levels of its factors (e.g., as in the "anti-PD-1" level). We will remove these
+For DESeq2 to perform properly, we must modify how the experimental variables are coded in two ways:
+1. Experimental variables (in this case treatment and cell_line) need to be classified as "factors" and we need to conscious of how the levels within the factors are ordered because this determines how the analysis model is specified. Whichever level you list first will be the reference level so here we indicated that "isotype" is the control treatment level and "Parental" is the reference cell line
+2. DESeq2 does not like the "-" characters in the levels of its factors (e.g., as in the "anti-PD-1" level) so we need to remove these
 
 ```{r}
+# create a column with sample names that is named "Run"
 tibble::tibble(Run = colnames(starcountData)) %>%
+# use this column to add info from mtdata to constrain the row order
     dplyr::full_join(mtdata, by = "Run") %>%
+# gsub() finds and replaces the "-" with "" (ie deletes it)
+# factor() classifies the data as a factor and provides the opportunity to set the order of the factor levels
         dplyr::mutate(trt = factor(gsub("-", "",treatment), levels = c("isotype", "antiPD1")), 
                       cline = factor(cell_line, levels = c("Parental", "UV2"))) -> 
             starcolData
 ```
 
 ```{r}
-starcolData
+starcolData # rows are samples, columns are sample metadata
 ```
 
 ```{r}
@@ -134,7 +148,7 @@ starcolData
 ### Create DESeq2 data object
 
 
-IMPORTANT: The rows of the STAR column data set have to line up with the columns of the STAR count data matrix. Be sure to check this very carefully. Following a merger, it is possible that the rows are reordered. 
+IMPORTANT: The rows of the STAR column data set have to line up with the columns of the STAR count data matrix. Be sure to check this very carefully. Following a merger, it is possible that the rows are reordered.
 
 ```{r}
 identical(starcolData[["Run"]], colnames(starcountData))
@@ -161,13 +175,25 @@ PRJNA668393ddsData
 In the count data object, the genes are across the rows and the libraries are across the columns. To create a QC data set, the object will need to be transposed
 
 ```{r}
-countdata %>% 
-    tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            head(3)
+head(countdata)
 ```
 
-Add the total count for each library as a new column (depth) and drop gene counts
+```{r}
+countdata %>% 
+    tidyr::gather(key = "fname", value = "value", -gene) %>% 
+        tidyr::spread(key = gene, value = value) %>% 
+            head(3)
+
+# gather() collects a set of column names and places them into a single "key" column
+# in this case, we are naming the key column "fname"
+# all the cells from those columns get gathered into a new column that we are naming "value"
+# the last argument is for columns that you don't want to be "gathered", here "gene"
+
+# spread() does the opposite
+# in this case, we are spreading out the data by gene so that each column holds data for a single gene
+```
+
+Now, to summarize the number of reads per samples (aka library size or library depth), add the total read count for each library as a new column and call it "depth". Now that we've got that value, we can drop all the columns for individual genes to simplify the dataframe.
 
 ```{r}
 countdata %>% 
@@ -179,7 +205,7 @@ countdata %>%
                         head(3)
 ```
 
-Add the number of reads mapped to genes as a new column (N_mapped)
+Calculate the number of reads that were actually mapped to genes and call this column "N_mapped". To do this, subtract the non-mapped reads (ie N_ambigious, N_multimapping, N_noFeature, and N_unmapped) from the total reads (depth).
 
 ```{r}
 countdata %>% 
@@ -192,7 +218,10 @@ countdata %>%
                             head(3)
 ```
 
-This function adds three QC statistics to the transposed count matrix: 1. proportion of mapped reads (defined as number of mapped reads over depth count), proportion of reads mapped to regions with no gene annotation, and proportion of unqiuely mapped reads
+The following function named "mapstat" adds three QC statistics to the transposed count matrix: 
+1. proportion of mapped reads (defined as number of mapped reads over depth count)
+2. proportion of reads mapped to regions with no gene annotation
+3. proportion of unqiuely mapped reads
 
 ```{r}
 mapstat <- function(cntdf) {
@@ -203,7 +232,7 @@ mapstat <- function(cntdf) {
 }
 ```
 
-Now, we add these QC statistics to the transposed count matrix
+Now, we can use this function to add these QC statistics to the transposed count matrix
 
 ```{r}
 countdata %>% 
@@ -215,6 +244,8 @@ countdata %>%
                         dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped))%>%
                             mapstat() %>%
                                 head(3)
+# Question -- Why build the separate function mapstat? (As opposed to just adding those lines to this pipe)
+
 ```
 
 Finally merge in the meta data
@@ -231,6 +262,7 @@ countdata %>%
                                 dplyr::mutate(Run = cleancolname(fname)) %>%
                                     dplyr::full_join(mtdata, by = "Run") ->
                                           PRJNA668393qcData
+# use full_join() to add the metadata to the QC info
 PRJNA668393qcData %>% dim
 PRJNA668393qcData %>% head(3)
 ```

@@ -1,5 +1,13 @@
 # Working with Unix
 
+## Author: Cliburn Chan
+## Edited by: Janice McCarthy
+
+## Bash kernel
+In the previous unit, we used the terminal window to type commands to the bash shell. The Jupyter notebook interface allows us to create bash code cells, so that we can create a reproducible series of commands. We can also write 'shell scripts', which are text files that can be read by bash, but as we will do the entire RNA analysis pipeline using notebooks, those are beyond our scope.
+
+In this unit, we'll re-inforce some of the last unit. The following commands are very useful:
+
 ## File and directory navigation
 
 ```
@@ -21,98 +29,29 @@ mv    Move file
 pwd
 ```
 
-    /home/jovyan/work/hts_final_for_distribution/computing_intro
+### Why does it matter where I am? 
+
+The concept of the 'working directory' comes from the way that bash locates files. The default place for bash to look is in the 'working directory'. We saw earlier that you can 'change directories' using `cd`. 
 
 
 ### List files
+
+We can list the files in the 'current' or working directory using `ls`.
 
 
 ```{bash}
 ls
 ```
 
-    1_IntroToCompBoot.ipynb
-    [0m[01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
+Some files are 'hidden' (by default, `ls` does not list files whose names start with '.')
 
 ```{bash}
 ls -a
 ```
 
-    [0m[01;34m.[0m
-    [01;34m..[0m
-    1_IntroToCompBoot.ipynb
-    [01;34mfigs[0m
-    [01;34m.ipynb_checkpoints[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
-
 ```{bash}
 ls -l
 ```
-
-    total 2692
-    -rw-r--r-- 1 jovyan users    5572 Feb 19 17:49 1_IntroToCompBoot.ipynb
-    drwxr-xr-x 2 jovyan users    4096 Jun 22 17:57 [0m[01;34mfigs[0m
-    -rw-r--r-- 1 jovyan users   66271 Jun 20 21:06 R01_IntroductionToR.ipynb
-    -rw-r--r-- 1 jovyan users  118439 Jun 20 21:14 R02_Dplyr.ipynb
-    -rw-r--r-- 1 jovyan users   88030 Jun 22 16:50 R03_Tidyr.ipynb
-    -rw-r--r-- 1 jovyan users  123451 Jun 22 16:51 R04_Multiple_Files.ipynb
-    -rw-r--r-- 1 jovyan users  158657 Jun 22 17:24 R05_Graphics_Overview.ipynb
-    -rw-r--r-- 1 jovyan users    6135 Jun 22 17:24 R06_Graphics_Base.ipynb
-    -rw-r--r-- 1 jovyan users  143363 Jun 22 17:42 R07_Tidyverse_With_Pilot_Counts.ipynb
-    -rw-r--r-- 1 jovyan users  155110 Jun 22 17:43 R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    -rw-r--r-- 1 jovyan users 1375419 Jun 22 18:03 R08_Graphics_ggplot2.ipynb
-    -rw-r--r-- 1 jovyan users  360944 Jun 22 18:42 R09_Libraries_and_Bioconductor.ipynb
-    -rw-r--r-- 1 jovyan users    8765 Jun 22 18:43 Unix01_Intro_to_Unix_and_bash.ipynb
-    -rw-r--r-- 1 jovyan users   27262 Jun 22 18:45 Unix02_Files_And_Directories.ipynb
-    -rw-r--r-- 1 jovyan users    8029 Feb 19 17:49 Unix03_File_Storage.ipynb
-    -rw-r--r-- 1 jovyan users   11707 Feb 19 17:49 Unix04_FileIO.ipynb
-    -rw-r--r-- 1 jovyan users   16107 Feb 19 17:49 Unix05_Text_Manipulation.ipynb
-    -rw-r--r-- 1 jovyan users   15601 Feb 19 17:49 Unix06_Variables.ipynb
-    -rw-r--r-- 1 jovyan users   11089 Feb 19 17:49 Unix07_Regular_Expresssions.ipynb
-    -rw-r--r-- 1 jovyan users    5387 Feb 19 17:49 Unix08_Capstone_Exercises.ipynb
-    -rw-r--r-- 1 jovyan users    8226 Feb 19 17:49 Unix08_Capstone_Exercises_Solutions.ipynb
-
 
 Fields returned by `ls -l`:
 
@@ -138,50 +77,16 @@ r-- Other has Read permission
 
 
 ```{bash}
-ls *ipynb
+ls *Rmd
 ```
-
-    1_IntroToCompBoot.ipynb
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
 
 ```{bash}
 ls U*
 ```
 
-    Unix01_Intro_to_Unix_and_bash.ipynb  Unix06_Variables.ipynb
-    Unix02_Files_And_Directories.ipynb   Unix07_Regular_Expresssions.ipynb
-    Unix03_File_Storage.ipynb            Unix08_Capstone_Exercises.ipynb
-    Unix04_FileIO.ipynb                  Unix08_Capstone_Exercises_Solutions.ipynb
-    Unix05_Text_Manipulation.ipynb
-
-
-
 ```{bash}
 ls *nix??_*Exercises*
 ```
-
-    Unix08_Capstone_Exercises.ipynb  Unix08_Capstone_Exercises_Solutions.ipynb
-
 
 ### Make directories
 
@@ -197,73 +102,13 @@ mkdir a/b/c
 ls
 ```
 
-    1_IntroToCompBoot.ipynb
-    [0m[01;34ma[0m
-    [01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
-
 ```{bash}
 ls -R
 ```
 
-    .:
-    1_IntroToCompBoot.ipynb
-    [0m[01;34ma[0m
-    [01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-    
-    ./a:
-    [01;34mb[0m
-    
-    ./a/b:
-    [01;34mc[0m
-    
-    ./a/b/c:
-    
-    ./figs:
-    [01;35mbox.png[0m  g3.pdf  [01;35mg3.png[0m  [01;35mlm.png[0m
-
-
-### Removing empty directories
-
+```{bash}
+ls -l
+```
 
 ```{bash}
 rmdir a/b/c
@@ -275,29 +120,6 @@ rmdir a
 ```{bash}
 ls
 ```
-
-    1_IntroToCompBoot.ipynb
-    [0m[01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
 
 ### Making nested directories in one step
 
@@ -318,52 +140,6 @@ touch a/b/c/foo.txt a/b/d/bar.txt a/b/e/baz.txt
 ls -R
 ```
 
-    .:
-    1_IntroToCompBoot.ipynb
-    [0m[01;34ma[0m
-    [01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-    
-    ./a:
-    [01;34mb[0m
-    
-    ./a/b:
-    [01;34mc[0m  [01;34md[0m  [01;34me[0m
-    
-    ./a/b/c:
-    foo.txt
-    
-    ./a/b/d:
-    bar.txt
-    
-    ./a/b/e:
-    baz.txt
-    
-    ./figs:
-    [01;35mbox.png[0m  g3.pdf  [01;35mg3.png[0m  [01;35mlm.png[0m
-
-
-### Copying files
-
-
 ```{bash}
 cp a/b/c/foo.txt foo_copy1.txt
 cp a/b/c/foo.txt a/foo_copy2.txt
@@ -375,53 +151,6 @@ cp a/b/c/foo.txt a/b/foo_copy3.txt
 ls -R
 ```
 
-    .:
-    1_IntroToCompBoot.ipynb
-    [0m[01;34ma[0m
-    [01;34mfigs[0m
-    foo_copy1.txt
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-    
-    ./a:
-    [01;34mb[0m  foo_copy2.txt
-    
-    ./a/b:
-    [01;34mc[0m  [01;34md[0m  [01;34me[0m  foo_copy3.txt
-    
-    ./a/b/c:
-    foo.txt
-    
-    ./a/b/d:
-    bar.txt
-    
-    ./a/b/e:
-    baz.txt
-    
-    ./figs:
-    [01;35mbox.png[0m  g3.pdf  [01;35mg3.png[0m  [01;35mlm.png[0m
-
-
-### Moving files
-
-
 ```{bash}
 mv a/b/c/foo.txt a/b/c/oof.txt
 ```
@@ -430,10 +159,6 @@ mv a/b/c/foo.txt a/b/c/oof.txt
 ```{bash}
 ls a/b/c
 ```
-
-    oof.txt
-
-
 
 ```{bash}
 mv a/b/c/oof.txt oof.txt
@@ -449,32 +174,6 @@ ls a/b/c
 ls 
 ```
 
-    1_IntroToCompBoot.ipynb
-    [0m[01;34ma[0m
-    [01;34mfigs[0m
-    foo_copy1.txt
-    oof.txt
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
 ### Navigating between directories
 
 
@@ -486,9 +185,6 @@ cd a/b/
 ```{bash}
 ls
 ```
-
-    [0m[01;34mc[0m  [01;34md[0m  [01;34me[0m  foo_copy3.txt
-
 
 #### Deleting a file
 
@@ -502,9 +198,6 @@ rm foo_copy3.txt
 ls
 ```
 
-    [0m[01;34mc[0m  [01;34md[0m  [01;34me[0m
-
-
 ### Move back
 
 
@@ -512,10 +205,6 @@ ls
 pwd
 ```
 
-    /home/jovyan/work/hts_final_for_distribution/computing_intro/a/b
-
-
-
 ```{bash}
 cd ..
 ```
@@ -525,10 +214,6 @@ cd ..
 pwd
 ```
 
-    /home/jovyan/work/hts_final_for_distribution/computing_intro/a
-
-
-
 ```{bash}
 cd ..
 ```
@@ -537,10 +222,6 @@ cd ..
 ```{bash}
 pwd
 ```
-
-    /home/jovyan/work/hts_final_for_distribution/computing_intro
-
-
 
 ```{bash}
 cd a/b/c
@@ -551,10 +232,6 @@ cd a/b/c
 pwd
 ```
 
-    /home/jovyan/work/hts_final_for_distribution/computing_intro/a/b/c
-
-
-
 ```{bash}
 cd ../../../
 ```
@@ -563,9 +240,6 @@ cd ../../../
 ```{bash}
 pwd
 ```
-
-    /home/jovyan/work/hts_final_for_distribution/computing_intro
-
 
 #### Go home
 
@@ -579,9 +253,6 @@ cd ~
 pwd
 ```
 
-    /home/jovyan
-
-
 #### Go last position
 
 
@@ -589,7 +260,21 @@ pwd
 cd -
 ```
 
-    /home/jovyan/work/hts_final_for_distribution/computing_intro
+### Pathnames
+
+We've already used pathnames, but didn't point them out. We have seen that bash looks in the current directory for files, and if we look for a file that is not in the current directory, but exists elsewhere, we'll get an error:
+
+```{bash}
+ls b
+```
+
+Bash doesn't see 'b' because it's not in the current directory. We can give its (relative) path name and bash can find it:
+
+```{bash}
+ls a/b
+```
+
+Because 'b' is a directory, `ls` displays its contents.
 
 
 ### Quick and dangerous recursive deletion
@@ -604,63 +289,20 @@ rm -r a
 ls 
 ```
 
-    1_IntroToCompBoot.ipynb
-    [0m[01;34mfigs[0m
-    foo_copy1.txt
-    oof.txt
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
-
+I can see from the `ls` command that the only files with the extension '.txt' are `foo_copy1.txt` and `oof.txt`.  I want to remove them, and to do that I can use `rm *.txt`. But I get a little paranoid when using `*` with `rm`, so I will often check first, giving the exact string first to `ls`.
 
 ```{bash}
-rm *txt
+ls *.txt
+```
+
+```{bash}
+rm *.txt
 ```
 
 
 ```{bash}
 ls
 ```
-
-    1_IntroToCompBoot.ipynb
-    [0m[01;34mfigs[0m
-    R01_IntroductionToR.ipynb
-    R02_Dplyr.ipynb
-    R03_Tidyr.ipynb
-    R04_Multiple_Files.ipynb
-    R05_Graphics_Overview.ipynb
-    R06_Graphics_Base.ipynb
-    R07_Tidyverse_With_Pilot_Counts.ipynb
-    R07_Tidyverse_With_Pilot_Counts_Solutions.ipynb
-    R08_Graphics_ggplot2.ipynb
-    R09_Libraries_and_Bioconductor.ipynb
-    Unix01_Intro_to_Unix_and_bash.ipynb
-    Unix02_Files_And_Directories.ipynb
-    Unix03_File_Storage.ipynb
-    Unix04_FileIO.ipynb
-    Unix05_Text_Manipulation.ipynb
-    Unix06_Variables.ipynb
-    Unix07_Regular_Expresssions.ipynb
-    Unix08_Capstone_Exercises.ipynb
-    Unix08_Capstone_Exercises_Solutions.ipynb
-
 
 ## Exercises
 

@@ -102,7 +102,7 @@ testcnt2 %>% head(10)
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     head(10)
 ```
 
@@ -110,7 +110,7 @@ testcnt1 %>%
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile1))) %>%
     head(10)
 ```
@@ -119,12 +119,12 @@ testcnt1 %>%
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile1))) ->
     cnt1
 
 testcnt2 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile2))) ->
     cnt2
 
@@ -147,7 +147,7 @@ readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
 countdata <- foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
     cntfile <- file.path(cntdir, fname)
     readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
-        dplyr::select(X1, X4) %>%
+        dplyr::select(X1, X2) %>%
             rlang::set_names(c("gene", fname))
 }
 ```

@@ -1,0 +1,113 @@
+---
+title: Import SRA meta data
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+
+
+```{r}
+library(tidyverse)
+library(rtracklayer)
+library(DESeq2)
+library(plyranges)
+```
+
+```{r}
+### Import dds analysis file
+procdir <- normalizePath("./proc/")
+ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
+
+PRJNA668393ddsData <- readRDS(ddsfile)
+
+tools::md5sum(ddsfile)
+```
+
+```{r}
+annodir <- normalizePath("/data/genome/")
+
+gfffile <- file.path(annodir, "gencode.vM27.primary_assembly.annotation.gff3")
+tools::md5sum(gfffile)
+```
+
+```{r}
+# Import gff file
+### Import gtf file
+rtracklayer::import(gfffile) ->
+    gffdat
+```
+
+```{r}
+## Inspect imported object
+gffdat
+```
+
+```{r}
+gffdat %>%
+    plyranges::filter(type == "gene") %>%
+        tibble::as_tibble() %>%
+            dplyr::select(seqnames, start, end, strand, gene_type, mgi_id, gene_id, gene_name) ->
+                ens2symbdat
+```
+
+```{r}
+ens2symbdat
+```
+
+```{r}
+### do the ensemble ids agree with those in the DESeq2 object
+setequal(rownames(PRJNA668393ddsData), ens2symbdat[["gene_id"]])
+```
+
+```{r}
+### ensembl ids are unique
+ens2symbdat %>% dplyr::pull(gene_id) %>% duplicated() %>% any
+```
+
+```{r}
+### gene symbols are not
+ens2symbdat %>% dplyr::pull(gene_name) %>% duplicated() %>% any
+```
+
+```{r}
+### duplicate gene names
+ens2symbdat %>% 
+        dplyr::group_by(gene_name) %>% 
+            dplyr::filter(n()>1)
+```
+
+```{r}
+### focusing on protein coding genes will reduce the number of duplicate gene ids
+ens2symbdat %>% 
+    dplyr::filter(gene_type == "protein_coding") %>% 
+        dplyr::group_by(gene_name) %>% 
+            dplyr::filter(n()>1)
+```
+
+```{r}
+outdir <- "./proc/"
+
+outfile <- file.path(outdir, "PRJNA668393-annodata.RDS")
+
+saveRDS(ens2symbdat, file = outfile)
+
+tools::md5sum(outfile)
+```
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+
+```

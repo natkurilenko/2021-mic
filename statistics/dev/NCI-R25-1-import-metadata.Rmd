@@ -1,0 +1,84 @@
+---
+title: Import SRA meta data
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+The objective of this notebook is to load the study metadata.
+
+Requires the following:
+- /data/sra_data//accession_table.csv
+
+Generates the following:
+- ./proc//PRJNA668393-metadata.RDS
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+metadir <- normalizePath("/data/sra_data/")
+# normalizePath makes sure that a path works on the current operating system (ie Windows vs others)
+srametafile <- file.path(metadir, "accession_table.csv")
+srametafile # there are 2 // in this path?
+tools::md5sum(srametafile)
+# checksums summarize the file contents
+# this file doesn't exist yet, so the md5sum is NA
+
+# Output directory for R image files
+outdir <- "./proc/"
+
+if (!dir.exists(outdir)) {
+  dir.create(outdir)
+}
+```
+
+```{r}
+# Import meta data
+readr::read_csv(srametafile) ->
+    mtdata
+
+```
+
+```{r}
+## Inspect imported object
+mtdata
+```
+
+```{r}
+## Get distinct combination of cell line and treament
+mtdata %>%
+    dplyr::distinct(cell_line, treatment)
+```
+
+```{r}
+# Create cross tabulation
+mtdata %>%
+    dplyr::group_by(treatment, cell_line) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
+    tidyr::spread(cell_line, n)
+```
+
+```{r}
+mtfile <- file.path(outdir, "PRJNA668393-metadata.RDS") # create the file name
+mtfile # this is the filename you just created
+saveRDS(mtdata, mtfile) # save the object mtdata to this file
+
+tools::md5sum(mtfile)
+# checksums summarize the file contents
+# now that we've saved data to this file, we should have a non-zero and non-NA checksum
+```
+
+```{r}
+sessionInfo()
+```

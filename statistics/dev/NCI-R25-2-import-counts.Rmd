@@ -52,7 +52,7 @@ cntfiles
 ### Inspect file names
 
 ```{r}
-cntfiles
+cntfiles # one file for each sample
 ```
 
 ## Import a single count file
@@ -72,78 +72,107 @@ testfile2
 ```{r}
 readr::read_tsv(testfile1, col_names = FALSE) -> testcnt1
 readr::read_tsv(testfile2, col_names = FALSE) -> testcnt2
+# read_tsv() reads-in tab-delimited files
+# there isn't a row for column headers in these files, so make sure they say empty with col_names=FALSE
 ```
 
-### Inspect first ten rows of first count file
+### Inspect first ten rows of the first count file
 
 
-First look at the dimension and note that there are four columns
+First look at the dimension and note that there are four columns.
 
 ```{r}
 testcnt1 %>% dim()
 ```
 
-Next, inspect the first ten rows. Columns 2 through 4 contain read counts. The choice for downstream analysis depends on the stranding of kit (we will use the fourth column). The first four rows, provide the corresponding counts for unmapped, multi-mapped, no-feature-mapped and ambigiously-mapped counts. The remaining rows, provide the gene counts.
+There are thousands of rows, so we will inspect the first ten for now.
 
-```{r}
-testcnt1 %>% head(10)
-```
+#### Columns
 
-The counts across the rows of each of the three columns (as expected) are identical 
+Because these data do not by default have headers, we need to see what they are from the STAR manual.
 
-```{r}
-testcnt1 %>% dplyr::summarize(across(2:4,sum))
-```
+*Col 1* = gene ID
 
-### Inspect first ten rows of second count file
+*Col 2* = counts of unstranded RNA-seq
+
+*Col 3* = counts for the 1st read strand aligned with RNA (htseq-count option -s yes)
+
+*Col 4* = counts for the 2nd read strand aligned with RNA (htseq-count option -s reverse)
+
+We have a lot of different type of count data (Cols 2-4) but we need to choose a measure of counts that reflects how the RNASeq libraries were prepared. More specifically, the how the prep kit keeps track of the strandedness matters. We will use the second column as we are analyzing data from an unstranded kit. For more on what this means check out Zhao et al 2015 BMC Genomics "Comparison of stranded and non-stranded RNA-seq transcriptome profiling and investigation of gene overlap".
 
 
-Note that the structure of the file is identical to that of the first count files (only the counts, as expected, differ).
+#### Rows
+
+The first four rows provide the corresponding counts that are ...
+1. unmapped
+2. multi-mapped
+3. no-feature-mapped
+4. ambigiously-mapped
+
+The remaining rows, provide the gene counts.
 
 ```{r}
 testcnt2 %>% head(10)
 ```
 
-### Extract first and fourth columns of first count file
+If we calculate the sum of each count column, we see that the sums of unstranded reads, first strand, and second strand are equal. Also, there are over 10 million reads in the dataset.
+
+```{r}
+testcnt1 %>% dplyr::summarize(across(2:4,sum))
+```
+
+### Inspect the first ten rows of the second count file
+
+Note that the structure of the file is identical to that of the first count files (only the counts, as expected, differ because this is a different sample).
+
+
+
+### Extract the first and second columns of first count file
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     head(10)
 ```
 
-### Extract and rename first and fourth columns of first count file
+### Extract and rename the first and second columns of first count file
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile1))) %>%
     head(10)
+# rlang is a package for working with base types in R and tidyverse features
+# ie here set_names() changes the cols from "X1" to "gene" and "X2" to the sample filename
 ```
 
-### Extract and rename first and fourth columns of first and second count files and merge by gene name
+### Extract and rename the first and second columns of the first and second count files and merge by gene name
 
 ```{r}
 testcnt1 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile1))) ->
     cnt1
 
 testcnt2 %>% 
-    dplyr::select(X1, X4) %>% 
+    dplyr::select(X1, X2) %>% 
     rlang::set_names(c("gene", basename(testfile2))) ->
     cnt2
 
 dplyr::full_join(cnt1, cnt2, by = "gene") %>% head(10)
+# full_join() returns all rows and all columns from both input tables
+# if there are non-matching values, then you'll get NAs
+# we shouldn't get any NAs here because each count file will effectively add a new column with its sample filename
 ```
 
 ### Silence dplyr::read_csv by explicitely defining the column types
 
 ```{r}
-
 ### Data type for each column in STAR count file (gene name is character; the three remaining columns are integers)
 coltypes <- list(col_character(), col_integer(), col_integer(), col_integer())
 readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
+# silencing these warnings will be really nice when we need to read in a lot of these files; we've been warned :)
 ```
 
 ## Import count files
@@ -153,9 +182,27 @@ readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
 countdata <- foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
     cntfile <- file.path(cntdir, fname)
     readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
-        dplyr::select(X1, X4) %>%
+        dplyr::select(X1, X2) %>%
             rlang::set_names(c("gene", fname))
 }
+# foreach() is like a for loop
+
+# the "do" part
+# take the current sample fname and make the full path to the file
+#cntfile <- file.path(cntdir, fname)
+# use the filepath to read in the file, extract and rename columns
+#cntfile %>%
+#    readr::read_tsv(col_names = FALSE, col_types = coltypes) %>%
+#    dplyr::select(X1, X4) %>%
+#    rlang::set_names(c("gene", fname)) 
+# the output of the "do" part is going to be a dataframe
+
+# we are going to merge the dataframes using this function specified by .combine
+# this is the same function we used above
+#fxn <- function(df1,df2){
+#    dplyr::full_join(df1, df2, by = "gene")
+#}
+# and then we save the final dataframe to "countdata"
 ```
 
 Inspect the dimension of the object
@@ -164,7 +211,7 @@ Inspect the dimension of the object
 countdata %>% dim
 ```
 
-Inspect first 10 rows of the object
+Inspect the first 10 rows of the object
 
 ```{r}
 countdata %>% head(10)

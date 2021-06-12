@@ -20,7 +20,7 @@ Hint:
 - You can list just directories with `ls -d */`
 
 
-```bash
+```{bash}
 
 
 
@@ -45,7 +45,7 @@ Hint:
 - Arithmetic operations are evaluated like this $((1+2))
 
 
-```bash
+```{bash}
 
 
 
@@ -59,7 +59,7 @@ Hint:
 - `md5sum` needs a list of files as arguments
 
 
-```bash
+```{bash}
 
 
 
@@ -69,7 +69,7 @@ Hint:
 4. Create a `data.tar.gz` file containing all the contents of the `data` directory
 
 
-```bash
+```{bash}
 
 
 
@@ -79,7 +79,7 @@ Hint:
 5. Move `data.tar.gz` to the `results` directory and recreate the original files
 
 
-```bash
+```{bash}
 
 
 
@@ -96,7 +96,7 @@ Hint:
     - The inner loop sums up the numbers in the appropriate column of the file
 
 
-```bash
+```{bash}
 
 
 
@@ -106,7 +106,7 @@ Hint:
 7. Delete the `data` and `reults` directory recursively
 
 
-```bash
+```{bash}
 
 
 

@@ -1,4 +1,6 @@
+<!-- #region -->
 # Introduction to Unix and bash
+## Author: Janice McCarthy
 
 ## What is an operating system?
 
@@ -31,6 +33,10 @@ The basic features a shell program has are some basic programming constructs (lo
     - examine the content of (text) files
     - Use tab completion
     - Use meta characters
+    
+## Early exploration
+
+In the following, we will use the terminal screen to explore some of the aspects of the shell. Then, in the next session, we will begin to study the shell more methodically, using the notebook interface.
 
 ### Exercises - basic commands
 
@@ -46,81 +52,25 @@ From the terminal screen
 8. Sort the list by time.
 9. Sort the list in reverse order.
 10. List all files in the parent directory.
-11. List all files in the parent directory with extension `.ipynb`
-12. List all files in the parent directory that have an '_' as the second character in the name.
+
+
+See the glossary below for relevant commands
 
 #### Command glossary
 
 - ls (list)
+- ls -l (long list)
+- ls -t (time)
+- ls -r (reverse sort order)
 - mkdir (make directory)
+- cd (change directory)
 - cp (copy file)
 - mv (rename file)
 - pwd (print working directory)
 
-#### meta characters
+<!-- #endregion -->
 
-- `*` matches all
-- ? matches a single character
-
-
-### Programming constructs in bash
-
-#### loops
- 
- - **for loops** 
- 
-    Use for iterating over a fixed number of items (may be unknown at time of coding)
-   
-    `for i in $( ls ); do`
-            echo item: $i
-      `done`
-        
- - **while loops**
- 
-     Use for iterating until a certain condition is met
-     
-    `while true; do`
-       echo 'hello' 
-      `done`
-  
-  - **until** (really doesn't do any more than `for` or `while`
-  
-  
-  #### Conditionals (sometimes called 'flow control')
-  
-  - Simple **if-then**
-  
- `if [ "foo" = "foo" ]; then`
-         echo expression evaluated as true
-     `fi`
-            
-  - **if-then-else**
-  
-   `if [ "foo" = "foo" ]; then`
-               echo expression evaluated as true
-    `else`
-               echo expression evaluated as false
-    `fi`
-            
-            
-
-#### Exercises for loops and conditionals
-
-1. Write a for loop to repeat 'hello world' 10 times. Print the number of iteration so the output looks like:
-    1. hello world
-    2. hello world
-    3. hello world 
-    etc.
- 
-2. Modify the above to add the word 'again' as many times as the number of current iterations:
-   1. hello world
-   2. hello world again
-   3. hello world again again
-   etc.
-   
-3. Modify 2 to stop after 3 iterations, after printing 'enough already'.
-
-4. Modify 3 to use a while loop.
+###
 
 
 ### Linking programs together - pipes and I/O redirection
@@ -149,6 +99,3 @@ A program's input and output can be redirected from the standard streams in many
 
 3. What happens if you repeat the above using `>>`?
 
-### Putting it all together - scripting
-
-The next lesson will teach you to write what are called 'scripts'. These are lists of commands saved in a file that can be executed. This makes a workflow reproducible. All of the steps are saved and can be run again in *exactly* the same manner.

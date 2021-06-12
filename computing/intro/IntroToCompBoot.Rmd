@@ -1,6 +1,4 @@
-# Duke HTS Course Tutorial - Introduction to Computing for HTS Experiments
-
-## Purpose of this component
+# Duke Microbiome Immunology Cancer Bioinformatics Short Course
 
 
 In this course, you will learn how to generate and analyze RNAseq data. Roughly, we have the following components:
@@ -12,6 +10,9 @@ In this course, you will learn how to generate and analyze RNAseq data. Roughly,
 - *Computational Procedure* Analysis pipeline (Bioinformatics)
 
 Finally, we want to do all of the above in a **REPRODUCIBLE** fashion. 
+
+
+## Computational bootcamp
 
 This 'computational bootcamp' component is designed to give you the tools you need to carry out the steps above - and to do so within the context of reproducible research.
 
@@ -26,9 +27,6 @@ All of this will be done within the Jupyter notebook tool, which allows for what
 
 We execute code cells (and markdown cells) by hitting &lt;shift>&lt;Enter>. Take a moment to play around a bit and get comfortable. Click on the 'help' menu and look at the keyboard shortcuts (they are very useful).
 
-
-
-
 ```{r}
 
 ```
@@ -40,6 +38,43 @@ We execute code cells (and markdown cells) by hitting &lt;shift>&lt;Enter>. Take
 # Can you figure out how to make headings?
 ```
 
+
+```{r}
+
+```
+
+## Code cells
+
+```{r}
+# This is a code cell. The notebook is using an R kernel to interpret whatever is entered here. (See the upper right corner)
+
+2+2
+```
+
+Note that we can change kernels (kernel tab above). Installed on this container are R, Bash and Python 3.
+
+```{r}
+# I can execute R code (just like the 2+2 above)
+hist(rnorm(100))
+```
+
+```{r}
+# We will use dplyr, tidyr and ggplot extensively
+library(tidyverse)
+```
+
+```{r}
+# R has built-in data sets we can play with
+head(mtcars)
+```
+
+```{r}
+mtcars %>% ggplot(aes(x = hp, y = mpg, color = as_factor(cyl))) + geom_point()
+```
+
+```{r}
+mtcars %>% ggplot(aes(x = hp, y = mpg, color = as_factor(cyl))) + geom_point() + geom_smooth(method = 'lm')
+```
 
 ```{r}
 

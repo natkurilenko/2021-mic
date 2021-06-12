@@ -1,4 +1,3 @@
-<!-- #region -->
 # Introduction to Unix and bash
 ## Author: Janice McCarthy
 
@@ -22,11 +21,12 @@ The interpreter parses the strings you enter and calls the appropriate executabl
 
 sh is short for 'shell'. The reason for this terminology is because you can think of this programs as hosting an environment (variables can be saved and refered to later, among other things). But shells can run any program, including other shells. So there is a notion of 'inheritance' from the environment - each subsequently called shell is contained in the other.
 
+<!-- #region -->
 ### The main features of a shell
 
-The basic features a shell program has are some basic programming constructs (loops, conditionals, etc.) and ways to link programs together (pipes and redirections). Before we examine those, let's get a little experience working in the command line. We'll learn how to:
+The basic features a shell program has are some basic programming constructs (loops, conditionals, variables etc.) and ways to link programs together (pipes and redirections). Before we examine those, let's get a little experience working in the command line. We'll learn how to:
 
-    - print the current directory
+    - print the current directory (and what does 'current' directory mean?)
     - list the contents
     - make a new directory
     - copy and rename files
@@ -37,6 +37,29 @@ The basic features a shell program has are some basic programming constructs (lo
 ## Early exploration
 
 In the following, we will use the terminal screen to explore some of the aspects of the shell. Then, in the next session, we will begin to study the shell more methodically, using the notebook interface.
+
+
+We'll work through the following commands
+
+#### Command glossary
+
+- `ls` (list)
+- `ls -l` (long list)
+- `ls -t` (time)
+- `ls -r` (reverse sort order)
+- `mkdir` (make directory)
+- `cd` (change directory)
+- `cp` (copy file)
+- `mv` (rename file)
+- `pwd` (print working directory)
+
+And introduce 'globs'
+
+#### Globs
+
+- `*` (match everything)
+- `?` (match one character)
+
 
 ### Exercises - basic commands
 
@@ -52,32 +75,16 @@ From the terminal screen
 8. Sort the list by time.
 9. Sort the list in reverse order.
 10. List all files in the parent directory.
-
-
-See the glossary below for relevant commands
-
-#### Command glossary
-
-- ls (list)
-- ls -l (long list)
-- ls -t (time)
-- ls -r (reverse sort order)
-- mkdir (make directory)
-- cd (change directory)
-- cp (copy file)
-- mv (rename file)
-- pwd (print working directory)
-
 <!-- #endregion -->
 
-###
-
-
+<!-- #region -->
 ### Linking programs together - pipes and I/O redirection
+
+When working at the command line, it is very common (and useful!) to link programs together using 'redirection' and 'piping'. The pipe is so useful, it has been incorporated into R programming, especially when munging and wrangling data. 
 
 #### I/O streams
 
-There are three standard I/O streams in Unix:
+So, what are we 'redirecting'? There are three standard I/O streams in Unix:
 
 - `stdin` or standard input. The default is the parent process - usually the keyboard
 - `stdout` or standard output. The default is the parent process - usually the terminal screen
@@ -91,6 +98,27 @@ A program's input and output can be redirected from the standard streams in many
 - We can direct a program to take input from a file rather than the keyboard (`<`).
 - We can direct a program's output to be another program's input (`|`). This allows linking of several programs to form a workflow.
 
+#### Examples
+
+`echo "hello world"`
+
+`echo "hello world" > hw.txt`
+
+`echo "hello again" >> hw.txt`
+
+`cat hw.txt`
+
+`echo "world" > w.txt`
+
+`grep "world" *.txt`
+
+`grep "hello" *.txt`
+
+`ls -l /etc`
+
+`ls -l /etc |more`
+
+
 #### Exercises
 
 1. The `ps -aef` command shows all processes currently running. Use `|` and the program `grep` to find the processes you are running (your user name is 'joyvan')
@@ -99,3 +127,4 @@ A program's input and output can be redirected from the standard streams in many
 
 3. What happens if you repeat the above using `>>`?
 
+<!-- #endregion -->

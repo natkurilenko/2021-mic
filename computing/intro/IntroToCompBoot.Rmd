@@ -1,0 +1,46 @@
+# Duke HTS Course Tutorial - Introduction to Computing for HTS Experiments
+
+## Purpose of this component
+
+
+In this course, you will learn how to generate and analyze RNAseq data. Roughly, we have the following components:
+
+- *Experimental Design and Statistics* How do we design experiments so that results are easily interpretable and answer the question(s) we are interested in. 
+
+- *Analysis of Data* How do we **properly** analyze experimental data, so that results are correct.
+
+- *Computational Procedure* Analysis pipeline (Bioinformatics)
+
+Finally, we want to do all of the above in a **REPRODUCIBLE** fashion. 
+
+This 'computational bootcamp' component is designed to give you the tools you need to carry out the steps above - and to do so within the context of reproducible research.
+
+The analysis pipeline has several different apps. Some are written in R, and so require knowledge of the R programming language (minimal - but some proficiency is needed). Some have components in python, and some are binaries. Both of these last types of applications require moderate proficiency in the 'bash shell' or 'unix command line'. Therefore, we will cover the following topics:
+
+- Basic R
+- Basic Unix/Linux commands
+
+Additionally, we will use the bootcamp to reinforce the statistical lecture materials by walking you through some of the examples using R, and we will cover some 'data visualization' techniques that include graphics in R.
+
+All of this will be done within the Jupyter notebook tool, which allows for what is called 'literate programming' and reproducible pipelines.
+
+We execute code cells (and markdown cells) by hitting &lt;shift>&lt;Enter>. Take a moment to play around a bit and get comfortable. Click on the 'help' menu and look at the keyboard shortcuts (they are very useful).
+
+
+
+
+```{r}
+
+```
+
+
+```{r}
+# Make the next cell into a markdown cell (using the keyboard shortcut) and type some text. 
+# Can you make it bold? Italicized? 
+# Can you figure out how to make headings?
+```
+
+
+```{r}
+
+```

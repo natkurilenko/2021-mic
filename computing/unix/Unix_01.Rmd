@@ -440,7 +440,7 @@ ls
 1. Create the following structure including empty files using `mkdir` and `touch` commands.
 
 ```
-crytococcus
+cryptococcus
     data
         fake1.fq
         fake2.fq

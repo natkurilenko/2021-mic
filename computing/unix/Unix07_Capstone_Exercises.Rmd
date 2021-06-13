@@ -1,13 +1,13 @@
 # Unix capstone exercise
 
-Ths capstone exercise covers essentially all of the Unix commands you need to develop your bioinformatics piplines. If you can do this exercise without too much difficulty, you are ready to process raw RNA-seq data!
+Ths capstone exercise covers essentially all of the Unix commands you need to develop your bioinformatics pipelines. If you can do this exercise without too much difficulty, you are ready to process raw RNA-seq data!
 
 But don't be discouraged if you find this difficult - unless you have quite a lot of previous programming experience, this exercise is likely to be challenging.
 
 General hints:
 
 - Use `pwd` liberally to check that you are in the right directory
-- Each command should execute almost instantly - if not, something is problay wrong with your command
+- Each command should execute almost instantly - if not, something is probably wrong with your command
 - Commands in Jupyter can appear to "hang" when there is an error - try the command in a terminal to see what's wrong
 - Remember to configure so that you get a warning with unbound variables
 - Use variables liberally - if a name is used more than once, it should probably be assigned to a variable
@@ -21,28 +21,15 @@ Hint:
 
 
 ```{bash}
-pwd
+
+
+
+
 ```
-
-    /home/jovyan/work/hts_final_for_distribution/computing_intro
-
-
-
-```{bash}
-mkdir data results
-```
-
-
-```{bash}
-ls -d */
-```
-
-    [0m[01;34mdata/[0m  [01;34mfigs/[0m  [01;34mmisc/[0m  [01;34mresults/[0m
-
 
 2. In `data`, create the files `expt-1`, `expt-2`, `epxt-3`, each with 5 rows of 3 random numbers between 0 and 9 (inclusive) separated by tabs. When done, display the contents of each file.
 
-  
+
 Hint: 
 
 - Create 3 for loops 
@@ -59,60 +46,11 @@ Hint:
 
 
 ```{bash}
-cd data
+
+
+
+
 ```
-
-
-```{bash}
-RANDOM=42
-for FILE in expt-{1..3}
-do
-    rm $FILE
-    touch $FILE
-    for row in {1..5}
-    do
-        for col in {1..3}
-        do
-            echo -ne $(($RANDOM % 10))'\t' >> $FILE
-        done
-        echo >> $FILE
-    done
-done
-```
-
-    rm: cannot remove 'expt-1': No such file or directory
-    rm: cannot remove 'expt-2': No such file or directory
-    rm: cannot remove 'expt-3': No such file or directory
-
-
-
-```{bash}
-for FILE in expt-{1..3}
-do
-    echo $FILE
-    cat $FILE
-done
-```
-
-    expt-1
-    6	1	1	
-    3	8	7	
-    9	0	6	
-    3	4	9	
-    2	5	2	
-    expt-2
-    0	4	6	
-    8	4	3	
-    6	2	7	
-    3	2	9	
-    1	5	9	
-    expt-3
-    0	2	5	
-    7	8	5	
-    4	5	3	
-    5	8	7	
-    8	3	1	
-
 
 3. Create an `MD5SUM` file containing the checksums of the contents within `expt-1`, `expt-2`, and `epxt-3`. Show the contents of the `MD5SUM` file.
 
@@ -122,77 +60,31 @@ Hint:
 
 
 ```{bash}
-ls
+
+
+
+
 ```
-
-    expt-1  expt-2  expt-3
-
-
-
-```{bash}
-md5sum * > MD5SUM
-```
-
-
-```{bash}
-cat MD5SUM
-```
-
-    72e21e4726baa4296d0722161c92d19b  expt-1
-    c98f878743247e78e2dc5dacfb0e3b7f  expt-2
-    0bd25d1865615e48cc55d8f7ad88c440  expt-3
-
 
 4. Create a `data.tar.gz` file containing all the contents of the `data` directory
 
 
 ```{bash}
-cd ..
+
+
+
+
 ```
-
-
-```{bash}
-tar -czvf data.tar.gz data
-```
-
-    data/
-    data/expt-1
-    data/expt-2
-    data/expt-3
-    data/MD5SUM
-
 
 5. Move `data.tar.gz` to the `results` directory and recreate the original files
 
 
 ```{bash}
-mv data.tar.gz results
+
+
+
+
 ```
-
-
-```{bash}
-cd results
-```
-
-
-```{bash}
-tar -xzvf data.tar.gz
-```
-
-    data/
-    data/expt-1
-    data/expt-2
-    data/expt-3
-    data/MD5SUM
-
-
-
-```{bash}
-ls
-```
-
-    [0m[01;34mdata[0m  [01;31mdata.tar.gz[0m
-
 
 6. Create a new file `expt-sum.txt` in `results` with 3 lines showing the sum of the numbers in the 1st, 2nd and 3rd columns over all 3 `expt-x` files. That is, the first row of `expt-sum.txt` contains the sum of the 1st column of `expt-1`, `expt-2`, and `expt-3` and so on. Use globbing to get the files `expt-1`, `expt-2`, and `expt-3`.
 
@@ -205,64 +97,18 @@ Hint:
 
 
 ```{bash}
-DEST_FILE='expt-sum.txt'
-touch $DEST_FILE
-COL=1
-for FILE in $(ls data/expt*)
-do
-    SUM=0
-    NS=$(cat $FILE | cut -f$COL)
-    for N in $NS
-    do
-        SUM=$((SUM + N))
-    done
-    COL=$((COL + 1))
-    echo $SUM >> $DEST_FILE
-done
+
+
+
+
 ```
-
-
-```{bash}
-cat $DEST_FILE
-```
-
-    23
-    17
-    21
-
 
 7. Delete the `data` and `reults` directory recursively
 
 
 ```{bash}
-pwd
+
+
+
+
 ```
-
-    /home/jovyan/work/hts_final_for_distribution/computing_intro/results
-
-
-
-```{bash}
-cd ..
-```
-
-
-```{bash}
-ls -d */
-```
-
-    [0m[01;34mdata/[0m  [01;34mfigs/[0m  [01;34mmisc/[0m  [01;34mresults/[0m
-
-
-
-```{bash}
-rm -r data results
-```
-
-
-```{bash}
-ls -d */
-```
-
-    [0m[01;34mfigs/[0m  [01;34mmisc/[0m
-

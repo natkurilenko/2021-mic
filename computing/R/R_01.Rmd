@@ -1,0 +1,2559 @@
+
+# Introduction to R
+
+R is an interpreted language, which means it can be used interactively: we can type some code, hit execute and see the results instantly. This is different from compiled languages such as C or C++ where you must first compile code into an executable file, then run it.
+
+## R as simple calculator
+
+
+```{r}
+2 + 3^5 
+```
+
+
+245
+
+
+
+```{r}
+7 %/% 3
+```
+
+
+2
+
+
+
+```{r}
+sin(0.5*pi)
+```
+
+
+1
+
+
+
+```{r}
+1.23e3
+```
+
+
+1230
+
+
+### Printing results
+
+By default, the result on the last line is displayed in the Jupyter notebook. To see other lines, use the `print` function.
+
+
+```{r}
+print(1 * 2 * 3 *4)
+print(11 %% 3 == 1)
+10 > 1
+```
+
+    [1] 24
+    [1] FALSE
+
+
+
+TRUE
+
+
+### Getting help
+
+Type something and hit the tab key - this will either complete the R command for you (if unique) or present a list of opitons.
+
+Use ?topic to get a description of `topic`, or more verbosely, you can also use `help(topic)`. 
+
+
+```{r}
+?seq
+```
+
+Use example to see usage examples.
+
+
+```{r}
+example(seq)
+```
+
+    
+    seq> seq(0, 1, length.out = 11)
+     [1] 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+    
+    seq> seq(stats::rnorm(20)) # effectively 'along'
+     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+    
+    seq> seq(1, 9, by = 2)     # matches 'end'
+    [1] 1 3 5 7 9
+    
+    seq> seq(1, 9, by = pi)    # stays below 'end'
+    [1] 1.000000 4.141593 7.283185
+    
+    seq> seq(1, 6, by = 3)
+    [1] 1 4
+    
+    seq> seq(1.575, 5.125, by = 0.05)
+     [1] 1.575 1.625 1.675 1.725 1.775 1.825 1.875 1.925 1.975 2.025 2.075 2.125
+    [13] 2.175 2.225 2.275 2.325 2.375 2.425 2.475 2.525 2.575 2.625 2.675 2.725
+    [25] 2.775 2.825 2.875 2.925 2.975 3.025 3.075 3.125 3.175 3.225 3.275 3.325
+    [37] 3.375 3.425 3.475 3.525 3.575 3.625 3.675 3.725 3.775 3.825 3.875 3.925
+    [49] 3.975 4.025 4.075 4.125 4.175 4.225 4.275 4.325 4.375 4.425 4.475 4.525
+    [61] 4.575 4.625 4.675 4.725 4.775 4.825 4.875 4.925 4.975 5.025 5.075 5.125
+    
+    seq> seq(17) # same as 1:17, or even better seq_len(17)
+     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
+
+
+To search for all functions with the phrase `topic`, use `apropos(topic)`.
+
+
+```{r}
+apropos("seq")
+```
+
+
+<ol class=list-inline>
+	<li>'seq'</li>
+	<li>'seq_along'</li>
+	<li>'seq_len'</li>
+	<li>'seq.Date'</li>
+	<li>'seq.default'</li>
+	<li>'seq.int'</li>
+	<li>'seq.POSIXt'</li>
+	<li>'sequence'</li>
+</ol>
+
+
+
+Finally, you can always use a search engine - e.g. Googling for "how to generate random numbers from a normal distribution in R" returns:
+R Learning Module: Probabilities and Distributions
+www.ats.ucla.edu › stat › r › modules
+University of California, Los Angeles
+Generating random samples from a normal distribution ... (For more information on the random number generator used in R please refer to the help pages for the  ...
+
+R: The Normal Distribution
+https://stat.ethz.ch/R-manual/R-devel/library/.../Normal.html
+ETH Zurich
+Normal {stats}, R Documentation ... quantile function and random generation for the normal distribution with mean equal to mean and ... number of observations.
+
+CASt R: Random numbers
+astrostatistics.psu.edu/.../R/Random.html
+Pennsylvania State University
+It is often necessary to simulate random numbers in R. There are many functions available to ... Let's consider the well-known normal distribution as an example: ?Normal .... Creating functions in R, as illustrated above, is a common procedure.
+#### Creating and using sequences
+
+
+```{r}
+1:4
+```
+
+
+<ol class=list-inline>
+	<li>1</li>
+	<li>2</li>
+	<li>3</li>
+	<li>4</li>
+</ol>
+
+
+
+
+```{r}
+seq(2, 12, 3)
+```
+
+
+<ol class=list-inline>
+	<li>2</li>
+	<li>5</li>
+	<li>8</li>
+	<li>11</li>
+</ol>
+
+
+
+
+```{r}
+seq(from = 0, to = pi, by = pi/4)
+```
+
+
+<ol class=list-inline>
+	<li>0</li>
+	<li>0.785398163397448</li>
+	<li>1.5707963267949</li>
+	<li>2.35619449019234</li>
+	<li>3.14159265358979</li>
+</ol>
+
+
+
+
+```{r}
+seq(from = 0, to = pi, length.out = 5)
+```
+
+
+<ol class=list-inline>
+	<li>0</li>
+	<li>0.785398163397448</li>
+	<li>1.5707963267949</li>
+	<li>2.35619449019234</li>
+	<li>3.14159265358979</li>
+</ol>
+
+
+
+## Basic Programming Concepts
+
+The following sections introduce some basic programming concepts within the context of R, but they are common ingredients in any programming language
+
+    - Style
+    - Variable Assignment
+    - Data Types
+    - Operators
+    - Looping and branching
+    - Errors and debugging
+    
+### Style
+
+Programming style (how to name things, how much blank space to use, etc.) is an important part of creating a readable program. It's beyond our scope to cover this in detail, but it would be a good idea to review an R style guide if you plan to write a lot of R code. Different people have slightly different conventions, but this guide by Hadley Wickham is pretty widely used:
+
+http://adv-r.had.co.nz/Style.html
+
+It's 'based' on [Google's R style guide](https://google.github.io/styleguide/Rguide.xml), but some of the recommendations are in direct conflict. The most important thing is to try to be *consistent*. 
+
+### Variable Assignment
+
+
+#### Assigning to variables
+
+Variable assignments in R are made using the `<-` operator, but note that there is more than one assignment operator. Later, when we discuss custom functions in greater detail, we'll talk about the "=" assignment operator. Note that while some programmers use "=" in place of "<-" (they are *almost* equivalent), it is considered best practice to use "<-" for assignments in R.
+
+
+```{r}
+x <- 3
+y <- 5
+
+z <- x * y
+
+z
+```
+
+
+15
+
+
+#### Data Types
+
+When we assign variables in R (and in any programming language), they are assigned a 'type' (implicitly or explicitly). Some common types are:
+
+- numeric
+  
+  In R, this includes both floating points (decimal) and integers (e.g. 1.2, 3.14159, 15)
+  
+  
+- integer
+
+  Non-floating point number (e.g. 1, 2, -4, etc., but not 1.2, 3.14159,...)
+ 
+- logical
+  
+  TRUE or FALSE
+
+- character
+
+  Words and letters. NB: numbers can be treated as characters too - we'll do some examples that illustrate that.
+
+In R, these are also 'classes', and the distinction between 'type' and 'class' is a bit abstract and won't really help us with basic programming, so using a gross and somewhat incorrect (but workable) simplification, we'll just refer to the above as classes. New classes can be created from these basic classes:
+
+- vector
+
+  This is actually the same as 'numeric'. R sees numbers as vectors of length 1. <br><br>
+
+- matrix
+
+  A 2-dimensional array of numerics. <br><br>
+
+- list
+
+  Like a vector, but elements can be other than numeric (such as a collection of logicals, character strings, etc.) <br><br>
+  
+- dataframe
+
+  A 2-dimensional array that allows columns to be different types. <br><br>
+  
+- tibble
+
+  New version of dataframe. We'll talk more about this in future lectures.
+  
+#### Operators
+  
+Once we have variables of different types or classes, we usually want to *do* something with them. That can mean anything from simple arithmetic to summaries to custom made R functions. Here, we will discuss simple operators.
+
+##### Arithmetic operators
+
+-  *, + , - , /
+
+These all do what you expect to numbers (numeric types), but things get a little tricky when we have vectors and matrices. To be explicit, the above operators are multiplication, addition, subtraction and division, respectively.<br><br>
+
+- %*% 
+
+This is what is known as the 'dot' product for vectors and matrices. <br><br>
+
+- %% 
+
+This is the modulus operator. (When you divide an integer by another integer it returns the remainder)<br><br>
+
+- %/% 
+
+This is the integer division operator. It returns the result of a division without the remainder.<br><br><br><br>
+
+##### Logical Operators
+
+- \>, <, ==, !=, >=, <=
+
+The above compare variables and return a 'logical' result (TRUE or FALSE)<br><br>
+
+- &, |
+
+The above are 'AND' and 'OR' logical operators, respectively. We can combine the previous operators with these to form complex logical queries. 
+
+#### Examples
+
+The only way to learn R is by using R. The following exercises require a bit more knowledge than the notes describe. Remember to use `TAB` and `?` and `apropos` whenever you're stuck.
+
+
+1. **Using arithmetic operators on numbers.**
+
+            a. If you put USD 100 in a bank that pays 5 percent interest compounded daily, how much will you have in the bank at the end of one year? Recall from high school math that
+    $$
+            A = P(1 + r/n)^m
+    $$
+     where $A$ is the amount, $P$ is the principal, $r$ is the interest rate, $n$ is the compoundings per period and $m$ is the number of periods.
+
+                b. What is the (Euclidean) distance between two points at (1,5) and (4,8)? Recall that the Euclidean distance between two points (x1, y1) and (x2, y2) is given by the Pythagorean theorem:
+
+    $$
+               \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}
+                   $$<br><br>
+                                                           
+2. **Assigning variables**
+   Write the formula in part 1a using variables (i.e. P,r,n,m) and then assign those variables to the values above. Assign the result to the variable A, and then print A.
+   
+3. **Data Types**
+   Define two variables of the following classes: numeric, character, logical and integer by assigning names (of your choice) to values (of your choice). (The integer is tricky - google or use help for this).
+   
+4. **Operators**
+   Use the variables above to find the results of the operators *, +, -, /, %%, %*%, %/%, <, >, ==, !=, <=, >=. Which variables work with which data classes?
+
+
+```{r}
+# Your code here
+```
+
+
+```{r}
+# Your code here
+```
+
+
+```{r}
+# Your code here
+```
+
+### Basic Programming continued
+
+#### Loops and Branching
+
+Sometimes, actually, nearly all the time, we want to repeat an operation or series of operations over many instances of a variable. For example, suppose I have a list of numbers and I want to double them all. This is a very simple example, and the first way I will show you to do it is *exactly the wrong way* in R. But we need simple examples to learn, so here we go.
+
+There are a couple of ways to make a loop, depending on whether or not you know how many iterations will be required when you write the code.
+
+A ``for`` loop is a loop that repeats over something called an iterator. The simplest example would be a count, say I want to do something 6 times. Then a ``for`` loop may be used. Doubling a list of known length calls for a ``for`` loop. (I'm kinda lying here... will clarify this in a bit.)
+
+A ``while`` loop is used when conditions during execution of the code determine when the loop is terminated. Suppose we have a list of coin toss outcomes, and we want to count how many flips it took to get 3 heads. We don't know how many iterations the loop will take, but we do have a condition for stopping.
+
+
+
+```{r}
+## for loop example.
+
+v <- seq(from = 2, to = 20, by = 3)
+
+print(v)
+
+
+for (i in 1:length(v)) {
+    v[i] <- 2*v[i]
+}
+
+print(v)
+```
+
+    [1]  2  5  8 11 14 17 20
+    [1]  4 10 16 22 28 34 40
+
+
+The ``i`` in the above ``for`` loop is called an *iterator*. At the first step, ``i`` is *initialized* to 1 (because the code tells it to start at 1 and end at the length of v, with the ``in 1:length(v)`` statement.  Each time the code in the body is executed, it is incremented (in this case, sequentially, one at a time). Iterators can be much fancier though. Here are a few examples:
+
+
+```{r}
+## for loop example
+
+iterator_variable <- c(1,10,32,1.45)
+
+
+for ( i in iterator_variable){
+    print(i)
+}
+```
+
+    [1] 1
+    [1] 10
+    [1] 32
+    [1] 1.45
+
+
+
+```{r}
+## for loop example
+
+iterator_variable <- list(1,10,32,1.45,"the", "quick brown fox")
+
+
+for ( i in iterator_variable){
+    print(i)
+}
+```
+
+    [1] 1
+    [1] 10
+    [1] 32
+    [1] 1.45
+    [1] "the"
+    [1] "quick brown fox"
+
+
+
+```{r}
+## while loop example
+
+samples <- rbinom(100, 1, prob = 0.2)  # generate 100 Bernouli trials with success probability 0.2
+i <- 0  #initialize index for samples vector
+
+
+found_success <- 'FALSE'  #initialize the loop termination condition
+
+while (found_success == 'FALSE'){
+       i <- i+1
+       if (samples[i] == 1)
+           found_success <- 'TRUE'
+}
+
+print(samples)   # print all trials    
+print(i)         # print index of first success.  
+```
+
+      [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 0 1 0 0 1 1 0 0 0 0 0 0 0
+     [38] 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 1 0 0 0
+     [75] 0 0 1 0 1 0 0 0 1 1 1 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0
+    [1] 14
+
+
+The above code also contains an example of 'branching'. Branching is when the code that executes depends upon the current state of the program. In this example, the command ``found_success <- 'TRUE'`` only executes when the current (ith) component of ``samples`` is a 1.
+
+#### Examples
+
+1. Write a ``for`` loop to print the index of each success in ``samples``.
+
+2. Write a ``while`` loop to find the index of the third success.
+ 
+
+### The Next Level - vectors, matrices, functions, etc.
+
+#### Avoiding loops: Vectorization
+
+In R, and in other scripting languages, it is usually best to avoid loops when possible. Historically, looping in interpreted languages was slow. Nowadays, the issue is more with programming style, readability and lowering the possibilty of errors.
+
+We avoid loops by using what is called 'vectorization'. In other words, we use functions that work on whole vectors at once, rather than one element at a time (of course, at the lowest level, the code is iterating over each element. It is just happening using very fast machine code.)
+
+Many operations in R are vectorized. For example, we just used a ``for`` loop to double the elements of a vector. We could have done this another way:
+
+
+```{r}
+## Vectorization example
+
+v <- seq(from = 2, to = 20, by = 3)
+
+print(v)
+
+print (2*v)
+
+```
+
+    [1]  2  5  8 11 14 17 20
+    [1]  4 10 16 22 28 34 40
+
+
+R interprets the multiplication operator to do componentwise multiplication (because it's the only thing that 'makes sense'). Suppose we have two vectors of the same length. What does ``*`` do?
+
+
+```{r}
+v <- seq(from = 2, to = 20, by = 3)
+
+w <- seq(from = 1, to = 21, by = 3)
+
+print(v)
+print(w)
+
+print(v*w)
+```
+
+    [1]  2  5  8 11 14 17 20
+    [1]  1  4  7 10 13 16 19
+    [1]   2  20  56 110 182 272 380
+
+
+Again, multiplication is componentwise. There is another way to multiply 2 vectors of the same size:
+
+
+```{r}
+print(v %*% w)
+```
+
+         [,1]
+    [1,] 1022
+
+
+This is called the 'dot product'. The i<sup>th</sup> component of v is multiplied by the ith component of w, and these are added together for all i. Because linear algebra is beyond our scope, we won't deal with this operation much. 
+
+R has vectorization built in to many functions. In practice, if you ever feel you need to code a loop, you should look do some googling and see if there is another way. 
+
+We'll first talk a bit more about vectors, matrices and lists, and then we will cover some common R functions that take these as arguments.
+
+#### Examples
+
+1. Create the vector (1,2,3,4,5,6) using the ``seq`` command in R.
+
+2. Add 2 to every element in the vector.
+
+3. Square every element of the original vector.
+
+#### Vectors, lists, and matrices
+
+Linear algebra is not a pre-requisite for this course, so for our purposes, we will think of vectors as lists of numbers and matrices as two-dimensional arrays of numbers. They are much, much more than that, but that material is very much beyond the scope of this course. We will also mention (for those for whom it is meaningful) that vectors can be multiplied (in various ways) and matrices and vectors are related objects, and we can also multiply matrices together as well as multiply vectors and matrices.
+
+##### Creating vectors lists and matrices
+
+- The *concatenate* function in R builds vectors. We can also obtain vectors from other functions as we have seen in the start of these notes with the function ``seq`` <br><br>
+
+- Matrices are built with the command ``matrix``. They can also be constructed from vectors or returned from certain functions.<br><br>
+
+- Lists are created with the ``list`` function.
+
+
+```{r}
+## Example of vector creation
+
+v <- c(1,2,3,4)
+print(v)
+
+w <- c("This", "is", "a", "character", "vector")
+print(w)
+```
+
+    [1] 1 2 3 4
+    [1] "This"      "is"        "a"         "character" "vector"   
+
+
+
+```{r}
+## Example of matrix creation
+
+## First just create a vector of entries
+matrix_entries <- c(1,2,3,4,5,6,7,8,9,10,11,12)
+
+M <- matrix(matrix_entries, ncol = 3, nrow = 4)
+print(M)
+
+matrix_entries <- c("This", "is", "a", "character", "matrix", "with", "two", "rows")
+N <-  matrix(matrix_entries, nrow = 2)
+print(N)
+```
+
+         [,1] [,2] [,3]
+    [1,]    1    5    9
+    [2,]    2    6   10
+    [3,]    3    7   11
+    [4,]    4    8   12
+         [,1]   [,2]        [,3]     [,4]  
+    [1,] "This" "a"         "matrix" "two" 
+    [2,] "is"   "character" "with"   "rows"
+
+
+
+```{r}
+## We can create matrices of different dimensions
+
+N <- matrix(matrix_entries, ncol = 2, nrow = 6)
+print(N)
+```
+
+    Warning message in matrix(matrix_entries, ncol = 2, nrow = 6):
+    “data length [8] is not a sub-multiple or multiple of the number of rows [6]”
+
+         [,1]        [,2]       
+    [1,] "This"      "two"      
+    [2,] "is"        "rows"     
+    [3,] "a"         "This"     
+    [4,] "character" "is"       
+    [5,] "matrix"    "a"        
+    [6,] "with"      "character"
+
+
+
+```{r}
+## add rows or columns with row bind (``rbind``) or column bind (``cbind``)
+
+## First create a vector of the appropriate length:
+
+new_column <- rep(1,4)
+
+P <- cbind(M, new_column)
+print(P)
+```
+
+                new_column
+    [1,] 1 5  9          1
+    [2,] 2 6 10          1
+    [3,] 3 7 11          1
+    [4,] 4 8 12          1
+
+
+#### Examples
+
+1. Create 3 vectors, one using concatenate, one using ``rep`` and one using ``seq``
+
+2. Create 3 matrices: one 2x2, one 6x4, one a 4x4 with ones on the diagonal and zeroes everywhere else.
+
+3. Use cbind and rbind to add one row and one column to the 6x4 matrix.
+
+
+```{r}
+# Your code here
+```
+
+#### Common Operations on Vectors and Matrices
+
+Two major categories of vector operations are
+
+- Componentwise operations
+- Summary operations
+
+We have already seen some componentwise operations (e.g. the doubling example). Let's look at some summary operations and we will do some more componentwise in the examples.
+
+
+```{r}
+## Sum of the components of a vector
+
+v <- c(1,2,5,8,9,10)
+sum(v)
+```
+
+
+35
+
+
+
+```{r}
+## mean
+
+mean(v)
+```
+
+
+5.83333333333333
+
+
+
+```{r}
+## median
+
+median(v)
+```
+
+
+6.5
+
+
+#### Examples
+
+1. Create two vectors length 3 using the concatenate function. What happens when you add them using `+`?
+
+2. Create a third vector of length 2. What happens if you try to add that vector to one of the others?
+
+3. Create another vector of length 4. Add it to the vector of length 2. What do you observe?
+
+4. We have examples of sum, mean and median summary operations. Can you find some others?
+
+5. Try the functions ``sort`` and ``sample``. What do they do? Try ``sample`` with and without replacement.
+
+
+
+```{r}
+## Your code here
+```
+
+#### Functions
+
+A function is code that behaves like a black box - you give it some input and it returns some output. Functions are essential because they allow you to design potentially complicated algorithms without having to keep track of the algorithmic details - all you need to remember are the function name (which you can search with `apropos` or by prepending `??` to the search term), the input arguments (TAB provides these), and what type of output will be generated. Most of R's usefulness comes from the large collection of functions that it provides - for example, `library()`, `seq()`, `as.fractions()` are all functions. You can also write your own R functions - this will be covered in detail in a later session - but we show the basics here.
+
+##### Creating a function
+
+A function has the following structure
+
+```{r}
+function_name <- function(arguments) {
+    body_of_function
+    return(result)
+}
+```
+
+**function_name** is defined by the user (you). It can be anything you like, but meaningfulnames are encouraged to make code more readable to humans. 
+
+**function** is a keyword (one that has special meaning to R). It tells R that this is a function you are defining (as opposed to a variable).
+
+**arguments** are inputs to the function. Usually, when you write a function, you want it to do something to a variable or variables.
+
+**body_of_function** is a list of R commands. They are whatever you wish this function to do with the arguments.
+
+**return** is a keyword. It tells R to send something back to the code that 'called' it.
+
+**result** is user-defined. It is whatever you want R to send back to the code that called this function.
+
+
+The simple example below will make this explicit.   
+
+
+```{r}
+MyFunc <- function(a, b) {
+    c <- a * b
+    d <- a + 2*b
+    return(d)
+}
+```
+
+**function_name** is MyFunc
+
+**arguments** are a and b
+
+**body_of_function** is
+
+      c <- a * b
+      d <- a + 2 * b
+
+**result** is d
+
+
+```{r}
+MyFunc(5, 4)
+```
+
+
+13
+
+
+
+```{r}
+MyFunc(b = 4, a = 5)
+```
+
+
+13
+
+
+
+```{r}
+MyFunc(4, 5)
+```
+
+
+14
+
+
+#### Examples
+
+1. Write a function that takes as input principal, interest rate, compoundings per period and number of periods and returns current amount.
+
+2. Write a function that takes as input two points, x and y, and returns the distance between them.
+
+
+### Lists and Data Frames
+
+A more general data structure in R is something called a list. Lists can have elements that are pretty much anything. For example, we can create a list of three members whose first element is a character vector, second element is a matrix and a third is a numeric vector. There is no restriction on length or type. Lists can even have other lists as elements. 
+
+This is important, because Bioconductor packages often make use of something called S4 objects. These are really just complicated lists (with functions that act on them). 
+
+#### Simple list
+
+
+```{r}
+a <- c("a", "character", "vector")
+b <- matrix(1:12, nrow = 4)
+c <- 2:5
+
+print(a)
+print(b)
+print(c)
+
+my_list <- list(first = a, second = b, third = c)
+
+print(my_list)
+```
+
+    [1] "a"         "character" "vector"   
+         [,1] [,2] [,3]
+    [1,]    1    5    9
+    [2,]    2    6   10
+    [3,]    3    7   11
+    [4,]    4    8   12
+    [1] 2 3 4 5
+    $first
+    [1] "a"         "character" "vector"   
+    
+    $second
+         [,1] [,2] [,3]
+    [1,]    1    5    9
+    [2,]    2    6   10
+    [3,]    3    7   11
+    [4,]    4    8   12
+    
+    $third
+    [1] 2 3 4 5
+    
+
+
+Note hoe the elements are named. Writing "first = " names the first element 'first'. Now, we can access elements of the list in different ways:
+
+
+```{r}
+my_list[1]
+```
+
+
+<strong>$first</strong> = <ol class=list-inline>
+	<li>'a'</li>
+	<li>'character'</li>
+	<li>'vector'</li>
+</ol>
+
+
+
+
+```{r}
+my_list["second"]
+```
+
+
+<strong>$second</strong> = <table>
+<caption>A matrix: 4 × 3 of type int</caption>
+<tbody>
+	<tr><td>1</td><td>5</td><td> 9</td></tr>
+	<tr><td>2</td><td>6</td><td>10</td></tr>
+	<tr><td>3</td><td>7</td><td>11</td></tr>
+	<tr><td>4</td><td>8</td><td>12</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+my_list$third
+```
+
+
+<ol class=list-inline>
+	<li>2</li>
+	<li>3</li>
+	<li>4</li>
+	<li>5</li>
+</ol>
+
+
+
+The '$' is probably the most often used, but there is a lot of old R code out there where lists are accessed by the element number (you would also use element number when looping over a list, but you should probably not be doing that anyway!)
+
+#### Data frames
+
+Data frames are lists where each element has the same number of columns. This is the data structure most often seen in R code, and many functions are specialized to work on them easily. We can create one from scratch:
+
+
+```{r}
+names <- c("bast", "dash", "chestnut", "tibbs")
+species <- c("cat", "cat", "dog", "dog")
+ages <- c(9, 9, 7, 8)
+
+df <- data.frame(name = names, species = species, age = ages)
+df
+```
+
+
+<table>
+<caption>A data.frame: 4 × 3</caption>
+<thead>
+	<tr><th scope=col>name</th><th scope=col>species</th><th scope=col>age</th></tr>
+	<tr><th scope=col>&lt;fct&gt;</th><th scope=col>&lt;fct&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>bast    </td><td>cat</td><td>9</td></tr>
+	<tr><td>dash    </td><td>cat</td><td>9</td></tr>
+	<tr><td>chestnut</td><td>dog</td><td>7</td></tr>
+	<tr><td>tibbs   </td><td>dog</td><td>8</td></tr>
+</tbody>
+</table>
+
+
+
+R also has many built-in data frames that can be used to experiment or for examples.
+
+
+```{r}
+head(iris)
+
+hist(iris$Petal.Length)
+```
+
+
+<table>
+<caption>A data.frame: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>Sepal.Length</th><th scope=col>Sepal.Width</th><th scope=col>Petal.Length</th><th scope=col>Petal.Width</th><th scope=col>Species</th></tr>
+	<tr><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;fct&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>5.1</td><td>3.5</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
+	<tr><td>4.9</td><td>3.0</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
+	<tr><td>4.7</td><td>3.2</td><td>1.3</td><td>0.2</td><td>setosa</td></tr>
+	<tr><td>4.6</td><td>3.1</td><td>1.5</td><td>0.2</td><td>setosa</td></tr>
+	<tr><td>5.0</td><td>3.6</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
+	<tr><td>5.4</td><td>3.9</td><td>1.7</td><td>0.4</td><td>setosa</td></tr>
+</tbody>
+</table>
+
+
+
+
+    
+![png](output_74_1.png)
+    
+
+
+#### Examples
+
+1. Explore the data frame mtcars. What variables does it contain? What are their data types?
+
+2. What is the average miles-per-gallon for a car with 4 cylinders? How about 8?
+
+3. Plot a histogram of the vehicle weight.
+
+# Using `dplyr` for data manipulation
+
+**Description**
+
+```
+dplyr provides a flexible grammar of data manipulation. It’s the next iteration of plyr, focused on tools for working with data frames (hence the d in the name).
+```
+
+If you look at [`dplyr` docs](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf), there is a rich collection of data manipulaiton verbs provided. However, most common tasks can be accomplished with just 6 verbs that we will cover in this session:
+
+```
+select
+filter
+mutate a
+arrange
+summarize
+group_by
+```
+
+We will also see how to construct data manipulation "sentnces" by using these versb togetehr wtih `pipes`.
+
+
+```{r}
+library(tidyverse)
+```
+
+## Data
+
+
+```{r}
+path='../data/hts_2018_data/2018_pilot_metadata_anon.tsv'
+```
+
+
+```{r}
+getwd()
+```
+
+
+```{r}
+df <- read_tsv(path)
+```
+
+
+```{r}
+names(df)
+```
+
+### Fix names to be consistent
+
+Note that some names use spaces between words and others use underscores. Le'ts fix this.
+
+
+```{r}
+names(df) <- str_replace_all(names(df), c('[:space:]+' = '_'))
+```
+
+
+```{r}
+names(df)
+```
+
+
+```{r}
+dim(df)
+```
+
+Note: Drop some columns so table fits in browser
+
+
+```{r}
+df <- df[, c(2:5, 8:15)]
+```
+
+
+```{r}
+dim(df)
+```
+
+
+```{r}
+sample_n(df, 3)
+```
+
+
+```{r}
+summary(df)
+```
+
+### Fixing fake numeric columns
+
+Note that `RNA_sample_num`, `Replicate` and `library#` are really discrete `factors` rather than numbrs.  As `#` is not allowed in an R variable name, we need to use backticks for `library#`. (Alternatively, we cna reame to something like `library_num`). 
+
+
+```{r}
+df %>% mutate(
+    RNA_sample_num=factor(RNA_sample_num), 
+    Replicate=factor(Replicate),
+    `library#`=factor(`library#`)
+) %>% 
+select_if(is.factor) %>%
+names
+```
+
+After checking that the transformation worked, we can save the transformed data.frame.
+
+
+```{r}
+df <- df %>% mutate(
+    RNA_sample_num=factor(RNA_sample_num), 
+    Replicate=factor(Replicate),
+    `library#`=factor(`library#`)
+)
+```
+
+## 0. Pipe
+
+
+```{r}
+df %>% head(10) %>% tail(3)
+```
+
+Note that the above result can also be achieved with `slice`
+
+
+```{r}
+df %>% slice(8:10)
+```
+
+## 1. Select columns
+
+
+```{r}
+df %>% select(1:3) %>% head(3)
+```
+
+
+```{r}
+df %>% select(c(1,3,5)) %>% head(3)
+```
+
+
+```{r}
+df %>% select(c('RNA_sample_num', 'Media')) %>% head(3)
+```
+
+### Dropping columns
+
+
+```{r}
+df %>% select(-((1:10))) %>% head(3)
+```
+
+### Selecting using string operations
+
+
+```{r}
+df %>% select(ends_with('person')) %>% head(3)
+```
+
+
+```{r}
+df %>% select(starts_with('i')) %>% head(3)
+```
+
+
+```{r}
+df %>% select(contains('primer')) %>% head(3)
+```
+
+
+```{r}
+df %>% select(matches('.*_.*')) %>% head(3)
+```
+
+### Renaming columns with select
+
+
+```{r}
+df %>% 
+select(c('method' = 'enrichment_method', 
+         'fold.change' =  'concentration_fold_difference')) %>% 
+head(3)
+```
+
+### Scoped variants
+
+
+```{r}
+df %>% select_if(is.numeric) %>% head(3)
+```
+
+
+```{r}
+df %>% 
+select_at(c('enrichment_method', 
+            'concentration_fold_difference'), toupper) %>%
+head(3)
+```
+
+
+```{r}
+df %>% select_all(tolower) %>% head(3)
+```
+
+## 2. Filter rows
+
+
+```{r}
+unique(df$Media)
+```
+
+### Equality and inequality conditions
+
+
+```{r}
+df %>% filter(Media == 'TC') %>% head(3)
+```
+
+
+```{r}
+df %>% filter(concentration_fold_difference > 3) %>% head(3)
+```
+
+### Combining conditions
+
+
+```{r}
+df %>% 
+filter(Media != 'TC', 
+       concentration_fold_difference > 3) %>%
+head(3)
+```
+
+
+```{r}
+df %>% 
+filter(Media == 'TC' |
+       concentration_fold_difference > 3) %>%
+head(3)
+```
+
+### Filtering on string conditions
+
+
+```{r}
+df %>% filter(str_length(Media) == 3) %>% head(3)
+```
+
+
+```{r}
+df %>% filter(str_detect(i7_index, '^A.+')) %>% head(3)
+```
+
+## 3. Arrange in ascending or descening order
+
+
+```{r}
+df %>% arrange(concentration_fold_difference) %>% head(3)
+```
+
+
+```{r}
+df %>% arrange(desc(concentration_fold_difference)) %>% head(3)
+```
+
+
+```{r}
+df %>% 
+arrange(Replicate, 
+        desc(concentration_fold_difference))%>% 
+head(3)
+```
+
+### Using `top_n`
+
+
+```{r}
+df %>% top_n(3, concentration_fold_difference)
+```
+
+
+```{r}
+df %>% top_n(3, desc(concentration_fold_difference))
+```
+
+## 4. Mutate values
+
+
+```{r}
+df %>% 
+select(RNA_sample_num, concentration_fold_difference) %>%
+mutate(concentration_difference=2^concentration_fold_difference) %>%
+head(3)
+```
+
+
+```{r}
+df %>%
+transmute(concentration_difference=2^concentration_fold_difference) %>% 
+head(3)
+```
+
+## 5. Summarize
+
+
+```{r}
+df %>% summarize(avg_fold_change=mean(concentration_fold_difference),
+                 min_fold_change=min(concentration_fold_difference),
+                 max_fold_change=max(concentration_fold_difference))
+```
+
+
+```{r}
+df %>% summarize_if(is.numeric, mean)
+```
+
+## Group_by
+
+`summariz`e is most useful when used with `group_by`
+
+
+```{r}
+df %>% 
+group_by(Media, Strain, enrichment_method) %>%
+summarize(mean_fold_diff=mean(concentration_fold_difference))
+```
+
+
+```{r}
+df %>% 
+group_by(Media, Strain, enrichment_method) %>%
+summarize_if(is.numeric, mean) 
+```
+
+
+```{r}
+df %>% 
+group_by(Media, Strain) %>%
+summarize_if(is.numeric, funs(mean, sd))
+```
+
+What experimental conditions produced the greatest mean fold change?
+
+
+```{r}
+df %>% 
+group_by(Media, Strain, enrichment_method) %>%
+summarize(mean_fold_diff=mean(concentration_fold_difference)) %>%
+arrange(desc(mean_fold_diff)) %>%
+head(1)
+```
+# Using `tidyr` to create tidy data sets
+
+**Description**
+> Easily Tidy Data with 'spread()' and 'gather()' Functions
+
+A tidy data frame is one where
+
+- Each column is a variable
+- Each row is an observation
+- Each value is a cell
+
+As we have seen, tidy data sets can be easily plotted with `ggplot2` and manipulated with `dplyr`. In this notebook, we see how to convert messy data sets into tidy ones using the verbs `gather`, `spread`, `separate`, `extract`, `separte_rows` and `unite`.
+
+For more complicated tidying jobs, see the full range of functions in the [`tidyr` documentation](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf).
+
+
+```{r}
+library(tidyverse)
+```
+
+## Data
+
+We will work with a subset of the pilot metadata that we are familiar with from the `dplyr` session.
+
+
+```{r}
+path='../data/hts_2018_data/2018_pilot_metadata_anon.tsv'
+```
+
+
+```{r}
+df <- read_tsv(path)
+```
+
+### Subset the data
+
+
+```{r}
+df <- df %>% select(
+    Label,
+    RNA_sample_num,
+    Media,
+    Strain,
+    Replicate,
+    concentration_fold_difference,
+    `i7 index`,
+    `i5 index`,  
+    `i5 primer`,
+    `i7 primer`,
+)
+```
+
+
+```{r}
+head(df)
+```
+
+## 1. Use `gather` to combine multiple columns into one
+
+We note thet there are two "index" and "primer" columns - for a tidy data frame, we probably want to combine them. We cna do this using `gather`.
+
+### Warm-up
+
+The use of `gather` can be confusing, so we will start with a toy example.
+
+
+```{r}
+name <- c('ann', 'bob', 'charlie')
+jan <- c(102, 155, 211)
+feb <- c(112, 150, 211)
+mar <- c(123, 147, 213)
+apr <- c(130, 140, 210)
+
+wts <- tibble(name=name, jan=jan, feb=feb, mar=mar, apr=apr)
+```
+
+
+```{r}
+wts
+```
+
+### Messy data
+
+In the current form, it is not possible to subgroup by month or to plot by month easily.
+
+### Using `gather` to creat a new column called `weight` to store monthly weights
+
+
+```{r}
+wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+
+```{r}
+wts.1 <- wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+### To get menth sorted correctly, we make it a factor
+
+
+```{r}
+wts.1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+
+```{r}
+wts.2 <- wts.1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+### Now we can easily work wtih the tidy data set
+
+
+```{r}
+wts.2 %>% 
+group_by(month) %>% 
+summarize_at('weight', funs(min, max, mean)) 
+```
+
+
+```{r}
+options(repr.plot.width=6, repr.plot.height=3)
+```
+
+
+```{r}
+ggplot(wts.2, aes(x=month, y=weight, fill=name)) + 
+geom_bar(stat='identity') + 
+facet_wrap('name')
+```
+
+### Using `gather` on experiment metadata
+
+
+```{r}
+df %>% 
+select(Label, ends_with('index')) %>% 
+head()
+```
+
+
+```{r}
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+head()
+```
+
+
+```{r}
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+mutate(index=str_extract(index, '^..')) %>%
+head()
+```
+
+## 2. Use `spread` to convert one column into multiple
+
+We can undo `gather` with `spread`. This is less commonly used than `gather`.
+
+
+```{r}
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+head()
+```
+
+
+```{r}
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+spread(index, sequence) %>%
+head()
+```
+
+## 3. Use `separate` to split a single column containing multiple values
+
+The label column actually contains three pieces of informaiton separated by underscores - a sample number, the RNA enrichment methd, and code for the person presenting the sample. Assuuming that we do not have this informatio nduplicate in other columns, it woujld be tricky to compare, say, results by the sampling method.
+
+The `separate` function is designed to address this problem.
+
+
+```{r}
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+head(3)
+```
+
+
+```{r}
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+head(3)
+```
+
+#### It is now easy to condition on sample_number, enrichment method or person
+
+Here is a summary of the data.
+
+
+```{r}
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, into=c('sample_num', 'enrichment', 'person'), sep='_') %>%
+add_count(enrichment) %>%
+group_by(person, enrichment, n) %>%
+summarize_at('concentration_fold_difference', mean) 
+```
+
+## 4. Use `unite` to craate a single variable from multiple columns
+
+Sometimes we want to do the opposite and combine multiple columns into a single column. Use `unite` to do this.
+
+
+```{r}
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+head
+```
+
+
+```{r}
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+unite(Label, c('sample_num', 'enrichment', 'person'), sep='_') %>% 
+head
+```
+
+#### Extract parts with regular expressions
+
+Sometiems there is no simple delimiter between parts of a value. In such cases, we may need to use reuglar expressions to extract parts from a string.
+
+
+```{r}
+bad_labels <- df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, 
+         sep='_', 
+         into=c('sample_num', 'enrichment', 'person')) %>%
+unite(Label, c('sample_num', 'enrichment', 'person'), sep='')
+head(bad_labels)
+```
+
+The regular expression consists of 3 capture groups in parentheses that will form the new columns.
+
+`'([0-9]+)(.*)(.$)'`
+
+where
+
+- Capture group 1 `[0-9]+`  means match one or more `+` of any digits  `[0-9]`
+- Capture group 2 `.*`     means match zero or more `*` of any character `.`
+- Capture gorup 3 `.$`     means match any character `.` at the end `$`
+
+
+```{r}
+bad_labels %>% 
+extract(Label, 
+         into=c('sample_num', 'enrichment', 'person'), 
+         '([0-9]+)(.*)(.$)') %>%
+head
+```
+
+### Using `separate_rows` rows when multiple values are in a single cell.
+
+Very occassionally, we find data sets where multiple values are stored in a single cell. We will make up and exmple here as this does not occur in the metadata data set.
+
+
+```{r}
+bad_primer <- df %>% 
+select(Label, `i5 index`, `i7 index`) %>% 
+unite(primer, c(`i5 index`, `i7 index`), sep=',') %>%
+arrange(Label)
+head(bad_primer)
+```
+
+
+```{r}
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+head
+```
+
+#### Challenge: Reconstruct column structure  of orignial metadata file
+
+Since `separate_rows` will place the items in each row in alternating columns, we create a temporary variable to store the position in the original cell.
+
+
+```{r}
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+mutate(tmp=rep_len(1:2, n())) %>% 
+head
+```
+
+We then `spread` the primer values by the temporary variable and rename the columns as appropriate.
+
+
+```{r}
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+mutate(tmp=rep_len(1:2, n())) %>% 
+spread(tmp, primer) %>%
+rename(`i5 index`=`1`, `i7 index`=`2`) %>%
+head
+```
+
+Comapre with original
+
+
+```{r}
+df %>%
+select(Label, `i5 index`, `i7 index`) %>%
+arrange(Label) %>%
+head
+```
+
+## Challenge exercise 
+
+Let's look at the index and primer columne more closely. It seems that the index and primer values are linked and are just different ways of labeling the same thing. So we really should be have columns like this
+
+| primer_type | code | seq |
+| - | - | - |
+| i5 | i501 | AGGCTATA | 
+| i5 | i502 | GCCTCTAT |
+| i7 | i701 | ATTACTCG |
+| i7 | i702 | TCCGGAGA |
+
+We can do this by combining the operatios we have seen above.
+
+
+```{r}
+df %>% 
+unite(i7, c(`i7 primer`, `i7 index`), sep=':') %>%
+unite(i5, c(`i5 primer`, `i5 index`), sep=':') %>%
+gather(primer_type, val, c(i7, i5)) %>%
+separate(val, into=c('code', 'seq'), sep=':') %>%
+mutate(code=str_extract(code, '..$')) %>%
+arrange(primer_type, code) %>% 
+head(10)
+```
+# Working with multiple files
+
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+    Registered S3 methods overwritten by 'ggplot2':
+      method         from 
+      [.quosures     rlang
+      c.quosures     rlang
+      print.quosures rlang
+    ── [1mAttaching packages[22m ─────────────────────────────────────── tidyverse 1.2.1 ──
+    [32m✔[39m [34mggplot2[39m 3.1.1     [32m✔[39m [34mpurrr  [39m 0.3.2
+    [32m✔[39m [34mtibble [39m 2.1.2     [32m✔[39m [34mdplyr  [39m 0.8.1
+    [32m✔[39m [34mtidyr  [39m 0.8.3     [32m✔[39m [34mstringr[39m 1.4.0
+    [32m✔[39m [34mreadr  [39m 1.3.1     [32m✔[39m [34mforcats[39m 0.4.0
+    ── [1mConflicts[22m ────────────────────────────────────────── tidyverse_conflicts() ──
+    [31m✖[39m [34mdplyr[39m::[32mfilter()[39m masks [34mstats[39m::filter()
+    [31m✖[39m [34mdplyr[39m::[32mlag()[39m    masks [34mstats[39m::lag()
+
+
+## Extended example
+
+Suppose we have the following scenario:
+
+A multi-center experiment is conducted at Duke and UNC.
+
+- Duke has patients `Ann`, `Bob`, `Charle`
+- UNC has patients `David`, `Ed`, `Fiona`
+- Each patient has blood sampled at 2 time points 
+- The genomics core at each center measures 3 genes for each patient at each time point
+- The proteomics core at each center measures 3 proteins from each patient at each time point
+- Each center has additional information about patient demographics in a different database
+
+We have a ten files to work with:
+
+```
+duke_demographics.tsv
+duke_genes_v1.tsv
+duke_genes_v2.tsv
+duke_proteins_v1.tsv
+duke_proteins_v2.tsv
+unc_demographics.tsv
+unc_genes_v1.tsv
+unc_genes_v2.tsv
+unc_proteins_v1.tsv
+unc_proteins_v2.tsv
+```
+
+## Objective
+
+We want to visualize the correlation between the gene and protein expression changes from visit 1 to visit 2 for all patients in the study. We also want to augment the data with demographic variables for each patient.
+
+- Assume that labs within an institution *do not* have batch effects across visits
+- Assume that labs at different institutions *have* batch affects and must be normalized before comparison
+
+### Combine gene expression data from Duke and normalize to zero mean and unit standard deviation 
+
+
+```{r}
+df_dg1 <- read_tsv('../data/misc_data/duke_genes_v1.tsv')
+df_dg2 <- read_tsv('../data/misc_data/duke_genes_v2.tsv')
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+
+
+
+```{r}
+df_dg1
+```
+
+
+<table>
+<caption>A spec_tbl_df: 3 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td> 91.09792</td><td>64.62166</td><td>124.4608</td></tr>
+	<tr><td>Bob    </td><td> 88.81115</td><td>78.24940</td><td>113.6644</td></tr>
+	<tr><td>Charlie</td><td>107.52933</td><td>70.52984</td><td>124.5951</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_dg2
+```
+
+
+<table>
+<caption>A spec_tbl_df: 3 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td>108.67919</td><td> 90.38630</td><td>137.5395</td></tr>
+	<tr><td>Bob    </td><td>113.44700</td><td>101.52725</td><td>144.7763</td></tr>
+	<tr><td>Charlie</td><td> 98.12047</td><td> 97.70863</td><td>131.1964</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_dg <- bind_rows(df_dg1, df_dg2, .id = "visit")
+df_dg
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td> 91.09792</td><td> 64.62166</td><td>124.4608</td></tr>
+	<tr><td>1</td><td>Bob    </td><td> 88.81115</td><td> 78.24940</td><td>113.6644</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>107.52933</td><td> 70.52984</td><td>124.5951</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>108.67919</td><td> 90.38630</td><td>137.5395</td></tr>
+	<tr><td>2</td><td>Bob    </td><td>113.44700</td><td>101.52725</td><td>144.7763</td></tr>
+	<tr><td>2</td><td>Charlie</td><td> 98.12047</td><td> 97.70863</td><td>131.1964</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_dg.scaled <- df_dg  %>% mutate_if(is.numeric, scale)
+df_dg.scaled
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-1.0073042</td><td>-1.2805845</td><td>-0.4479685</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.2335142</td><td>-0.3723877</td><td>-1.4327190</td></tr>
+	<tr><td>1</td><td>Charlie</td><td> 0.6181059</td><td>-0.8868438</td><td>-0.4357137</td></tr>
+	<tr><td>2</td><td>Ann    </td><td> 0.7318518</td><td> 0.4364545</td><td> 0.7449587</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.2034879</td><td> 1.1789234</td><td> 1.4050414</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>-0.3126272</td><td> 0.9244382</td><td> 0.1664011</td></tr>
+</tbody>
+</table>
+
+
+
+### Do the same for the other data sets
+
+Duke protein expression
+
+
+```{r}
+df_dp1 <- read_tsv('../data/misc_data/duke_proteins_v1.tsv')
+df_dp2 <- read_tsv('../data/misc_data/duke_proteins_v2.tsv')
+df_dp <- bind_rows(df_dp1, df_dp2, .id = "visit")
+df_dp.scaled <- df_dp %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+
+
+
+```{r}
+head(df_dp.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>prot_A</th><th scope=col>prot_B</th><th scope=col>prot_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-0.4967020</td><td> 0.9830005</td><td>-1.37774584</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.0132844</td><td>-1.1799912</td><td>-1.01496776</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>-0.3455620</td><td>-0.8561590</td><td> 0.60497113</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>-0.4191436</td><td> 0.3772850</td><td> 0.88392265</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.7870904</td><td>-0.5388750</td><td>-0.05597907</td></tr>
+	<tr><td>2</td><td>Charlie</td><td> 0.4876017</td><td> 1.2147397</td><td> 0.95979888</td></tr>
+</tbody>
+</table>
+
+
+
+UNC gene expression
+
+
+```{r}
+df_ug1 <- read_tsv('../data/misc_data/unc_genes_v1.tsv')
+df_ug2 <- read_tsv('../data/misc_data/unc_genes_v2.tsv')
+df_ug <- bind_rows(df_ug1, df_ug2, .id = "visit")
+df_ug.scaled <- df_ug %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+
+
+
+```{r}
+head(df_ug.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>David</td><td>-0.59425311</td><td>-1.2262407</td><td>-0.30771429</td></tr>
+	<tr><td>1</td><td>Ed   </td><td>-1.17645232</td><td>-0.5087640</td><td> 0.02835355</td></tr>
+	<tr><td>1</td><td>Fiona</td><td> 0.36658576</td><td>-0.3217073</td><td>-1.82700451</td></tr>
+	<tr><td>2</td><td>David</td><td> 0.08382534</td><td> 0.5735718</td><td> 0.66994801</td></tr>
+	<tr><td>2</td><td>Ed   </td><td>-0.40047124</td><td>-0.1817827</td><td> 0.92567540</td></tr>
+	<tr><td>2</td><td>Fiona</td><td> 1.72076557</td><td> 1.6649228</td><td> 0.51074184</td></tr>
+</tbody>
+</table>
+
+
+
+UNC protein expression
+
+
+```{r}
+df_up1 <- read_tsv('../data/misc_data/unc_proteins_v1.tsv')
+df_up2 <- read_tsv('../data/misc_data/unc_proteins_v2.tsv')
+df_up <- bind_rows(df_up1, df_up2, .id = "visit")
+df_up.scaled <- df_up %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+
+
+
+```{r}
+head(df_up.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>prot_A</th><th scope=col>prot_B</th><th scope=col>prot_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>David</td><td> 1.04580136</td><td> 0.1280673</td><td>-0.6867668</td></tr>
+	<tr><td>1</td><td>Ed   </td><td>-1.65977553</td><td> 0.2117860</td><td> 0.9772767</td></tr>
+	<tr><td>1</td><td>Fiona</td><td> 0.05811210</td><td>-0.6413509</td><td>-1.4593511</td></tr>
+	<tr><td>2</td><td>David</td><td>-0.44575884</td><td>-0.7384114</td><td> 0.9175770</td></tr>
+	<tr><td>2</td><td>Ed   </td><td> 0.02765904</td><td> 1.8317201</td><td> 0.6595148</td></tr>
+	<tr><td>2</td><td>Fiona</td><td> 0.97396187</td><td>-0.7918110</td><td>-0.4082508</td></tr>
+</tbody>
+</table>
+
+
+
+### Find the change in each gene from visit 1 to visit 2
+
+
+```{r}
+df_dg.scaled
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-1.0073042</td><td>-1.2805845</td><td>-0.4479685</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.2335142</td><td>-0.3723877</td><td>-1.4327190</td></tr>
+	<tr><td>1</td><td>Charlie</td><td> 0.6181059</td><td>-0.8868438</td><td>-0.4357137</td></tr>
+	<tr><td>2</td><td>Ann    </td><td> 0.7318518</td><td> 0.4364545</td><td> 0.7449587</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.2034879</td><td> 1.1789234</td><td> 1.4050414</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>-0.3126272</td><td> 0.9244382</td><td> 0.1664011</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+# To avoid a bunch or harmless warnigns, we will temprarily suppress them
+
+options(warn=-1)
+```
+
+
+```{r}
+df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+head
+```
+
+
+<table>
+<caption>A tibble: 6 × 4</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene</th><th scope=col>value</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>gene_A</td><td>-1.0073042</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>gene_A</td><td>-1.2335142</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>gene_A</td><td> 0.6181059</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>gene_A</td><td> 0.7318518</td></tr>
+	<tr><td>2</td><td>Bob    </td><td>gene_A</td><td> 1.2034879</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>gene_A</td><td>-0.3126272</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+head
+```
+
+
+<table>
+<caption>A tibble: 6 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene</th><th scope=col>1</th><th scope=col>2</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>gene_A</td><td>-1.0073042</td><td>0.7318518</td></tr>
+	<tr><td>Ann</td><td>gene_B</td><td>-1.2805845</td><td>0.4364545</td></tr>
+	<tr><td>Ann</td><td>gene_C</td><td>-0.4479685</td><td>0.7449587</td></tr>
+	<tr><td>Bob</td><td>gene_A</td><td>-1.2335142</td><td>1.2034879</td></tr>
+	<tr><td>Bob</td><td>gene_B</td><td>-0.3723877</td><td>1.1789234</td></tr>
+	<tr><td>Bob</td><td>gene_C</td><td>-1.4327190</td><td>1.4050414</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_dg.diff <- df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          gene=str_extract(gene, '[^_]+$'), 
+          gene.change=`2`-`1`)
+head(df_dg.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>A</td><td>1.739156</td></tr>
+	<tr><td>Ann</td><td>B</td><td>1.717039</td></tr>
+	<tr><td>Ann</td><td>C</td><td>1.192927</td></tr>
+	<tr><td>Bob</td><td>A</td><td>2.437002</td></tr>
+	<tr><td>Bob</td><td>B</td><td>1.551311</td></tr>
+	<tr><td>Bob</td><td>C</td><td>2.837760</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine with UNC data
+
+
+```{r}
+df_ug.diff <- df_ug.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          gene=str_extract(gene, '[^_]+$'), 
+          gene.change=`2`-`1`)
+head(df_ug.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David</td><td>A</td><td>0.6780785</td></tr>
+	<tr><td>David</td><td>B</td><td>1.7998124</td></tr>
+	<tr><td>David</td><td>C</td><td>0.9776623</td></tr>
+	<tr><td>Ed   </td><td>A</td><td>0.7759811</td></tr>
+	<tr><td>Ed   </td><td>B</td><td>0.3269814</td></tr>
+	<tr><td>Ed   </td><td>C</td><td>0.8973218</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_g <- bind_rows(list(duke=df_dg.diff, unc=df_ug.diff), .id='site')
+df_g
+```
+
+
+<table>
+<caption>A tibble: 18 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td></tr>
+</tbody>
+</table>
+
+
+
+### Now do the same with protein data
+
+
+```{r}
+df_dp.diff <- df_dp.scaled %>% 
+gather(protein, value, starts_with('prot'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          protein=str_extract(protein, '[^_]+$'), 
+          protein.change=`2`-`1`)
+head(df_dp.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>Ann</td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>Ann</td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>Bob</td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>Bob</td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>Bob</td><td>C</td><td> 0.95898869</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_up.diff <- df_up.scaled %>% 
+gather(protein, value, starts_with('prot'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          protein=str_extract(protein, '[^_]+$'), 
+          protein.change=`2`-`1`)
+head(df_up.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David</td><td>A</td><td>-1.4915602</td></tr>
+	<tr><td>David</td><td>B</td><td>-0.8664787</td></tr>
+	<tr><td>David</td><td>C</td><td> 1.6043438</td></tr>
+	<tr><td>Ed   </td><td>A</td><td> 1.6874346</td></tr>
+	<tr><td>Ed   </td><td>B</td><td> 1.6199340</td></tr>
+	<tr><td>Ed   </td><td>C</td><td>-0.3177619</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_p <- bind_rows(list(duke=df_dp.diff, unc=df_up.diff), .id='site')
+df_p
+```
+
+
+<table>
+<caption>A tibble: 18 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 0.95898869</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td> 0.83316369</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 2.07089865</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.35482775</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td>-1.49156020</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td>-0.86647868</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 1.60434377</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 1.68743457</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 1.61993404</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td>-0.31776193</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 0.91584977</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td>-0.15046013</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 1.05110029</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine gene and protein data into single data frame
+
+Since the rows are perfectly aligned, we can just bind columns together. If we are not certain that the rows match up exactly, it is safer to use a `join` to combine columns.
+
+
+```{r}
+bind_cols(df_g, df_p, )
+```
+
+
+<table>
+<caption>A tibble: 18 × 8</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>site1</th><th scope=col>patient1</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td>duke</td><td>Ann    </td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>duke</td><td>Ann    </td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td>duke</td><td>Ann    </td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td>duke</td><td>Bob    </td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td>duke</td><td>Bob    </td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td>duke</td><td>Bob    </td><td>C</td><td> 0.95898869</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td>duke</td><td>Charlie</td><td>A</td><td> 0.83316369</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td>duke</td><td>Charlie</td><td>B</td><td> 2.07089865</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td>duke</td><td>Charlie</td><td>C</td><td> 0.35482775</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>unc </td><td>David  </td><td>A</td><td>-1.49156020</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>unc </td><td>David  </td><td>B</td><td>-0.86647868</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td>unc </td><td>David  </td><td>C</td><td> 1.60434377</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td><td>unc </td><td>Ed     </td><td>A</td><td> 1.68743457</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td><td>unc </td><td>Ed     </td><td>B</td><td> 1.61993404</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td><td>unc </td><td>Ed     </td><td>C</td><td>-0.31776193</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td>unc </td><td>Fiona  </td><td>A</td><td> 0.91584977</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>unc </td><td>Fiona  </td><td>B</td><td>-0.15046013</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td>unc </td><td>Fiona  </td><td>C</td><td> 1.05110029</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_gp <- bind_cols(df_g, df_p %>% select(-site, -patient, -protein))
+head(df_gp)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann</td><td>A</td><td>1.739156</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>B</td><td>1.717039</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>C</td><td>1.192927</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>A</td><td>2.437002</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>B</td><td>1.551311</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>C</td><td>2.837760</td><td> 0.95898869</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine with demographic data
+
+
+```{r}
+df_dd <- read_tsv('../data/misc_data/duke_demographics.tsv')
+df_ud <- read_tsv('../data/misc_data/unc_demographics.tsv')
+```
+
+    Parsed with column specification:
+    cols(
+      patients = [31mcol_character()[39m,
+      age = [32mcol_double()[39m,
+      sex = [31mcol_character()[39m
+    )
+    Parsed with column specification:
+    cols(
+      patients = [31mcol_character()[39m,
+      age = [32mcol_double()[39m,
+      sex = [31mcol_character()[39m
+    )
+
+
+
+```{r}
+head(df_dd)
+```
+
+
+<table>
+<caption>A tibble: 4 × 3</caption>
+<thead>
+	<tr><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td>16</td><td>F</td></tr>
+	<tr><td>Bob    </td><td>23</td><td>M</td></tr>
+	<tr><td>Beth   </td><td>43</td><td>F</td></tr>
+	<tr><td>Charlie</td><td>53</td><td>M</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+head(df_ud)
+```
+
+
+<table>
+<caption>A tibble: 3 × 3</caption>
+<thead>
+	<tr><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David </td><td>49</td><td>K</td></tr>
+	<tr><td>Edward</td><td>53</td><td>M</td></tr>
+	<tr><td>Fiona </td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_d <- bind_rows(list(duke=df_dd, unc=df_ud), .id='site')
+df_d
+```
+
+
+<table>
+<caption>A spec_tbl_df: 7 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Beth   </td><td>43</td><td>F</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>David  </td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+left_join(df_gp, df_d, by = c('site', c('patient'='patients')))
+```
+
+
+<table>
+<caption>A tibble: 18 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td> 0.07755833</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>-0.60571547</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td> 2.26166848</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td> 2.80037479</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td> 0.64111624</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td> 0.95898869</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td> 0.83316369</td><td>53</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td> 2.07089865</td><td>53</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td> 0.35482775</td><td>53</td><td>M </td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>-1.49156020</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>-0.86647868</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td> 1.60434377</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td><td> 1.68743457</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td><td> 1.61993404</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td><td>-0.31776193</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td> 0.91584977</td><td>67</td><td>F </td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>-0.15046013</td><td>67</td><td>F </td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td> 1.05110029</td><td>67</td><td>F </td></tr>
+</tbody>
+</table>
+
+
+
+There are missing values for Ed because the names don't match. We know that Ed's name in this case is really Edward, so we fix and try again.
+
+
+```{r}
+left_join(df_gp %>% mutate(patient=recode(patient, 'Ed'='Edward')),
+          df_d, 
+          by = c('site', c('patient'='patients')))
+```
+
+
+<table>
+<caption>A tibble: 18 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td> 0.07755833</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>-0.60571547</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td> 2.26166848</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td> 2.80037479</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td> 0.64111624</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td> 0.95898869</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td> 0.83316369</td><td>53</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td> 2.07089865</td><td>53</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td> 0.35482775</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>-1.49156020</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>-0.86647868</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td> 1.60434377</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>A</td><td> 0.7759811</td><td> 1.68743457</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>B</td><td> 0.3269814</td><td> 1.61993404</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>C</td><td> 0.8973218</td><td>-0.31776193</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td> 0.91584977</td><td>67</td><td>F</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>-0.15046013</td><td>67</td><td>F</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td> 1.05110029</td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+df_all <- left_join(df_gp %>% mutate(patient=recode(patient, 'Ed'='Edward')),
+          df_d, 
+          by = c('site', c('patient'='patients')))
+```
+
+
+```{r}
+head(df_all)
+```
+
+
+<table>
+<caption>A tibble: 6 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann</td><td>A</td><td>1.739156</td><td> 0.07755833</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>B</td><td>1.717039</td><td>-0.60571547</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>C</td><td>1.192927</td><td> 2.26166848</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>A</td><td>2.437002</td><td> 2.80037479</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>B</td><td>1.551311</td><td> 0.64111624</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>C</td><td>2.837760</td><td> 0.95898869</td><td>23</td><td>M</td></tr>
+</tbody>
+</table>
+
+
+
+
+```{r}
+options(repr.plot.width=8, repr.plot.height=3)
+```
+
+Plotting the data suggests that there may be an increase in most genes and proteins from visit 1 to visit 2 (since most of the changes are positive), but there is no obvious correlation between the gene and its protein product.
+
+
+```{r}
+ggplot(df_all, aes(x=gene.change, y=protein.change, color=site)) + 
+geom_point() + 
+geom_hline(yintercept = 0, color='grey') + 
+geom_vline(xintercept = 0, color='grey') +
+xlim(c(-3, 3)) +
+ylim(c(-3, 3)) +
+facet_grid(~ gene)
+```
+
+
+    
+![png](output_50_0.png)
+    
+

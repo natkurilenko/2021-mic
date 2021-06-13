@@ -1,0 +1,75 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+# Import SRA meta data
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+metadir <- normalizePath("/data/sra_data/")
+
+srametafile <- file.path(metadir, "accession_table.csv")
+tools::md5sum(srametafile)
+
+# Output directory for R image files
+outdir <- "./proc/"
+
+if (!dir.exists(outdir)) {
+  dir.create(outdir)
+}
+```
+
+```{r}
+# Import meta data
+readr::read_csv(srametafile) ->
+    mtdata
+```
+
+```{r}
+## Inspect imported object
+mtdata
+```
+
+```{r}
+## Get distinct combination of cell line and treament
+mtdata %>%
+    dplyr::distinct(cell_line, treatment)
+```
+
+```{r}
+# Create cross tabulation
+mtdata %>%
+    dplyr::group_by(treatment, cell_line) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
+    tidyr::spread(cell_line, n)
+```
+
+```{r}
+mtfile <- file.path(outdir, "PRJNA668393-metadata.RDS")
+
+saveRDS(mtdata, mtfile)
+
+tools::md5sum(mtfile)
+```
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+
+```

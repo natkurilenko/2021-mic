@@ -16,6 +16,13 @@ jupyter:
 
 ## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
 
+Requires the following:
+- ./proc//PRJNA668393-ddsdata.RDS
+- ./proc//PRJNA668393-qcdata.RDS
+
+Generates the following:
+-
+
 
 ### Load packages
 
@@ -35,13 +42,11 @@ PRJNA668393ddsData <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
 ```
 
-### Check dimensions of the two objects
-
 
 # Inspect object & Slots of an S4 class
 
 
-Let's has a look at the object we have created.
+Let's have a look at the object we have created.
 
 ```{r}
 PRJNA668393ddsData
@@ -65,7 +70,7 @@ The metadata (columnData) is stored in the slot `colData`
 colData(PRJNA668393ddsData) %>% as.data.frame
 ```
 
-The design formula is stored in the slot `design`. The design holds the R formula which expresses how the counts depend on the variables in colData.
+The design formula is stored in the slot `design`. The design holds the R formula which expresses how the counts depend on the variables in colData. We have specified any predictor values, so this currently looks like an intercept-only model.
 
 ```{r}
 design(PRJNA668393ddsData)
@@ -81,54 +86,60 @@ dim(DESeq2::counts(PRJNA668393ddsData))
 head(DESeq2::counts(PRJNA668393ddsData),3)
 ```
 
-This slot returns gene specific information (it will be populated later)
+This slot is empty, but it will be important soon. This is where dispersion estimates for variation in read counts per gene will go, i.e. dispersion parameter $\alpha_i$ (notation below).
 
 ```{r}
 dispersionFunction(PRJNA668393ddsData)
 ```
 
-Get size factors
-
+This slot is also empty, but it too will be important soon. This is where sample-specific size factors will go, ie 𝑠𝑗  is the sample 𝑗 specific size factor (notation below). A size factor is a normalization constant used to account for the fact that samples can have very different library sizes
 ```{r}
 sizeFactors(PRJNA668393ddsData)
 ```
-
 # Differential expression analysis
 
 
 ## Specify Model
 
 
-You recall that DESeq requires that  we have estimates for sample specific size factors and gene specific dispersion factors. More specifically, recall that DESeq models the count $K_{ij}$ (gene $i$, sample $j$) as negative binomial with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$. Here $\mu_{ij}=s_j q_{ij}$ where $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j$. Here $s_j$ is the sample $j$ specific size factor.
-
-**Summarize of notation**
+**Summary of notation**
 - $K_{ij}$ denotes the observed **number of reads** mapped to gene $i$ for sample $j$
 - $K_{ij}$ follows a **negative binomial distribution** with
     - **Mean** $\mu_{ij}$
     - **Dispersion parameter** $\alpha_i$
-- Modelling
-    - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$
-    - $\mu_{ij} = s_{j}q_{ij}$
-        - $s_j$ is sample $j$ specific normalization constant
-    - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
-        - $x_j=0$ if treament = isotype, or
-        - $x_j=1$ if treatment = anti-PD1
-        - $z_j=0$ if cell line = Parental, or
-        - $z_j=1$ if cell line = UV2.
- - Effect size (no cell line effect)
-     - If there is differential treatment effect but NO cell line effect for gene $i$, then
-         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i}$
-     - The corresponding mean count is
-         - $\mu_{ij} = s_j 2^{\beta_{0i} + \beta_{1i}}$
- 
-  - Effect size (with cell line effect)
-     - If there is differential treatment and cell line effects for gene $i$, then
-         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
-     - The corresponding mean count is
-         - $\mu_{ij} = s_j 2^{\beta_{0i} + \beta_{1i} \beta_{2i}}$   
+    
+- Model:
+  - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
+  - $\mu_{ij} = s_{j}q_{ij}$
+  - $s_j$ is sample $j$ specific normalization constant to account for the fact that samples can have very different library sizes
+  - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
+       - $x_j=0$ if treament = isotype, or
+       - $x_j=1$ if treatment = anti-PD1
+       - $z_j=0$ if cell line = Parental, or
+       - $z_j=1$ if cell line = UV2.
+- Mean count 
+ -  $x_j=0$ and  $z_j=0$
+	 - $\log_2(q_{ij}) = \beta_{0i}$
+ -  $x_j=1$ and  $z_j=0$
+     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i}$
+ -  $x_j=0$ and  $z_j=1$
+     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{2i}$
+ -  $x_j=1$ and  $z_j=1$
+     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
+  
+- Effect size
+  - Treatment effect within the parental cell line ($z_j=0$)
+	- $(\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
+  - Treatment effect within the UV2 cell line ($z_j=1$)
+	- $(\beta_{0i} + \beta_{1i} + \beta_{2i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i}$
+
+- Parameter interpretation
+	- $\beta_{1i}$ quantifies the treatment effect
+	- Under the additive model, the treatment effect does not depend on the cell line
+	
 
 
-Add the design to the DESeq2 object
+Add the design to the DESeq2 object. This is going to be the format that R uses for most linear models with the form "response ~ fixedeffect1 + fixedeffect2".
 
 ```{r}
 ddsobj <- PRJNA668393ddsData
@@ -143,7 +154,7 @@ design(ddsobj)
 ```
 
 ## 01 Size Factors
- We begin by estimating the size factors $s_1,\ldots,s_n$:
+ We begin by estimating the size factors for each sample $s_1,\ldots,s_n$:
 
 ```{r}
 ddsobj <- DESeq2::estimateSizeFactors(ddsobj)
@@ -169,7 +180,7 @@ Summarize size factors
 summary(sizeFactors(ddsobj))
 ```
 
-Now that the size factors have been estimated, we can get "normalized" counts (DESeq2 normalizes against size factor)
+Now that the size factors have been estimated, we can get "normalized" read counts. Remember that DESeq2 normalizes against size factor.
 
 ```{r}
 # original counts for three genes for samples 3 and 11
@@ -197,7 +208,7 @@ counts(ddsobj)[102:104, 3] / sizeFactors(ddsobj)[3]
 counts(ddsobj)[102:104, 11] / sizeFactors(ddsobj)[11]
 ```
 
-How do you get the raw and normalized counts for specific genes and samples
+Here is how you can extract the raw and normalized counts for specific genes and samples
 
 ```{r}
 counts(ddsobj, normalize = FALSE)[c("ENSMUSG00000061024.9", "ENSMUSG00000079671.9"),c("SRR12804465","SRR12804467")]
@@ -208,7 +219,7 @@ counts(ddsobj, normalize = TRUE)[c("ENSMUSG00000061024.9", "ENSMUSG00000079671.9
 ```
 
 ## 02 Dispersion Parameters
-Next, we get the dispersion factors $\alpha_1,\ldots,\alpha_{m}$
+Next, we get the dispersion factors for each gene $\alpha_1,\ldots,\alpha_{m}$
 
 ```{r}
 ddsobj <- estimateDispersions(ddsobj)
@@ -228,16 +239,17 @@ Can you notice the difference?
 
 
 
-Note that the dispersionfunction slot is now populated
+Note that the dispersionFunction slot is now populated. The dispersion function provides output of the fitted model used to estimate gene-specific dispersion. **This would be nice to visualize somehow for a single gene**
 
 ```{r}
 dispersionFunction(ddsobj)
 ```
 
-We can extract the gene specific dispersion factors using dispersions(). Note that there will be one number per gene. We look at the first four genes (rounded to 4 decimal places)
+We can extract the gene specific dispersion factors using dispersions(). Note that there will be one number per gene. **Is this "q" from the dispersion function notation?** We can look at the first ten genes (rounded to 4 decimal places). Note that many of these are NAs. No dispersion factor could be estimated for these genes -- this is likely because there are too few observations to make a reasonable estimate.
 
 ```{r}
 alphas <- dispersions(ddsobj)
+alphas[1:10]
 ```
 
 Verify that the number of dispersion factors equals the number of genes
@@ -258,7 +270,7 @@ boxplot(log(dispersions(ddsobj)))
 ```
 
 # Differential Expression Analysis
-We can now conduct a differential expression analysis using the DESeq() function. Keep in mind that to get to this step, we first estimated the size factors and then the dispersion parameters.
+We can now conduct a differential expression analysis using the DESeq() function. Keep in mind that to get to this step, we first estimated the size factors for each sample and then the dispersion parameters for each gene.
 
 ```{r}
 ### Carry out DE analysis
@@ -283,22 +295,29 @@ DESeq2::results(ddsDE, tidy = TRUE) %>%
         head(10)
 ```
 
-We can get the results for the differential expression analysis using results(). Here, we can compare two group of samples specified by the contrast. (If not, the default contrast would be the last term in your additive model `design(dds)`).
+We can get the results for the differential expression analysis using results(). Be careful because how we define our contrasts has a huge impact on how we interpret the results. 
 
+Note that if you do not define the contrast, the default constrast is the last term in your additive model `design(dds)`. For us, this is the cell line (cline) but that is probably not the first contrast you are interested in examining. 
+
+We will take a look at the treatment effect first by specifying "trt" as a the first element in the vector passed to the contrast argument within results(). Be aware that the order you specify the treatment levels really matters a lot for interpretation of the results.
+
+Here, we specify that "isotype" is the reference level (i.e. $x_j=0$ if treament = isotype) so positive effect sizes indicate that treatment with anti-PD-1 up-regulates the gene of interest.
 ```{r}
-# DE with respect to treatment using isotype as the referent 
+# DE with respect to treatment using isotype as the referent
 # (positive effect size suggests that treatment up-regulates)
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"))
 ```
 
+Alternatively, we could specify that "antiPD1" is the reference level (i.e. $x_j=0$ if treament = antiPD1) so negative effect sizes indicate that treatment with antiPD1 up-regulates the gene of interest.
 ```{r}
 # DE with respect to treatment using anti-PD-1 as the referent 
 # (negative effect size suggests that treatment up-regulates)
 DESeq2::results(ddsDE, contrast = c("trt", "isotype", "antiPD1"))
 ```
 
-Let's look at the results for the first four genes
+Let's look at the results for the first four genes arranged by p-value for each contrast in the model:
 
+Effect of treatment (trt) using "isotype" as the reference
 ```{r}
 ### Tidy the results
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>% 
@@ -306,6 +325,7 @@ DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %
         head(10)
 ```
 
+Effect of cell line (cline) using "Parental" as the reference
 ```{r}
 ### DE effect with respect to cell line
 ### Tidy the results
@@ -317,28 +337,33 @@ DESeq2::results(ddsDE, contrast = c("cline", "UV2", "Parental"), tidy = TRUE) %>
 ## Extract coefficient estimates
 
 
-The results for the top hit for treatment DE are shown below
+The results for the top hit (gene with the lowest p-value?) for treatment DE are shown below
 
 ```{r}
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>%
-    dplyr::filter(row == "ENSMUSG00000071724.6")
+    dplyr::filter(row == "ENSMUSG00000110537.2")
 ```
 
 This output only provides the estimate for the treament effect $\beta_{1i}$ for this gene. We can get the estimates for the intercept $\beta_{0i}$ and the cell line effect $\beta_{2i}$ as follows
 
 ```{r}
-coef(ddsDE, se = TRUE)["ENSMUSG00000071724.6", , drop = FALSE]
+coef(ddsDE, se = TRUE)["ENSMUSG00000110537.2", , drop = FALSE]
 ```
 
-* trt == 0 and cline == 0  => $\log2(q_{ij})$= 2.085754
-* trt == 1 and cline == 0  => $\log2(q_{ij})$= 2.085754 + 1.704187
-* trt == 0 and cline == 1  => $\log2(q_{ij})$= 2.085754 + 1.071143	
-* trt == 1 and cline == 1  => $\log2(q_{ij})$= 2.085754 + 1.071143	+ 1.704187
+We can examine these coefficients to get a better understanding of how the expression of this gene changes with anti-PD-1 treatment and cell line.
 
-The treatment DE effect unnder teh additive model does NOT depend on cell line
+Remember that if there is differential treatment and cell line effects for this gene then the effect size ($\log_2(q_{ij})$) can be calculated as $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
 
-* if cline == 0 => (2.085754 + 1.704187) - 2.085754 = 1.704187 
-* if cline == 1 => (2.085754 + 1.071143	+ 1.704187 ) -(2.085754 + 1.071143) = 1.704187
+For samples with X treatment and X cell line ...
+* trt == 0 and cline == 0  => $\log2(q_{ij})$= 5.240018	 + 0        + 0
+* trt == 1 and cline == 0  => $\log2(q_{ij})$= 5.240018	 + 0        + (-1.302921)
+* trt == 0 and cline == 1  => $\log2(q_{ij})$= 5.240018	 + (-0.2218365) + 0	
+* trt == 1 and cline == 1  => $\log2(q_{ij})$= 5.240018	 + (-0.2218365)+ (-1.302921)
+
+If we contrast by treatment within each cell line, we can prove to ourselves that the estimated treatment effect does not depend on cell line given the additive model (y~x1+x2).
+* if cline == 0 => (5.240018 + 0 + (-1.302921)) - (5.240018 + 0 + 0) = (-1.302921)
+* if cline == 1 => (5.240018 + (-0.2218365)+ (-1.302921)) - (5.240018 + (-0.2218365) + 0) = (-1.302921)
+
 
 
 ## Visualize DE effect
@@ -349,22 +374,24 @@ The treatment DE effect unnder teh additive model does NOT depend on cell line
 
 Looking at the results for these two genes: 
 
-* The estimated log2FC for "ENSMUSG00000071724.6" is positive. We will verify visually that treatment is associated with higher expression
-* The estimated log2FC for "ENSMUSG00000035683.14" is negative. We will verify visually that treatment is associated with lower expression
+* The estimated log2FC for "ENSMUSG00000110537.2" is negative. We will verify visually that treatment is associated with lower expression
+
+* The estimated log2FC for "ENSMUSG00000022564.8" is positive. We will verify visually that treatment is associated with higher expression
+
 
 
 ```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000071724.6", intgroup = "trt", normalized = TRUE)
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000110537.2", intgroup = "trt", normalized = TRUE)
 
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>%
-    dplyr::filter(row == "ENSMUSG00000071724.6")
+    dplyr::filter(row == "ENSMUSG00000110537.2")
 ```
 
 ```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000035683.14", intgroup = "trt", normalized = TRUE)
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000022564.8", intgroup = "trt", normalized = TRUE)
 
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>%
-    dplyr::filter(row == "ENSMUSG00000035683.14")
+    dplyr::filter(row == "ENSMUSG00000022564.8")
 ```
 
 DESeq2::plotCounts() is a convenient function for visualizing differential expression effects. The following example illustrates how one could customize the figure
@@ -393,9 +420,9 @@ myinteractplot <- function(mydds, geneid) {
                     ggplot2::theme_bw()
     }
 
-myinteractplot(ddsobj, "ENSMUSG00000071724.6")
+myinteractplot(ddsobj, "ENSMUSG00000110537.2")
 
-myinteractplot(ddsobj, "ENSMUSG00000035683.14")
+myinteractplot(ddsobj, "ENSMUSG00000022564.8")
 ```
 
 

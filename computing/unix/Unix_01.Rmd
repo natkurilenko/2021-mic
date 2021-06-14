@@ -20,7 +20,7 @@ The interpreter parses the strings you enter and calls the appropriate executabl
 
 #### sh? Why the hush?
 
-sh is short for 'shell'. The reason for this terminology is because you can think of this programs as hosting an environment (variables can be saved and refered to later, among other things). But shells can run any program, including other shells. So there is a notion of 'inheritance' from the environment - each subsequently called shell is contained in the other.
+sh is short for 'shell'. The reason for this terminology is because you can think of these programs as hosting an environment (variables can be saved and referred to later, among other things). But shells can run any program, including other shells. So there is a notion of 'inheritance' from the environment - each subsequently called shell is contained in the other.
 
 <!-- #region -->
 ### The main features of a shell
@@ -440,7 +440,7 @@ ls
 1. Create the following structure including empty files using `mkdir` and `touch` commands.
 
 ```
-crytococcus
+cryptococcus
     data
         fake1.fq
         fake2.fq

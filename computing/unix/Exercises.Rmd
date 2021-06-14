@@ -103,7 +103,7 @@ Hint:
 
 ```
 
-7. Delete the `data` and `reults` directory recursively
+7. Delete the `data` and `results` directory recursively
 
 
 ```{bash}

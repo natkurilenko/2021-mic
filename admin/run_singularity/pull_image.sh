@@ -13,4 +13,7 @@
 #     name: bash
 # ---
 
-srun -A chsi -p chsi --cpus-per-task=4 --mem=10G singularity pull --dir images/mic_course docker://miccourse/jupyter-mic-2021:latest
+# srun -A chsi -p chsi --cpus-per-task=4 --mem=10G singularity pull --dir /hpc/group/chsi/container_images/mic_course docker://miccourse/jupyter-mic-2021:latest
+# srun -A chsi -p chsi --cpus-per-task=4 --mem=10G singularity pull --dir /hpc/group/chsi/container_images/mic_course jupyter-mic-2021_2021_002.sif docker://miccourse/jupyter-mic-2021:latest
+# srun -A chsi -p chsi --cpus-per-task=4 --mem=10G singularity pull --dir /hpc/group/chsi/container_images/mic_course  docker://miccourse/jupyter-mic-2021:2021_003
+srun -A chsi -p chsi --cpus-per-task=4 --mem=10G singularity pull --dir /hpc/group/chsi/container_images/mic_course  docker://miccourse/jupyter-mic-2021:2021_004

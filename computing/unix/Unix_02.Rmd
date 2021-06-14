@@ -116,23 +116,6 @@ You may sometimes see this old backticks form. It is equivalent although modern 
 grep -in "unix" `ls` | head -5
 ```
 
-## Using variables in loops
-
-
-```{bash}
-for FILE in $(ls *txt)
-do
-    wc -c $FILE
-done
-```
-
-```{bash}
-for FIB in 1 1 2 3 5
-do
-    echo $FIB
-done
-```
-
 ## Single and double quotes
 
 Variables are not evaluated within single quotes, but they are within double quotes.
@@ -258,6 +241,20 @@ done
    WARNING: Beware of infinite loops! They are easy to make with `while` (you can do it with `for` loops too, but `while` is just easier). You 
 
 
+## For loop over files
+
+```{bash}
+for FILE in $(ls *txt)
+do
+    wc -c $FILE
+done
+
+for FIB in 1 1 2 3 5
+do
+    echo $FIB
+done
+```
+
 ## Conditionals (sometimes called 'flow control')
   
   - Simple **if-then**
@@ -300,6 +297,10 @@ b=2
 if [ $a = 2 ] | [ $b = 2 ]; then
     echo "a or b is 2"
 fi
+```
+
+```{bash}
+
 ```
 
 ## Exercises for loops and conditionals

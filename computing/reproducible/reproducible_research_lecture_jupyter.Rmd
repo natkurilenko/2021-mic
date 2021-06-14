@@ -1,3 +1,6 @@
+> There are slight differences between these notes and the slides used in lecture because the slides were generated in R with knitr which has some capabilities that are not available in Jupyter
+
+
 # Start Docker Demo
 
 # Overview
@@ -29,7 +32,7 @@
 ## Reproducible Analysis
   . . . is like eating your vegetables
 
-## Three Pillars of Reproducible Analysis  {.build}
+## Three Pillars of Reproducible Analysis
   - Raw Data
   - Compute Environment
   - Analysis Process

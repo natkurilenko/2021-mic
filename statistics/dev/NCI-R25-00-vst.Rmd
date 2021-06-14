@@ -1,0 +1,55 @@
+---
+title: DEseq2 differential expression analysis
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
+
+
+### Load packages
+
+```{r}
+library(DESeq2)
+```
+
+### Load the PRJNA668393 dds object from image file
+
+```{r}
+procdir <- normalizePath("./proc/")
+ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
+
+PRJNA668393ddsData <- readRDS(ddsfile)
+
+tools::md5sum(ddsfile)
+```
+
+```{r}
+PRJNA668393vst <- DESeq2::vst(PRJNA668393ddsData, blind = TRUE)
+PRJNA668393rlog <- DESeq2::rlog(PRJNA668393ddsData, blind = TRUE)
+
+```
+
+```{r}
+outdir <- "./proc/"
+expfile <- file.path(outdir, "PRJNA668393-expdat.RData")
+
+save(PRJNA668393ddsData, PRJNA668393vst, PRJNA668393rlog, file = expfile)
+tools::md5sum(expfile)
+```
+
+
+
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,161 @@
+---
+title: QC plots
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+The objective of this notebook is to check the quality of count data.
+
+Requires the following:
+- ./proc//PRJNA668393-qcdata.RDS
+
+Generates the following:
+
+
+
+### Load packages
+
+```{r}
+library(tidyverse)
+```
+
+### Import Counts
+
+```{r}
+procdir <- normalizePath("./proc/")
+qcfile <- file.path(procdir, "PRJNA668393-qcdata.RDS")
+
+PRJNA668393qcData <- readRDS(qcfile)
+
+tools::md5sum(qcfile)
+```
+
+### Specify a theme for the plots
+
+```{r}
+mytheme <-  ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# use a simple theme (theme_bw)
+# set the x-axis labels so that they are at a 45 degree angle so they are easier to read
+```
+
+## Visualize proportion of mapped reads
+
+
+### Simple plot
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
+        ggplot2::geom_point()
+# this is without using "mytheme"
+```
+
+### Add a theme
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
+        ggplot2::geom_point() +
+            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# this looks much nicer after specifying the simple black and white theme and x-axis text position
+# here's another way to do the same thing
+#PRJNA668393qcData %>%
+#    ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
+#        ggplot2::geom_point() +
+#        mytheme
+
+```
+
+### Annotate treatment information with colors
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment)) + 
+        ggplot2::geom_point() + 
+           ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# to color the points by treatment, add "col = treatment" to the "aes" function
+# which maps out how data are used to create the plot image
+```
+
+### Annotate treatment information with colors and cell line levels with shape
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) + 
+        ggplot2::geom_point() + 
+            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# to specify the cell line with different shaped points, add "shape = cell_line"
+```
+
+### Annotate treatment information with colors and cell line levels with shape (with additional customization)
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Run Label") + 
+                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
+                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualize depth
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = Run, y = depth, col = treatment, shape = cell_line)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Run Label") + 
+                        ggplot2::ylab("Total reads (depth)") +
+                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+This plot suggests that there is a systematic difference in the library size of samples based on cell line; UV2 cells tend to have more reads than parental cells.
+
+Let's see if there is a relationship between depth and the proportion of uniquely mapped reads.
+
+```{r}
+PRJNA668393qcData %>%
+    ggplot2::ggplot(aes(x = depth, y = prop.mapped, col = treatment, shape = cell_line)) +
+        ggplot2::geom_point(size = 3) +
+            ggplot2::labs(col = "Treatment") +
+                ggplot2::labs(shape = "Cell Line") +
+                    ggplot2::xlab("Depth") + 
+                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
+                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+No clear relationship between depth and % mapped reads. Perhaps UV2 cells exhibit more variability in % mapped reads than parental cells.
+
+
+## Visualize proportion of uniquely mapped reads with facets
+
+```{r}
+PRJNA668393qcData %>% ggplot(aes(x=Run, y=prop.mapped, shape =cell_line, color=treatment))+
+    ggplot2::geom_point(size = 3) +
+        ggplot2::labs(col = "Treatment") +
+            ggplot2::labs(shape = "Cell Line") +
+                ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+                    ggplot2::facet_grid(treatment~ cell_line, drop=TRUE, scales="free_x", space="free") +
+                        ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Facetting plots can be a quick and effective way to look for trends across stratified data.
+
+```{r}
+sessionInfo()
+```

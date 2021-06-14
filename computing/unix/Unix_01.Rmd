@@ -69,7 +69,7 @@ From the terminal screen
 1. Print the current directory
 2. Make a directory called 'mydir'
 3. Change directory to 'mydir'
-4. Copy this notebook to mydir.
+4. Create a notebook using the Jupyter menu and  copy it to mydir.
 5. Make another copy of this notebook named 'copy'
 6. List the contents of the directory
 7. List the contents of the directory in long form with permissions and modification times
@@ -87,15 +87,15 @@ When working at the command line, it is very common (and useful!) to link progra
 
 So, what are we 'redirecting'? There are three standard I/O streams in Unix:
 
-- `stdin` or standard input. The default is the parent process - usually the keyboard
-- `stdout` or standard output. The default is the parent process - usually the terminal screen
-- `stderr` or standard error. Also defaults to the parent, and usually the terminal screen. The important point is that errors and output may be treated separately.
+- `stdin` or standard input - usually the keyboard
+- `stdout` or standard output - usually the terminal screen
+- `stderr` or standard error. This is beyond our scope.
 
 #### I/O redirections using `|`, `>`, `<`
 
 A program's input and output can be redirected from the standard streams in many powerful ways:
 
-- We can store a program's output in a file to be saved. We can separately save errors (`>`).
+- We can store a program's output in a file to be saved. (`>`).
 - We can direct a program to take input from a file rather than the keyboard (`<`).
 - We can direct a program's output to be another program's input (`|`). This allows linking of several programs to form a workflow.
 
@@ -580,7 +580,7 @@ cat foo.txt
 
 ### Safety
 
-If you file contents are precious and should not be changed (e..g raw data), you can change permisions to read-only.
+If your file contents are precious and should not be changed (e..g raw data), you can change permisions to read-only.
 
 
 ```{bash}
@@ -616,108 +616,6 @@ ls > contents.txt
 cat contents.txt
 ```
 
-### Redirecting error messages
-
-
-```{bash}
-cat foobar.txt
-```
-
-```{bash}
-cat foobar.txt > error.txt
-```
-
-```{bash}
-ls e*txt
-```
-
-```{bash}
-cat error.txt
-```
-
-### Why is error.txt it empty?
-
-The standard `>` is  short for `1>` which means re-direct the standard output stream.
-
-
-```{bash}
-cat foobar.txt 1> stdout.txt
-```
-
-```{bash}
-cat stdout.txt
-```
-
-```{bash}
-cat foobar.txt 2> stderr.txt
-```
-```{bash}
-cat stderr.txt
-```
-
-You can redirect to both.
-
-
-```{bash}
-cat foobar.txt > results.txt 2> errors.txt
-```
-```{bash}
-cat results.txt
-```
-
-
-```{bash}
-cat errors.txt
-```
-
-You can also redirect both streams to the same file with `&>`.
-
-
-```{bash}
-cat foobar.txt &> combined.txt
-```
-```{bash}
-cat combined.txt
-```
-
-### Simple text operations
-
-
-```{bash}
-cat contents.txt
-```
-
-```{bash}
-head -3 contents.txt
-```
-
-```{bash}
-tail -3 contents.txt
-```
-
-```{bash}
-wc contents.txt
-```
-
-```{bash}
-wc -l contents.txt
-```
-
-```{bash}
-wc -w contents.txt
-```
-
-```{bash}
-wc -c contents.txt
-```
-
-If you don't want the filename, force it to read from standard input.
-
-
-```{bash}
-wc -c < contents.txt
-```
-
 ### Piping
 
 
@@ -739,63 +637,4 @@ cat word_count.txt
 
 ```{bash}
 ls
-```
-
-### Fancy globbing
-
-
-```{bash}
-shopt -s extglob
-```
-
-Specifying what NOT to list.
-
-
-```{bash}
-ls !(*.Rmd)
-```
-
-```{bash}
-ls !(*.txt)
-```
-
-```{bash}
-ls *{.txt,.Rmd}
-```
-
-### Clean up
-
-
-```{bash}
-rm -f !(*.Rmd)
-```
-
-```{bash}
-ls
-```
-
-## Exercises
-
-1. Create 3 files with the same contents (say `lsd1.txt`, `lsd2.txt`, `lsd3.txt`)
-
-```
-Two of the most famous products of Berkeley are LSD and Unix. 
-I don’t think that this is a coincidence.
-```
-
-using 
-
-- Echo
-- A HereDoc
-
-
-```{bash}
-
-```
-
-2. Count the number of words in the second sentence only of lsd1.txt
-
-
-```{bash}
-
 ```

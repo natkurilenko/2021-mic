@@ -1,14 +1,4 @@
----
-title: "Git Overview"
-output:
-  md_document:
-    variant: markdown_github
-    toc: true
-  html_document:
-    toc: true
-    toc_float: true
----
-
+<!-- #region -->
 # Why Version Control
 * [R and version control for the solo data analyst](https://stackoverflow.com/questions/2712421/r-and-version-control-for-the-solo-data-analyst)
 
@@ -19,53 +9,44 @@ output:
 * Free
 * Open Source
 
-# Using Git in RStudio
-RStudio provides a nice GUI for using git, which can reduce the
-learning curve for git.
+# Using Git with Jupyter
+The most straightforward way to use git in Jupyter is through the terminal. Except where noted, everything we do in this tutorial will be done in the Jupyter terminal (**NOT** in a bash notebook).
+
+> Note: RStudio provides a nice GUI for using git, which can reduce the git learning curve. There is an [RStudio version of this tutorial](git_in_rstudio.Rmd).
 	
-## Basic Setup in RStudio
-1. Go to Global Options (from the Tools menu)
-2. Click Git/SVN
-3. Click Enable version control interface for RStudio projects
-
-## Intro to Git in RStudio
-
-### Create a Project with Version Control
-
-1. Select the "New Project" command from the Project menu
-2. Select the "New Directory" option in the "Create Project" dialog
-box
-3. Select "Empty Project" for "Project Type"
-4. In the "Create New Project" dialog do the following:
-   * Directory name: "planets"
-   * Create project as subdirectory of: "~"
-   * Be sure there is a check in the box for "Create a git repository"
-   * Click "Create Project"
-5. Switch to the "Git" tab in the upper right pane.
-6. Check the "Staged" boxes next to .gitignore and planets.Rproj, then
-click "Commit"
-7. In the **Commit message** box, type "First commit!"
-8. Oops, we have gotten our first git message - it wants to know your
-name and email because this is incorporated in the commit history!
-9. Copy the following text from the error message and paste it into a
-new text file:
+## Configure Git
+1. Go to the Jupyter Terminal
+2. First we need to do a bit of configuration. Run the following commands, replacing "you@example.com" and "Your Name" with your information.
 ```
 git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
+git config --global init.defaultBranch main
 ```
-10. Replace "you@example.com" and "Your Name" with your information,
-then copy the revised text.
-11. Open the RStudio Terminal (under the **Tools** menu)
-12. Paste the revised text at the command prompt, then hit the
-**return** key on your keyboard
-13. You can confirm that you successful configured your name and email
-with this command: `git config --list`
-14. Now go back to the **Review Changes** dialog and close the **Git
-Commit** message.
-15. Click **Commit** again, then close the **Git Commit** and **Review
-    Changes** dialog boxes.
+3. You can confirm that you successful configured your name and email with this command: `git config --list`
 
-### Tracking Changes
+## Create a New Repo
+A local git repository consist of a directory and all of its contents (including subdirectories). When you make a directory into a repository, git makes a hidden subdirectory (named `.git`) where it keeps files that it needs to do its job; you should *never touch  this directory or its contents*
+
+Let's create a new repository!
+
+1. Create a new subdirectory in your home directory with `mkdir ~/planets`
+2. Change into the new directory with `cd ~/planets`
+3. Make the planets directory into a repository with `git init`
+4. Name the default branch "main" `git checkout -b main`
+4. Confirm that the current directory is a git repo with `git status`, which should print the following
+
+```
+On branch main
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+```
+
+
+## Tracking Changes
+
+STOPPED HERE
 
 #### Adding a New File
 1. Make a new text file in the **planets** project.
@@ -314,3 +295,4 @@ The bulk of this set of lessons is a translation from Unix command line to RStud
 [Collaborating](#collaborating) is also based on  [Version Control with Git and SVN](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN).
 
 The [Team Conflicts](#team-conflicts) section is based on [We'll git there, slowly but surely](https://github.com/mine-cetinkaya-rundel/github-class-sigcse-2018).
+<!-- #endregion -->

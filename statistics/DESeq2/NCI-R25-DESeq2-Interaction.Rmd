@@ -41,35 +41,43 @@ tools::md5sum(ddsfile)
 ## Specify Model
 
 
-You recall that DESeq requires that  we have estimates for sample specific size factors and gene specific dispersion factors. More specifically, recall that DESeq models the count $K_{ij}$ (gene $i$, sample $j$) as negative binomial with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$. Here $\mu_{ij}=s_j q_{ij}$ where $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j + \beta_{3i} (x_j*z_j)$. Here $s_j$ is the sample $j$ specific size factor.
-
-**Summarize of notation**
+**Summary of notation**
 - $K_{ij}$ denotes the observed **number of reads** mapped to gene $i$ for sample $j$
 - $K_{ij}$ follows a **negative binomial distribution** with
     - **Mean** $\mu_{ij}$
     - **Dispersion parameter** $\alpha_i$
-- Modelling
-    - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$
+- Model:
+    - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
     - $\mu_{ij} = s_{j}q_{ij}$
-        - $s_j$ is sample $j$ specific normalization constant
-    - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
+        - $s_j$ is sample $j$ specific normalization constant size factor
+    - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j + \beta_{3i} (x_j*z_j)$
         - $x_j=0$ if treament = isotype, or
         - $x_j=1$ if treatment = anti-PD1
         - $z_j=0$ if cell line = Parental, or
         - $z_j=1$ if cell line = UV2.
- - Effect size (no cell line effect)
-     - If there is differential treatment effect but NO cell line effect for gene $i$, then
+- Mean count 
+    -  $x_j=0$ and  $z_j=0$
+         - $\log_2(q_{ij}) = \beta_{0i}$
+    -  $x_j=1$ and  $z_j=0$
          - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i}$
-     - The corresponding mean count is
-         - $\mu_{ij} = s_j 2^{\beta_{0i} + \beta_{1i}}$
- 
-  - Effect size (with cell line effect)
-     - If there is differential treatment and cell line effects for gene $i$, then
-         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
-     - The corresponding mean count is
-         - $\mu_{ij} = s_j 2^{\beta_{0i} + \beta_{1i} \beta_{2i}}$   
+	-  $x_j=0$ and  $z_j=1$
+         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{2i}$
+	-  $x_j=1$ and  $z_j=1$
+		 - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i} + \beta_{3i}
 
-
+- Effect size
+    - Treatment effect within the parental cell line ($z_j=0$)
+        - $(\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
+    - Treatment effect within the UV2 cell line ($z_j=1$)
+        - $(\beta_{0i} + \beta_{1i} + \beta_{2i} + \beta_{3i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i} + \beta_{3i}$
+  
+- Parameter interpretation
+    - $\beta_{1i}$ quantifies the treatment effect on mean read count within the parental cell line
+	- $\beta_{1i} + \beta_{3i}$ quantifies the treatment effect on mean read count within the UV2 cell line
+	- When there there is no interaction (<em>i.e.,</em> $\beta_{3i}=0$)
+		- the treatment effect does not depend on the cell line
+		- specifically the treatment effect size is $\beta_{1i}$
+	
 Add the design to the DESeq2 object
 
 ```{r}

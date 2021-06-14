@@ -87,15 +87,15 @@ When working at the command line, it is very common (and useful!) to link progra
 
 So, what are we 'redirecting'? There are three standard I/O streams in Unix:
 
-- `stdin` or standard input. The default is the parent process - usually the keyboard
-- `stdout` or standard output. The default is the parent process - usually the terminal screen
-- `stderr` or standard error. Also defaults to the parent, and usually the terminal screen. The important point is that errors and output may be treated separately.
+- `stdin` or standard input - usually the keyboard
+- `stdout` or standard output - usually the terminal screen
+- `stderr` or standard error. This is beyond our scope.
 
 #### I/O redirections using `|`, `>`, `<`
 
 A program's input and output can be redirected from the standard streams in many powerful ways:
 
-- We can store a program's output in a file to be saved. We can separately save errors (`>`).
+- We can store a program's output in a file to be saved. (`>`).
 - We can direct a program to take input from a file rather than the keyboard (`<`).
 - We can direct a program's output to be another program's input (`|`). This allows linking of several programs to form a workflow.
 

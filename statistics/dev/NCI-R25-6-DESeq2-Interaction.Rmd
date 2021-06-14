@@ -169,6 +169,12 @@ ddsDE
 DESeq2::resultsNames(ddsDE)
 ```
 
+Remember these correspond to
+- Intercept = $\beta_{0i}$
+- cline_UV2_vs_Parental = $\beta_{1i}$
+- trt_antiPD1_vs_isotype = $\beta_{2i}$
+- clineUV2.trtantiPD1 = $\beta_{3i}$
+
 ```{r}
 ### Look at some of the results
 DESeq2::results(ddsDE)
@@ -212,7 +218,7 @@ First, we estimate the mean counts
 * trt == 0 and cline == 1  => $\log2(q_{ij})$= 10.511809 + (-0.4110139) = 10.1008
 * trt == 1 and cline == 1  => $\log2(q_{ij})$= 10.511809 + (-0.1326850) + (-0.4110139) +(-1.350313) = 8.617797
 
-The treatment DE effect under the multiplicative model depends on cell line: Under cell line 0, the treatment effect is the cell line log2 fold change, under cell line 1, the treatment effect is the cell line loig2 fold chnage + the interaction log 2 fold change
+The treatment DE effect under the multiplicative model depends on cell line: Under cell line 0, the treatment effect is the cell line log2 fold change, under cell line 1, the treatment effect is the cell line log2 fold change + the interaction log2 fold change
 
 * if cline == 0 => $\Delta_0$ = 10.37912 - 10.511809 = -0.132689
 * if cline == 1 => $\Delta_1$ = 8.617797 - 10.1008 = -1.483003 ( = -0.132689 + (-1.350313))
@@ -237,19 +243,26 @@ results(dds1mod)
 
 ```{r}
 DESeq2::resultsNames(dds1mod)
+# instead of 2 factors with two levels each, we now have 1 factor with 4 levels
 ```
 
 ```{r}
+# Examine the treatment effect given the parental cell line
 DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1Parental","isotypeParental")) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
 ```
 
 ```{r}
+# Examine the treatment effect given the UV2 cell line
 DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
 ```
 
 ```{r}
+# Now, go back to the first design and pull out the effect of treatment on given the UV2 cell line
+# **I don't really understand how this contrast list differs from how contrasts are specified above**
+# the version above is much more intuitive than how this is written to me
+# These are the same effect sizes and pvals
 DESeq2::results(ddsDE, tidy = TRUE, contrast = list(c("trt_antiPD1_vs_isotype", "clineUV2.trtantiPD1"))) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
 ```

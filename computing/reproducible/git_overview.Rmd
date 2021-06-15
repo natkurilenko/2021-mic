@@ -151,7 +151,6 @@ Which of the following commit messages would be most appropriate for the last co
 3. “Discuss effects of Mars’ climate on the Mummy”
 
 ### Reverting Changes
-STOPPED HERE
 "If I could turn back time . . ." -- Cher
 
 One of the key benefits of using version control is the ability to do
@@ -161,52 +160,40 @@ like an infinite super-duper undo with a safety net.
 
 #### Basic Reversion
 1. Add a forth line to `mars.txt`: "An ill-considered change" and save.
-2. Open the **Review Changes** dialog.
-3. If we want to get rid of this change, we can click the **Revert**
-button, then click **Yes** . . . voila!
+2. Run `git diff`
+3. If we want to get rid of this change, `git status` tells us how: `git restore mars.txt`
+4. `git status` confirms that the previous version of the file has been restored.
+5. Unfortunately the Jupyter text editor does not update, so we need to close it and reopen the file.
 
-#### Revert Some Changes, but not All
-1. Add a these two lines `mars.txt`:
-```
-No wind
-A little bit dusty
-```
-2. Open the **Review Changes** dialog.
-3. Oops, it turns out that there **is** wind on mars, so we need to
-revert line 4, but commit line 5!
-4. Click on "No wind" to select it, then click **Discard line**.
-5. Now click on **Stage All** to add the remaining line, add a commit
-   message and commit
+Git also allows us to stage some of the changes in a file using `git add --interactive`, but this is a bit more complicated.
 
 #### Going Further Back
-Git is super powerful!  It will let you do all sorts of things.  For example, you can revert some or all files back to any previous commit . . . but you cannot access all of git's features with the RStudio interface.  To do fancier things you have to use the command line interface.  Within RStudio you can do this using the **Terminal** under the **Tools** menu.  The Software Carpentry module [Version Control with Git](http://swcarpentry.github.io/git-novice/) covers this, and google will help you figure out how to do just about anything with git.
+Git is super powerful!  It will let you do all sorts of things.  For example, you can revert some or all files back to any previous commit. The Software Carpentry module [Version Control with Git](http://swcarpentry.github.io/git-novice/) covers this, and google will help you figure out how to do just about anything with git. Just be careful, git makes it harder to do stupid things, but it won't stop you if you are set on doing something.
 
 ### Ignoring Things
 
-What if we have files that we do not want Git to track for us, like backup files created by our editor or intermediate files created during data analysis. Let’s create a few dummy files! Make new text files with the following names (you can leave them empty): 
+What if we have files that we do not want Git to track for us, like backup files created by our editor or intermediate files created during data analysis. Let’s create a few dummy files in the repository directory and in a subdirectory named "results" (these can be empty files): 
+
 ```
-a.dat
-b.dat
-c.dat
-results/a.out
-results/b.out
+touch a.dat b.dat c.dat
+mkdir results
+touch results/a.out results/b.out
 ```
 
 Putting these files under version control would be a waste of disk space. What’s worse, having them all listed could distract us from changes that actually matter, so let’s tell Git to ignore them.
 
-RStudio makes this pretty easy to do:
+1. Run `git status` to confirm that git recognizes these new files as Untracked.
+2. In a Jupyter page, click on the Jupyter logo in the top left corner to take the Jupyter file browser to Jupyter home directory.
+3. Click on **planets** to go in the planets directory.
+4. Click on the **New** button and select **Text File**.
+5. Change the name to **.gitignore** (the spelling is important, including the leading period).
+6. Type "a.dat" in the **.gitignore** file and save.
+7. Now go back to the terminal and run `git status`, which should not show **a.dat**, because you have told git to ignore it.
+8. We could add each of the data files separately, but there is a more efficient way. We can use a glob. Replace "a.dat" with "*.dat", this will tell git to ignore *any* file that ends in ".dat".
+9. Save .gitignore and check `git status` again.  All the .dat files should have disappeared from git's radar.
+5. Let's also add `results` directory. It is a good idea to add it as "results/", the forward slash at the end means that we are specifically refering to a directory (and its contents)
+7. Notice that `git status` shows **.gitignore** as Untracked. Sometimes you will want to include **.gitignore** in the repo, and sometimes you won't.  In cases where you don't want to include it in the repo, you will want to add ".gitignore" to the list of files to ignore in the **.gitignore** file, which is very meta! Let's do that now.
 
-1. Click on the `a.dat` file in the git pane to select it.
-2. Click on the gear in the git pane (it might say "More" next to it), and select **Ignore**.  This will open a **Git ignore** dialog box with a list of files that git is ignoring, with `a.dat` added to the list (the others were automatically added by RStudio when we made this project).
-3. Click on **save** to accept the addition of `a.dat` to the list. 
-> Notice that `a.dat` has now disappeared from the git pane, but `.gitignore` has just appeared as modified.  `.gitignore` is the file where we specify what git should ignore - that **Git ignore** dialog box was actually a mini text editor, and by adding `a.dat` we changed the file (you may remember that the first thing we did after creating the **planets** project was to commit `.gitignore` to the repo).
-
-4. What about the other `.dat` files? Select `b.dat` in the git pane then open the **Git ignore** dialog.  Now replace "a.dat" and "b.dat" with "*.dat", this will tell git to ignore *any* file that ends in ".dat"
-5. Let's also add `results` directory, but it is a good idea to add it as "results/", the forward slash at the end means that we are specifically refering to a directory (and its contents)
-6. Now lets stage and commit our changes to `.gitignore`
-> Sometimes you will want to include `.gitignore` in the repo, and sometimes you won't.  In cases where you don't want to include it in the repo, you will want to add ".gitignore" to the list of files to ignore in `.gitignore`, which is very meta!
-
-Now let's work through the challenges at the end of [Version Control with Git: 6. Ignoring Things](https://swcarpentry.github.io/git-novice/06-ignore/index.html)
 
 # Remote Git Repository
 

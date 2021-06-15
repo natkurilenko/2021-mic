@@ -56,36 +56,6 @@ example(seq)
 ```
 
 
-    seq> seq(0, 1, length.out = 11)
-     [1] 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
-    
-    seq> seq(stats::rnorm(20)) # effectively 'along'
-     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
-    
-    seq> seq(1, 9, by = 2)     # matches 'end'
-    [1] 1 3 5 7 9
-    
-    seq> seq(1, 9, by = pi)    # stays below 'end'
-    [1] 1.000000 4.141593 7.283185
-    
-    seq> seq(1, 6, by = 3)
-    [1] 1 4
-    
-    seq> seq(1.575, 5.125, by = 0.05)
-     [1] 1.575 1.625 1.675 1.725 1.775 1.825 1.875 1.925 1.975 2.025 2.075 2.125
-    [13] 2.175 2.225 2.275 2.325 2.375 2.425 2.475 2.525 2.575 2.625 2.675 2.725
-    [25] 2.775 2.825 2.875 2.925 2.975 3.025 3.075 3.125 3.175 3.225 3.275 3.325
-    [37] 3.375 3.425 3.475 3.525 3.575 3.625 3.675 3.725 3.775 3.825 3.875 3.925
-    [49] 3.975 4.025 4.075 4.125 4.175 4.225 4.275 4.325 4.375 4.425 4.475 4.525
-    [61] 4.575 4.625 4.675 4.725 4.775 4.825 4.875 4.925 4.975 5.025 5.075 5.125
-    
-    seq> seq(17) # same as 1:17, or even better seq_len(17)
-     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
-
-
-To search for all functions with the phrase `topic`, use `apropos(topic)`.
-
-
 ```{r}
 apropos("seq")
 ```
@@ -371,15 +341,6 @@ print(w)
 print(v*w)
 ```
 
-Again, multiplication is componentwise. There is another way to multiply 2 vectors of the same size:
-
-
-```{r}
-print(v %*% w)
-```
-
-This is called the 'dot product'. The i<sup>th</sup> component of v is multiplied by the ith component of w, and these are added together for all i. Because linear algebra is beyond our scope, we won't deal with this operation much. 
-
 R has vectorization built in to many functions. In practice, if you ever feel you need to code a loop, you should look do some googling and see if there is another way. 
 
 We'll first talk a bit more about vectors, matrices and lists, and then we will cover some common R functions that take these as arguments.
@@ -481,10 +442,6 @@ sum(v)
 ```
 
 
-35
-
-
-
 ```{r}
 ## mean
 
@@ -492,18 +449,11 @@ mean(v)
 ```
 
 
-5.83333333333333
-
-
-
 ```{r}
 ## median
 
 median(v)
 ```
-
-
-6.5
 
 
 #### Exercises
@@ -523,7 +473,7 @@ median(v)
 
 #### Functions
 
-NOTE: I am including this material for advanced learners. We will not cover it in class, but feel free to ask questions in breakout rooms! For now, we skip to lists and dataframes.
+*NOTE: I am including this material for advanced learners. We will not cover it in class, but feel free to ask questions in breakout rooms! For now, we skip to lists and dataframes.*
 
 A function is code that behaves like a black box - you give it some input and it returns some output. Functions are essential because they allow you to design potentially complicated algorithms without having to keep track of the algorithmic details - all you need to remember are the function name (which you can search with `apropos` or by prepending `??` to the search term), the input arguments (TAB provides these), and what type of output will be generated. Most of R's usefulness comes from the large collection of functions that it provides - for example, `library()`, `seq()`, `as.fractions()` are all functions. You can also write your own R functions - this will be covered in detail in a later session - but we show the basics here.
 

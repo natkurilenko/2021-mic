@@ -20,7 +20,6 @@ The most straightforward way to use git in Jupyter is through the terminal. Exce
 ```
 git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
-git config --global init.defaultBranch main
 ```
 3. You can confirm that you successful configured your name and email with this command: `git config --list`
 
@@ -45,14 +44,54 @@ nothing to commit (create/copy files and use "git add" to track)
 
 
 ## Tracking Changes
+Now we are ready to do some work. First we need to make a new file.
 
-STOPPED HERE
+### Adding a New File
+1. In a Jupyter page, click on the Jupyter logo in the top left corner to take the Jupyter file browser to Jupyter home directory.
+2. Click on **planets** to go in the planets directory.
+3. Now click on the **New** button and select **Text File**.
+4. Add some text: "Cold and dry, but everything is my favorite color"
+5. Change the name to **mars.txt**.
+6. Save by selecting **Save** in the *Jupyter* **File** menu (not the **File** menu for your web-browser).
+7. Now go back to the terminal and run `git status`. Git should report back:
 
-#### Adding a New File
-1. Make a new text file in the **planets** project.
-2. Add some text: "Cold and dry, but everything is my favorite color"
-3. Save as `mars.txt`.
-4. Notice that `mars.txt` is now in the Git pane.  The two question
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        mars.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+**Untracked files** are files that are in the repository's directory, but are not managed by git.  In other words, git is telling us that it sees **mars.txt**, but we haven't told it what to do about it yet.
+
+8. Run `git add mars.txt` to tell git that we want it to formally make **mars.txt** part of the repository. This  *stages* **mars.txt**. We can see this if we run `git status` again:
+
+```
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   mars.txt
+```
+
+9. At this point **mars.txt** is not part of the repository quite yet, to include it in the repository we have to **commit** it. To commit it we use the command `git commit -m "Start notes on Mars as a base"`. The `-m` tells git that what comes next is the commit message.  Git *requires* every commit to have a commit message.  Good commit should explain what changes have been made in the commit, without listing them out.
+
+10. Now that we have committed, **mars.txt** is part of the repository. We can confirm this by running `git status` again, which should report:
+
+```
+On branch main
+nothing to commit, working tree clean
+```
+
+
+~/planets` the Notice that `mars.txt` is now in the Git pane.  The two question
    marks under **Status** mean that git doesn't know anything about
    this file (and is not responsible for it)
 5. Click the checkbox under **Staged** to add the file to the repo,
@@ -60,34 +99,32 @@ notice that **Status** changes to "A" (for "added").
 6. Now click **Commit** to open the **Review Changes** dialog, put in the
    commit message "Start notes on Mars as a base", commit the
    file, and close the dialog boxes.
-7. To see our project history, click on the clock icon in the Git pane.
 
-#### Making changes
-1. Add a second line to `mars.txt`: "The two moons may be a problem
+### Making changes
+Now lets keep working!
+
+1. Go back to **mars.txt** in the Jupyter text editor and add a second line: "The two moons may be a problem
 for Wolfman" and save.
-2. Notice that `mars.txt` pops up again in the **Git** pane with an
-**M** for "modified".
-3. Click on the **Diff** button to open the **Review Changes**
-   dialog. It shows us the line we added highlighted in green, and
-   shows us the unchanged previous line in gray.
-4. To commit these changes to git, add the commit message "Add concerns about effects of Mars' moons
-on Wolfman", click **Commit**. Notice the error message from git:
+2. In the terminal run `git status`, which should report:
 
 ```
+On branch main
 Changes not staged for commit:
-	modified:   mars.txt
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   mars.txt
 
-no changes added to commit
+no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
-Git messages are usually very informative! Git is telling us that we
-can't commit because we didn't *add* anything to the commit!  We
-forgot to click the **Staged** button.
+Git sees that we have made changes to a file that is part of the repo.
 
-So, now click on the **Staged** checkbox, be sure our commit message
-is still there,  click **Commit**, check the message from git, then close the dialogs.
+3. We can look at exactly what changes were made using `git diff mars.txt`. Usually `git diff` only shows the changes, plus a few lines above and below the changes for context. Since our file is only two lines, we see the whole thing. The old version is colored red and the new version is colored green.
 
-#### Staging
+4. Now we can commit these changes with `git commit -m "Add concerns about effects of Mars moons on Wolfman"`. That said the same thing as `git status`.  Why? Git messages are usually very informative! Git is telling us that we
+can't commit because we didn't *add* anything to the commit: "no changes added to commit".  We forgot to `git add`! So now run `git add mars.txt`, then `git commit -m "Add concerns about effects of Mars moons on Wolfman"`, and confirm that everything is committed with `git status`
+
+### Staging
 Git insists that we add files to the set we want to commit before actually committing anything. This allows us to commit our changes in stages and capture changes in logical portions rather than only large batches. For example, suppose we’re adding a few citations to our supervisor’s work to our thesis. We might want to commit those additions, and the corresponding addition to the bibliography, but not commit the work we’re doing on the conclusion (which we haven’t finished yet).
 
 To allow for this, Git has a special staging area where it keeps track of things that have been added to the current changeset but not yet committed.
@@ -97,31 +134,24 @@ To allow for this, Git has a special staging area where it keeps track of things
 
 Let's examine this process more carefully . . .
 
-1. Add a third line to `mars.txt`: "But the Mummy will appreciate the lack of humidity
-" and save.
-2. Open the **Review Changes** dialog.
-3. Notice that the **Show: Unstaged** button is checked. We can toggle
-   between viewing staged changes and unstaged changes by clicking on
-   the buttons next to **Show: Staged** and **Show: Unstaged**.  Right now no
-   changes are staged.
-4. Click on the **Staged** button next to `mars.txt` to stage the
-   changes.  Notice that **Show: Staged** is automatically selected,
-   but we can flip back to **Show: Unstaged** to see that there are no
-   longer any unstaged changes.
-5. Add the commit message "Discuss concerns about Mars' climate for Mummy", click **Commit**, check the message from git, then close the dialogs.
-6. Now we can check the history and see the changes made at each
-commit and the commit message.
+1. Add a third line to `mars.txt`: "But the Mummy will appreciate the lack of humidity" and save.
+2. Run `git diff` and notice the output.
+3. Stage the changes with `git add mars.txt`
+4. Now run `git diff` again. Confusingly it reports nothing! That's because, if there are changes staged `git diff` show us what is different between the staging area and the current state of the file. Since we just staged all the changes, there aren't any. If we want to compare the staging area to the most recent commit, we need to use `git diff --staged`
+5. Now commit with the message "Discuss concerns about Mars climate for Mummy" and check `git status`
 
-#### Challenge: Choosing a Commit Message
+### Looking back
+We can look back at our commit history with `git log`, which tells us when each commit was made, who made it, and the commit message. This is why good commit messages are important they can help you six months from now when you are trying to find the commit where you fixed that important bug, etc.
+
+### Challenge: Choosing a Commit Message
 Which of the following commit messages would be most appropriate for the last commit made to mars.txt?
 
 1. “Changes”
-2. “Added line ‘But the Mummy will appreciate the lack of humidity’ to
-mars.txt”
+2. “Added line ‘But the Mummy will appreciate the lack of humidity’ to mars.txt”
 3. “Discuss effects of Mars’ climate on the Mummy”
 
 ### Reverting Changes
-
+STOPPED HERE
 "If I could turn back time . . ." -- Cher
 
 One of the key benefits of using version control is the ability to do

@@ -5,7 +5,7 @@
 |           | 13:15-14:30 | Reproducible Analysis Lecture | [Notes](../computing/reproducible/reproducible_research_lecture_jupyter.Rmd                           | Granek     |
 |           | 14:45-16:00 | Intro to UNIX I               | [Notes](../computing/unix/Unix_01.Rmd)                                                                | McCarthy   |
 |           |             |                               |                                                                                                       |            |
-| Tuesday   | 09:00-10:15 | Version Control with Git      | [Notes](../computing/reproducible/git_overview.md) [Code](../computing/reproducible/git_overview.Rmd) | Granek     |
+| Tuesday   | 09:00-10:15 | Version Control with Git      | [Notes](../computing/reproducible/git_overview.Rmd)                                                   | Granek     |
 |           | 10:30-11:45 | Intro to UNIX II              | [Notes](../computing/unix/Unix_02.Rmd) [Exercises](../computing/unix/Exercises.Rmd)                   | McCarthy   |
 |           | 13:15-14:30 | HTS: Technology background I  |                                                                                                       | Granek     |
 |           | 14:45-16:00 | HTS: Technology background II |                                                                                                       | Granek     |

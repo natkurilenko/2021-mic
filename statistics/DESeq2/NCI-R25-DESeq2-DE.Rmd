@@ -112,6 +112,8 @@ sizeFactors(PRJNA668393ddsData)
   - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
   - $\mu_{ij} = s_{j}q_{ij}$
   - $s_j$ is sample $j$ specific normalization constant to account for the fact that samples can have very different library sizes
+  - $q_{ij}$ is **inserted plain-language definition (please check this)...** gene $i$ and sample $j$ specific estimated mean reads after accounting for sample-specific library size
+  - **I was curious -- why log2? -- and found this info useful https://www.researchgate.net/post/Why_do_we_usually_use_Log2_when_normalizing_the_expression_of_genes some components might be nice to add here**
   - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
        - $x_j=0$ if treament = isotype, or
        - $x_j=1$ if treatment = anti-PD1
@@ -135,7 +137,7 @@ sizeFactors(PRJNA668393ddsData)
 
 - Parameter interpretation
 	- $\beta_{1i}$ quantifies the treatment effect
-	- Under the additive model, the treatment effect does not depend on the cell line
+	- Under the additive model, the treatment effect does not depend on the cell line; ie note that both the treatment effect with the parental cell line and the treatment effect within the UV2 cell line are equal to $\beta_{1i}$
 	
 
 
@@ -239,18 +241,27 @@ Can you notice the difference?
 
 
 
-Note that the dispersionFunction slot is now populated. The dispersion function provides output of the fitted model used to estimate gene-specific dispersion. **This would be nice to visualize somehow for a single gene**
+Note that the dispersionFunction slot is now populated.
 
 ```{r}
 dispersionFunction(ddsobj)
 ```
 
-We can extract the gene specific dispersion factors using dispersions(). Note that there will be one number per gene. **Is this "q" from the dispersion function notation?** We can look at the first ten genes (rounded to 4 decimal places). Note that many of these are NAs. No dispersion factor could be estimated for these genes -- this is likely because there are too few observations to make a reasonable estimate.
+The dispersion function slot holds the fitted model used to estimate gene-specific dispersion. For the negative binomial distribution, the variance is equal to 
+
+$\sigma^2 = \mu_{ij} + \mu_{ij}^2 /\alpha_i$
+
+where $\alpha_i$ is the dispersion parameter. **I'd like more info about how this is represented in the dispersionFunction slot** 
+
+We can extract the gene specific dispersion factors using dispersions(). 
 
 ```{r}
 alphas <- dispersions(ddsobj)
 alphas[1:10]
 ```
+
+**Why are some of these dispersion parameter estimates "NA"?**
+
 
 Verify that the number of dispersion factors equals the number of genes
 
@@ -337,7 +348,7 @@ DESeq2::results(ddsDE, contrast = c("cline", "UV2", "Parental"), tidy = TRUE) %>
 ## Extract coefficient estimates
 
 
-The results for the top hit (gene with the lowest p-value?) for treatment DE are shown below
+The results for the top hit (gene with the lowest p-value) for treatment DE are shown below
 
 ```{r}
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>%
@@ -430,6 +441,11 @@ Bonus exercise: The previous helper function allowed us to customize the differe
 
 
 ### Volcano plot
+
+
+Volcano plots can be useful as a visual summary of how many genes respond to a treatment because we can simultaneously see how gene responses vary by effect size (x-axis) and significance (y-axis).
+
+Can you think of reasons why we might see some genes that have large effect sizes but higher p-values? How about small effects sizes and lower p-values?
 
 ```{r}
 ### Volcano plot for treatment effect

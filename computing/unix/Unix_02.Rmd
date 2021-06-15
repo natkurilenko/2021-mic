@@ -58,7 +58,7 @@ Unix interprets this as: Assign space to the variable FILENAME then run a progra
 
 
 ```{bash}
-FILENAME= "temp.txt"
+FILENAME="temp.txt"
 ```
 
 ## Using a variable

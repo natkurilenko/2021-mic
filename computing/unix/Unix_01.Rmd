@@ -216,7 +216,7 @@ ls U*
 ```
 
 ```{bash}
-ls *nix??_*Exercises*
+ls *nix_??.Rmd
 ```
 
 ### Make directories
@@ -272,7 +272,7 @@ ls -R
 ```
 
 ```{bash}
-cp a/b/c/foo.txt foo_copy1.txt
+cp ~/2021-mic/computing/unix/a/b/c/foo.txt foo_copy1.txt
 cp a/b/c/foo.txt a/foo_copy2.txt
 cp a/b/c/foo.txt a/b/foo_copy3.txt
 ```

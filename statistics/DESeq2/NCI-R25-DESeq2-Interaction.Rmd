@@ -169,6 +169,12 @@ ddsDE
 DESeq2::resultsNames(ddsDE)
 ```
 
+Remember these correspond to
+- Intercept = $\beta_{0i}$
+- cline_UV2_vs_Parental = $\beta_{1i}$
+- trt_antiPD1_vs_isotype = $\beta_{2i}$
+- clineUV2.trtantiPD1 = $\beta_{3i}$
+
 ```{r}
 ### Look at some of the results
 DESeq2::results(ddsDE)
@@ -217,12 +223,21 @@ The treatment DE effect under the multiplicative model depends on cell line: Und
 * if cline == 0 => $\Delta_0$ = 10.37912 - 10.511809 = -0.132689
 * if cline == 1 => $\Delta_1$ = 8.617797 - 10.1008 = -1.483003 ( = -0.132689 + (-1.350313))
 
+Note that -1.483003 is equal to $\beta_{2i}$(trt_antiPD1_vs_isotype = -0.132689) plus $\beta_{3i}$(clineUV2.trtantiPD1 = -1.350313)
 
+
+```{r}
+**A bigger-picture sentence about why you should what happens when you flatten the 2 factors with 2 levels into 1 factors with 4 levels would be nice here**
+```
 
 ```{r}
 dds1 <- ddsobj
 dds1$group <- as.factor(paste0(dds1$trt,dds1$cline))
 colData(dds1)
+```
+
+```{r}
+
 ```
 
 ```{r}
@@ -232,11 +247,24 @@ dds1mod <- DESeq2::DESeq(dds1)
 ```
 
 ```{r}
+
+```
+
+```{r}
 results(dds1mod)
 ```
 
 ```{r}
+
+```
+
+```{r}
 DESeq2::resultsNames(dds1mod)
+# instead of 2 factors with two levels each, we now have 1 factor with 4 levels
+```
+
+```{r}
+
 ```
 
 ```{r}
@@ -245,13 +273,25 @@ DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1Parental","is
 ```
 
 ```{r}
+
+```
+
+```{r}
 DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
 ```
 
 ```{r}
+
+```
+
+```{r}
 DESeq2::results(ddsDE, tidy = TRUE, contrast = list(c("trt_antiPD1_vs_isotype", "clineUV2.trtantiPD1"))) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
+```
+
+```{r}
+
 ```
 
 ```{r}
@@ -292,6 +332,10 @@ myinteractplot(ddsobj, "ENSMUSG00000022351.15")
 myinteractplot(ddsobj, "ENSMUSG00000025964.16")
 ```
 
+
+```{r}
+
+```
 
 Bonus exercise: The previous helper function allowed us to customize the differential expression visualization. It is however in need of improvement and refinement if to be used for other projects. Specifically, there is substantial hard coding (e.g., the variable name for the merger "Run", the experimental factors "trt" and "cline", the axis labels, the colors. Consider revising this function so that it can be used more generally.
 

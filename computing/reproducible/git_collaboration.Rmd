@@ -1,0 +1,67 @@
+## Collaborating
+
+### Cloning someone else's repo
+For the next step, get into pairs. One person will be the “Owner” and the other will be the “Collaborator”. The goal is that the Collaborator add changes into the Owner’s repository. We will switch roles at the end, so both persons will play Owner and Collaborator.
+
+#### Github Setup
+1. The Owner needs to give the Collaborator access. The owner needs to find their repository on GitHub, click the settings button on the right, then select Collaborators, and enter your partner’s username.
+![Github Collaborator Settings](http://swcarpentry.github.io/git-novice/fig/github-add-collaborators.png)
+2. To accept access to the Owner’s repo, the Collaborator needs to go to https://github.com/notifications. Once there she can accept access to the Owner’s repo. If nothing shows up there, the collaborator should check their email to see if they received an email notification.
+
+#### Cloning the Repository
+ Next, the Collaborator needs to download a copy of the Owner’s repository to her machine. This is called “cloning a repo”. The Collaborator will clone the repo in RStudio by starting a new project.
+
+1. To get the URL for the Owner's repository, the Collaborator should go to the Owner’s repository on Github and click the green *Clone or download* button.  In the dialog box that pops up, be sure it says "Clone with SSH", then copy the Repository URL (it should be `git@github.com:OWNER_GITHUB_USERNAME/planet.git`, but with the Owner's Github username instead of "OWNER_GITHUB_USERNAME")
+2. In RStudio select the New Project command from the Project menu.
+3. Choose to create a new project from Version Control
+4. Choose Git
+5. Fill in the *Repository URL*: that you just copied from Github
+6. For *Project directory name* put `planet_shared`
+7. Leave *Create project as subdirectory of* as "~"
+8. Click Create Project.  
+
+### Modifying someone else's repo
+Now the Collaborator (i.e. not the owner) can now make a change in the clone of the Owner’s repository, exactly the same way as we’ve been doing before . . .
+
+1. Make a new text file and put in the text "It is so a planet!" and save as `pluto.txt`
+2. Stage `pluto.txt`, and commit it with the message "Add notes about Pluto"
+3. Push the change to the Owner’s repository on GitHub by clicking the **Push** button
+> Note that we didn’t have to create a remote called origin: Git uses this name by default when we clone a repository. (This is why origin was a sensible choice earlier when we were setting up remotes by hand.)
+
+4. Take a look to the Owner’s repository on its GitHub website now (maybe you need to refresh your browser.) You should be able to see the new commit made by the Collaborator.
+5. To download the Collaborator’s changes from GitHub, the Owner should clicking the **Pull** button in their own RStudio. Now the three repositories (Owner’s local, Collaborator’s local, and Owner’s on GitHub) are back in sync.
+6. Switch roles, whoever was Owner first time around should repeat this as Collaborator, and vice versa.
+
+#### > A Basic Collaborative Workflow
+> In practice, it is good to be sure that you have an updated version of the repository you are collaborating on, so you should git pull before making our changes. The basic collaborative workflow would be:
+> 
+> 1. update your local repo with git pull origin master
+> 2. make your changes and stage them
+> 3. commit your changes
+> 4. upload the changes to GitHub with git push
+
+> It is better to make many commits with smaller changes rather than of one commit with massive changes: small commits are easier to read and review.
+
+#### Challenges
+##### Review Changes
+The Owner push commits to the repository without giving any information to the Collaborator. How can the Collaborator find out what has changed with Rstudio? And on GitHub?
+
+##### Comment Changes in GitHub
+
+The Collaborator has some questions about one line change made by the Owner and has some suggestions to propose.
+
+With GitHub, it is possible to comment the diff of a commit. Over the line of code to comment, a blue comment icon appears to open a comment window.
+
+The Collaborator posts its comments and suggestions using GitHub interface.
+
+##### Version History, Backup, and Version Control
+
+Some backup software can keep a history of the versions of your files. They also allows you to recover specific versions. How is this functionality different from version control? What are some of the benifits of using version control, Git and GitHub?
+
+# References
+The bulk of this set of lessons is a translation from Unix command line to RStudio GUI of the The Software Carpentry module [Version Control with Git](http://swcarpentry.github.io/git-novice/), specifically:
+
+- [Collaborating](#collaborating) is based on [Version Control with Git: 8. Collaborating](http://swcarpentry.github.io/git-novice/08-collab/) and [Version Control with Git and SVN](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN)
+
+[Collaborating](#collaborating) is also based on  [Version Control with Git and SVN](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN).
+

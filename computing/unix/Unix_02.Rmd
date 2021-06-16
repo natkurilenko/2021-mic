@@ -137,7 +137,7 @@ You can see what variables are visible in the environment with `env`
 
 
 ```{bash}
-env | head -5
+env
 ```
 
 ```{bash}
@@ -184,7 +184,7 @@ env | grep EXPORTED_VARIABLE
  
     Use for iterating over a fixed number of items (may be unknown at time of coding)
    
-    `for i in $( ls ); do`
+    `for i in $(ls); do`
             echo item: $i
       `done`
         
@@ -248,7 +248,9 @@ for FILE in $(ls *txt)
 do
     wc -c $FILE
 done
+```
 
+```{bash}
 for FIB in 1 1 2 3 5
 do
     echo $FIB
@@ -291,7 +293,7 @@ fi
 ```
 
 ```{bash}
-a=1
+a=2
 b=2
 
 if [ $a = 2 ] | [ $b = 2 ]; then

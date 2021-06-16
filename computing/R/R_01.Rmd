@@ -11,17 +11,9 @@ R is an interpreted language, which means it can be used interactively: we can t
 ```
 
 
-245
-
-
-
 ```{r}
 7 %/% 3
 ```
-
-
-2
-
 
 
 ```{r}
@@ -29,16 +21,9 @@ sin(0.5*pi)
 ```
 
 
-1
-
-
-
 ```{r}
 1.23e3
 ```
-
-
-1230
 
 
 ### Printing results
@@ -51,14 +36,6 @@ print(1 * 2 * 3 *4)
 print(11 %% 3 == 1)
 10 > 1
 ```
-
-    [1] 24
-    [1] FALSE
-
-
-
-TRUE
-
 
 ### Getting help
 
@@ -78,53 +55,10 @@ Use example to see usage examples.
 example(seq)
 ```
 
-    
-    seq> seq(0, 1, length.out = 11)
-     [1] 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
-    
-    seq> seq(stats::rnorm(20)) # effectively 'along'
-     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
-    
-    seq> seq(1, 9, by = 2)     # matches 'end'
-    [1] 1 3 5 7 9
-    
-    seq> seq(1, 9, by = pi)    # stays below 'end'
-    [1] 1.000000 4.141593 7.283185
-    
-    seq> seq(1, 6, by = 3)
-    [1] 1 4
-    
-    seq> seq(1.575, 5.125, by = 0.05)
-     [1] 1.575 1.625 1.675 1.725 1.775 1.825 1.875 1.925 1.975 2.025 2.075 2.125
-    [13] 2.175 2.225 2.275 2.325 2.375 2.425 2.475 2.525 2.575 2.625 2.675 2.725
-    [25] 2.775 2.825 2.875 2.925 2.975 3.025 3.075 3.125 3.175 3.225 3.275 3.325
-    [37] 3.375 3.425 3.475 3.525 3.575 3.625 3.675 3.725 3.775 3.825 3.875 3.925
-    [49] 3.975 4.025 4.075 4.125 4.175 4.225 4.275 4.325 4.375 4.425 4.475 4.525
-    [61] 4.575 4.625 4.675 4.725 4.775 4.825 4.875 4.925 4.975 5.025 5.075 5.125
-    
-    seq> seq(17) # same as 1:17, or even better seq_len(17)
-     [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
-
-
-To search for all functions with the phrase `topic`, use `apropos(topic)`.
-
 
 ```{r}
 apropos("seq")
 ```
-
-
-<ol class=list-inline>
-	<li>'seq'</li>
-	<li>'seq_along'</li>
-	<li>'seq_len'</li>
-	<li>'seq.Date'</li>
-	<li>'seq.default'</li>
-	<li>'seq.int'</li>
-	<li>'seq.POSIXt'</li>
-	<li>'sequence'</li>
-</ol>
-
 
 
 Finally, you can always use a search engine - e.g. Googling for "how to generate random numbers from a normal distribution in R" returns:
@@ -142,67 +76,6 @@ CASt R: Random numbers
 astrostatistics.psu.edu/.../R/Random.html
 Pennsylvania State University
 It is often necessary to simulate random numbers in R. There are many functions available to ... Let's consider the well-known normal distribution as an example: ?Normal .... Creating functions in R, as illustrated above, is a common procedure.
-#### Creating and using sequences
-
-
-```{r}
-1:4
-```
-
-
-<ol class=list-inline>
-	<li>1</li>
-	<li>2</li>
-	<li>3</li>
-	<li>4</li>
-</ol>
-
-
-
-
-```{r}
-seq(2, 12, 3)
-```
-
-
-<ol class=list-inline>
-	<li>2</li>
-	<li>5</li>
-	<li>8</li>
-	<li>11</li>
-</ol>
-
-
-
-
-```{r}
-seq(from = 0, to = pi, by = pi/4)
-```
-
-
-<ol class=list-inline>
-	<li>0</li>
-	<li>0.785398163397448</li>
-	<li>1.5707963267949</li>
-	<li>2.35619449019234</li>
-	<li>3.14159265358979</li>
-</ol>
-
-
-
-
-```{r}
-seq(from = 0, to = pi, length.out = 5)
-```
-
-
-<ol class=list-inline>
-	<li>0</li>
-	<li>0.785398163397448</li>
-	<li>1.5707963267949</li>
-	<li>2.35619449019234</li>
-	<li>3.14159265358979</li>
-</ol>
 
 
 
@@ -230,7 +103,7 @@ It's 'based' on [Google's R style guide](https://google.github.io/styleguide/Rgu
 
 #### Assigning to variables
 
-Variable assignments in R are made using the `<-` operator, but note that there is more than one assignment operator. Later, when we discuss custom functions in greater detail, we'll talk about the "=" assignment operator. Note that while some programmers use "=" in place of "<-" (they are *almost* equivalent), it is considered best practice to use "<-" for assignments in R.
+Variable assignments in R are made using the `<-` operator, but note that the `=` sign can also be used for assignments. As the saying goes, just because you *can*, doesn't mean you *should*. It is considered best practice to use `<-` for assignments in R (and we'll see it's rather nice in tidyverse, because we can also use `->`)
 
 
 ```{r}
@@ -243,18 +116,15 @@ z
 ```
 
 
-15
-
-
-#### Data Types
+#### Atomic Types
 
 When we assign variables in R (and in any programming language), they are assigned a 'type' (implicitly or explicitly). Some common types are:
 
 - numeric
   
-  In R, this includes both floating points (decimal) and integers (e.g. 1.2, 3.14159, 15)
-  
-  
+  In base R, this includes both floating points (decimal) and integers (e.g. 1.2, 3.14159, 15). Tidyverse, with tibbles also include the `dbl` type.
+
+
 - integer
 
   Non-floating point number (e.g. 1, 2, -4, etc., but not 1.2, 3.14159,...)
@@ -267,23 +137,23 @@ When we assign variables in R (and in any programming language), they are assign
 
   Words and letters. NB: numbers can be treated as characters too - we'll do some examples that illustrate that.
 
-In R, these are also 'classes', and the distinction between 'type' and 'class' is a bit abstract and won't really help us with basic programming, so using a gross and somewhat incorrect (but workable) simplification, we'll just refer to the above as classes. New classes can be created from these basic classes:
+We can create larger structures with the above atomic types:
 
 - vector
 
-  This is actually the same as 'numeric'. R sees numbers as vectors of length 1. <br><br>
+  An object that contains a list of only one atomic type. <br><br>
 
 - matrix
 
-  A 2-dimensional array of numerics. <br><br>
+  A 2-dimensional array of one atomic type. <br><br>
 
 - list
 
-  Like a vector, but elements can be other than numeric (such as a collection of logicals, character strings, etc.) <br><br>
+  Like a vector, but elements can be *anything* - different atomic types, other higher order structures, other lists, etc. <br><br>
   
 - dataframe
 
-  A 2-dimensional array that allows columns to be different types. <br><br>
+  A 2-dimensional array where each column must be a vector and all are the same length. <br><br>
   
 - tibble
 
@@ -291,7 +161,7 @@ In R, these are also 'classes', and the distinction between 'type' and 'class' i
   
 #### Operators
   
-Once we have variables of different types or classes, we usually want to *do* something with them. That can mean anything from simple arithmetic to summaries to custom made R functions. Here, we will discuss simple operators.
+Once we have variables of different types, we usually want to *do* something with them. That can mean anything from simple arithmetic to summaries to custom made R functions. Here, we will discuss simple operators.
 
 ##### Arithmetic operators
 
@@ -321,10 +191,12 @@ The above compare variables and return a 'logical' result (TRUE or FALSE)<br><br
 
 The above are 'AND' and 'OR' logical operators, respectively. We can combine the previous operators with these to form complex logical queries. 
 
-#### Examples
 
-The only way to learn R is by using R. The following exercises require a bit more knowledge than the notes describe. Remember to use `TAB` and `?` and `apropos` whenever you're stuck.
+#### Exercises
 
+These are left for the reader to do outside of class (if desired).
+
+The following exercises require a bit more knowledge than the notes describe. Remember to use `TAB` and `?` and `apropos` whenever you're stuck.
 
 1. **Using arithmetic operators on numbers.**
 
@@ -381,6 +253,8 @@ A ``while`` loop is used when conditions during execution of the code determine 
 ```{r}
 ## for loop example.
 
+# The seq function creates a sequence according to our instructions
+
 v <- seq(from = 2, to = 20, by = 3)
 
 print(v)
@@ -392,10 +266,6 @@ for (i in 1:length(v)) {
 
 print(v)
 ```
-
-    [1]  2  5  8 11 14 17 20
-    [1]  4 10 16 22 28 34 40
-
 
 The ``i`` in the above ``for`` loop is called an *iterator*. At the first step, ``i`` is *initialized* to 1 (because the code tells it to start at 1 and end at the length of v, with the ``in 1:length(v)`` statement.  Each time the code in the body is executed, it is incremented (in this case, sequentially, one at a time). Iterators can be much fancier though. Here are a few examples:
 
@@ -411,13 +281,6 @@ for ( i in iterator_variable){
 }
 ```
 
-    [1] 1
-    [1] 10
-    [1] 32
-    [1] 1.45
-
-
-
 ```{r}
 ## for loop example
 
@@ -429,48 +292,18 @@ for ( i in iterator_variable){
 }
 ```
 
-    [1] 1
-    [1] 10
-    [1] 32
-    [1] 1.45
-    [1] "the"
-    [1] "quick brown fox"
-
-
-
-```{r}
 ## while loop example
 
-samples <- rbinom(100, 1, prob = 0.2)  # generate 100 Bernouli trials with success probability 0.2
-i <- 0  #initialize index for samples vector
-
-
-found_success <- 'FALSE'  #initialize the loop termination condition
-
-while (found_success == 'FALSE'){
-       i <- i+1
-       if (samples[i] == 1)
-           found_success <- 'TRUE'
-}
-
-print(samples)   # print all trials    
-print(i)         # print index of first success.  
-```
-
-      [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 0 1 0 0 1 1 0 0 0 0 0 0 0
-     [38] 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 1 0 0 0
-     [75] 0 0 1 0 1 0 0 0 1 1 1 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0
-    [1] 14
+I've removed this example in the interest of saving time. We don't really use while loops all that often!
 
 
 The above code also contains an example of 'branching'. Branching is when the code that executes depends upon the current state of the program. In this example, the command ``found_success <- 'TRUE'`` only executes when the current (ith) component of ``samples`` is a 1.
 
-#### Examples
+#### Exercise
 
 1. Write a ``for`` loop to print the index of each success in ``samples``.
 
-2. Write a ``while`` loop to find the index of the third success.
- 
+
 
 ### The Next Level - vectors, matrices, functions, etc.
 
@@ -494,10 +327,6 @@ print (2*v)
 
 ```
 
-    [1]  2  5  8 11 14 17 20
-    [1]  4 10 16 22 28 34 40
-
-
 R interprets the multiplication operator to do componentwise multiplication (because it's the only thing that 'makes sense'). Suppose we have two vectors of the same length. What does ``*`` do?
 
 
@@ -512,29 +341,12 @@ print(w)
 print(v*w)
 ```
 
-    [1]  2  5  8 11 14 17 20
-    [1]  1  4  7 10 13 16 19
-    [1]   2  20  56 110 182 272 380
-
-
-Again, multiplication is componentwise. There is another way to multiply 2 vectors of the same size:
-
-
-```{r}
-print(v %*% w)
-```
-
-         [,1]
-    [1,] 1022
-
-
-This is called the 'dot product'. The i<sup>th</sup> component of v is multiplied by the ith component of w, and these are added together for all i. Because linear algebra is beyond our scope, we won't deal with this operation much. 
-
 R has vectorization built in to many functions. In practice, if you ever feel you need to code a loop, you should look do some googling and see if there is another way. 
 
 We'll first talk a bit more about vectors, matrices and lists, and then we will cover some common R functions that take these as arguments.
 
-#### Examples
+
+#### Exercises
 
 1. Create the vector (1,2,3,4,5,6) using the ``seq`` command in R.
 
@@ -542,9 +354,10 @@ We'll first talk a bit more about vectors, matrices and lists, and then we will 
 
 3. Square every element of the original vector.
 
+
 #### Vectors, lists, and matrices
 
-Linear algebra is not a pre-requisite for this course, so for our purposes, we will think of vectors as lists of numbers and matrices as two-dimensional arrays of numbers. They are much, much more than that, but that material is very much beyond the scope of this course. We will also mention (for those for whom it is meaningful) that vectors can be multiplied (in various ways) and matrices and vectors are related objects, and we can also multiply matrices together as well as multiply vectors and matrices.
+For the purposes of this course we will think of vectors as lists of numbers and matrices as two-dimensional arrays of numbers.
 
 ##### Creating vectors lists and matrices
 
@@ -553,7 +366,6 @@ Linear algebra is not a pre-requisite for this course, so for our purposes, we w
 - Matrices are built with the command ``matrix``. They can also be constructed from vectors or returned from certain functions.<br><br>
 
 - Lists are created with the ``list`` function.
-
 
 ```{r}
 ## Example of vector creation
@@ -564,11 +376,6 @@ print(v)
 w <- c("This", "is", "a", "character", "vector")
 print(w)
 ```
-
-    [1] 1 2 3 4
-    [1] "This"      "is"        "a"         "character" "vector"   
-
-
 
 ```{r}
 ## Example of matrix creation
@@ -584,36 +391,14 @@ N <-  matrix(matrix_entries, nrow = 2)
 print(N)
 ```
 
-         [,1] [,2] [,3]
-    [1,]    1    5    9
-    [2,]    2    6   10
-    [3,]    3    7   11
-    [4,]    4    8   12
-         [,1]   [,2]        [,3]     [,4]  
-    [1,] "This" "a"         "matrix" "two" 
-    [2,] "is"   "character" "with"   "rows"
-
-
-
 ```{r}
 ## We can create matrices of different dimensions
+matrix_entries <- c("This", "is", "a", "character", "matrix", "with", "two", "columns")
 
-N <- matrix(matrix_entries, ncol = 2, nrow = 6)
+
+N <- matrix(matrix_entries, ncol = 2, nrow = 4)
 print(N)
 ```
-
-    Warning message in matrix(matrix_entries, ncol = 2, nrow = 6):
-    “data length [8] is not a sub-multiple or multiple of the number of rows [6]”
-
-         [,1]        [,2]       
-    [1,] "This"      "two"      
-    [2,] "is"        "rows"     
-    [3,] "a"         "This"     
-    [4,] "character" "is"       
-    [5,] "matrix"    "a"        
-    [6,] "with"      "character"
-
-
 
 ```{r}
 ## add rows or columns with row bind (``rbind``) or column bind (``cbind``)
@@ -625,13 +410,6 @@ new_column <- rep(1,4)
 P <- cbind(M, new_column)
 print(P)
 ```
-
-                new_column
-    [1,] 1 5  9          1
-    [2,] 2 6 10          1
-    [3,] 3 7 11          1
-    [4,] 4 8 12          1
-
 
 #### Examples
 
@@ -664,19 +442,11 @@ sum(v)
 ```
 
 
-35
-
-
-
 ```{r}
 ## mean
 
 mean(v)
 ```
-
-
-5.83333333333333
-
 
 
 ```{r}
@@ -686,10 +456,7 @@ median(v)
 ```
 
 
-6.5
-
-
-#### Examples
+#### Exercises
 
 1. Create two vectors length 3 using the concatenate function. What happens when you add them using `+`?
 
@@ -697,10 +464,7 @@ median(v)
 
 3. Create another vector of length 4. Add it to the vector of length 2. What do you observe?
 
-4. We have examples of sum, mean and median summary operations. Can you find some others?
-
-5. Try the functions ``sort`` and ``sample``. What do they do? Try ``sample`` with and without replacement.
-
+4. Find the sum, mean and median of your vector from part 3.
 
 
 ```{r}
@@ -708,6 +472,8 @@ median(v)
 ```
 
 #### Functions
+
+*NOTE: I am including this material for advanced learners. We will not cover it in class, but feel free to ask questions in breakout rooms! For now, we skip to lists and dataframes.*
 
 A function is code that behaves like a black box - you give it some input and it returns some output. Functions are essential because they allow you to design potentially complicated algorithms without having to keep track of the algorithmic details - all you need to remember are the function name (which you can search with `apropos` or by prepending `??` to the search term), the input arguments (TAB provides these), and what type of output will be generated. Most of R's usefulness comes from the large collection of functions that it provides - for example, `library()`, `seq()`, `as.fractions()` are all functions. You can also write your own R functions - this will be covered in detail in a later session - but we show the basics here.
 
@@ -784,7 +550,7 @@ MyFunc(4, 5)
 14
 
 
-#### Examples
+#### Exercises
 
 1. Write a function that takes as input principal, interest rate, compoundings per period and number of periods and returns current amount.
 
@@ -814,43 +580,9 @@ my_list <- list(first = a, second = b, third = c)
 print(my_list)
 ```
 
-    [1] "a"         "character" "vector"   
-         [,1] [,2] [,3]
-    [1,]    1    5    9
-    [2,]    2    6   10
-    [3,]    3    7   11
-    [4,]    4    8   12
-    [1] 2 3 4 5
-    $first
-    [1] "a"         "character" "vector"   
-    
-    $second
-         [,1] [,2] [,3]
-    [1,]    1    5    9
-    [2,]    2    6   10
-    [3,]    3    7   11
-    [4,]    4    8   12
-    
-    $third
-    [1] 2 3 4 5
-    
-
-
-Note hoe the elements are named. Writing "first = " names the first element 'first'. Now, we can access elements of the list in different ways:
-
-
 ```{r}
 my_list[1]
 ```
-
-
-<strong>$first</strong> = <ol class=list-inline>
-	<li>'a'</li>
-	<li>'character'</li>
-	<li>'vector'</li>
-</ol>
-
-
 
 
 ```{r}
@@ -858,34 +590,12 @@ my_list["second"]
 ```
 
 
-<strong>$second</strong> = <table>
-<caption>A matrix: 4 × 3 of type int</caption>
-<tbody>
-	<tr><td>1</td><td>5</td><td> 9</td></tr>
-	<tr><td>2</td><td>6</td><td>10</td></tr>
-	<tr><td>3</td><td>7</td><td>11</td></tr>
-	<tr><td>4</td><td>8</td><td>12</td></tr>
-</tbody>
-</table>
-
-
-
-
 ```{r}
 my_list$third
 ```
 
 
-<ol class=list-inline>
-	<li>2</li>
-	<li>3</li>
-	<li>4</li>
-	<li>5</li>
-</ol>
-
-
-
-The '$' is probably the most often used, but there is a lot of old R code out there where lists are accessed by the element number (you would also use element number when looping over a list, but you should probably not be doing that anyway!)
+The `$` is probably the most often used, but there is a lot of old R code out there where lists are accessed by the element number (you would also use element number when looping over a list, but you should probably not be doing that anyway!) In tidyverse (dplyr package), we use the function `select` to reference columns.
 
 #### Data frames
 
@@ -902,22 +612,6 @@ df
 ```
 
 
-<table>
-<caption>A data.frame: 4 × 3</caption>
-<thead>
-	<tr><th scope=col>name</th><th scope=col>species</th><th scope=col>age</th></tr>
-	<tr><th scope=col>&lt;fct&gt;</th><th scope=col>&lt;fct&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
-</thead>
-<tbody>
-	<tr><td>bast    </td><td>cat</td><td>9</td></tr>
-	<tr><td>dash    </td><td>cat</td><td>9</td></tr>
-	<tr><td>chestnut</td><td>dog</td><td>7</td></tr>
-	<tr><td>tibbs   </td><td>dog</td><td>8</td></tr>
-</tbody>
-</table>
-
-
-
 R also has many built-in data frames that can be used to experiment or for examples.
 
 
@@ -926,30 +620,6 @@ head(iris)
 
 hist(iris$Petal.Length)
 ```
-
-
-<table>
-<caption>A data.frame: 6 × 5</caption>
-<thead>
-	<tr><th scope=col>Sepal.Length</th><th scope=col>Sepal.Width</th><th scope=col>Petal.Length</th><th scope=col>Petal.Width</th><th scope=col>Species</th></tr>
-	<tr><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;fct&gt;</th></tr>
-</thead>
-<tbody>
-	<tr><td>5.1</td><td>3.5</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
-	<tr><td>4.9</td><td>3.0</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
-	<tr><td>4.7</td><td>3.2</td><td>1.3</td><td>0.2</td><td>setosa</td></tr>
-	<tr><td>4.6</td><td>3.1</td><td>1.5</td><td>0.2</td><td>setosa</td></tr>
-	<tr><td>5.0</td><td>3.6</td><td>1.4</td><td>0.2</td><td>setosa</td></tr>
-	<tr><td>5.4</td><td>3.9</td><td>1.7</td><td>0.4</td><td>setosa</td></tr>
-</tbody>
-</table>
-
-
-
-
-    
-![png](output_74_1.png)
-    
 
 
 #### Examples
@@ -973,13 +643,13 @@ If you look at [`dplyr` docs](https://cran.r-project.org/web/packages/dplyr/dply
 ```
 select
 filter
-mutate a
+mutate
 arrange
 summarize
 group_by
 ```
 
-We will also see how to construct data manipulation "sentnces" by using these versb togetehr wtih `pipes`.
+We will also see how to construct data manipulation "sentences" by using these verbs together wtih `pipes`.
 
 
 ```{r}
@@ -990,264 +660,163 @@ library(tidyverse)
 
 
 ```{r}
-path='../data/hts_2018_data/2018_pilot_metadata_anon.tsv'
+
+# This is just the path (directory) where the file is stored
+metadir <- normalizePath("/data/sra_data/")
+
+srametafile <- file.path(metadir, "accession_table.csv")
+
+#mdsum is a way to verify a file has not been corrupted
+
+tools::md5sum(srametafile)
+
+#Read the file and store it in a dataframe (actually a tibble)
+read_csv(srametafile) -> mtdata
+mtdata
 ```
 
-
-```{r}
-getwd()
-```
-
-
-```{r}
-df <- read_tsv(path)
-```
-
-
-```{r}
-names(df)
-```
-
-### Fix names to be consistent
-
-Note that some names use spaces between words and others use underscores. Le'ts fix this.
-
-
-```{r}
-names(df) <- str_replace_all(names(df), c('[:space:]+' = '_'))
-```
-
-
-```{r}
-names(df)
-```
-
-
-```{r}
-dim(df)
-```
 
 Note: Drop some columns so table fits in browser
 
 
-```{r}
-df <- df[, c(2:5, 8:15)]
-```
-
-
-```{r}
-dim(df)
-```
-
-
-```{r}
-sample_n(df, 3)
-```
-
-
-```{r}
-summary(df)
-```
-
-### Fixing fake numeric columns
-
-Note that `RNA_sample_num`, `Replicate` and `library#` are really discrete `factors` rather than numbrs.  As `#` is not allowed in an R variable name, we need to use backticks for `library#`. (Alternatively, we cna reame to something like `library_num`). 
-
-
-```{r}
-df %>% mutate(
-    RNA_sample_num=factor(RNA_sample_num), 
-    Replicate=factor(Replicate),
-    `library#`=factor(`library#`)
-) %>% 
-select_if(is.factor) %>%
-names
-```
-
-After checking that the transformation worked, we can save the transformed data.frame.
-
-
-```{r}
-df <- df %>% mutate(
-    RNA_sample_num=factor(RNA_sample_num), 
-    Replicate=factor(Replicate),
-    `library#`=factor(`library#`)
-)
-```
 
 ## 0. Pipe
 
-
-```{r}
-df %>% head(10) %>% tail(3)
-```
-
-Note that the above result can also be achieved with `slice`
+This is the same construction we learned in the bash shell. It's just got a different symbol `%>%`
 
 
 ```{r}
-df %>% slice(8:10)
+mtdata %>% head(10)
 ```
 
 ## 1. Select columns
 
 
 ```{r}
-df %>% select(1:3) %>% head(3)
+mtdata %>% select(1:3) %>% head(3)
 ```
 
 
 ```{r}
-df %>% select(c(1,3,5)) %>% head(3)
+mtdata %>% select(c(1,3,5)) %>% head(3)
 ```
 
 
 ```{r}
-df %>% select(c('RNA_sample_num', 'Media')) %>% head(3)
+mtdata %>% select(Run, SampleName, treatment) %>% head(3) # This is the preferred way!!!
 ```
 
 ### Dropping columns
 
 
 ```{r}
-df %>% select(-((1:10))) %>% head(3)
+mtdata %>% select(-Run) %>% head(3)
 ```
 
 ### Selecting using string operations
 
 
+
 ```{r}
-df %>% select(ends_with('person')) %>% head(3)
+mtdata %>% select(ends_with('long')) %>% head(3)
 ```
 
 
 ```{r}
-df %>% select(starts_with('i')) %>% head(3)
+mtdata %>% select(starts_with('treatment')) %>% head(3)
 ```
 
 
 ```{r}
-df %>% select(contains('primer')) %>% head(3)
+mtdata %>% select(contains('line')) %>% head(3)
 ```
 
 
 ```{r}
-df %>% select(matches('.*_.*')) %>% head(3)
-```
-
-### Renaming columns with select
-
-
-```{r}
-df %>% 
-select(c('method' = 'enrichment_method', 
-         'fold.change' =  'concentration_fold_difference')) %>% 
-head(3)
-```
-
-### Scoped variants
-
-
-```{r}
-df %>% select_if(is.numeric) %>% head(3)
-```
-
-
-```{r}
-df %>% 
-select_at(c('enrichment_method', 
-            'concentration_fold_difference'), toupper) %>%
-head(3)
-```
-
-
-```{r}
-df %>% select_all(tolower) %>% head(3)
+mtdata %>% select(matches('.*_.*')) %>% head(3)
 ```
 
 ## 2. Filter rows
 
 
 ```{r}
-unique(df$Media)
+unique(mtdata$treatment)
 ```
 
 ### Equality and inequality conditions
 
 
 ```{r}
-df %>% filter(Media == 'TC') %>% head(3)
+mtdata %>% filter(treatment == 'isotype')
 ```
 
 
 ```{r}
-df %>% filter(concentration_fold_difference > 3) %>% head(3)
+# first we'll add a numeric column
+mtdata %>% mutate(rep_num = rep(1:3,4)) -> mtdata #note the right arrow assignment
+```
+
+```{r}
+mtdata %>% filter(rep_num > 1)
 ```
 
 ### Combining conditions
 
 
 ```{r}
-df %>% 
-filter(Media != 'TC', 
-       concentration_fold_difference > 3) %>%
-head(3)
+mtdata %>% 
+filter(treatment != 'isotype', 
+       rep_num > 1) 
+```
+
+
+## 3. Arrange in ascending or descending order
+
+
+```{r}
+mtdata %>% arrange(replicate)
 ```
 
 
 ```{r}
-df %>% 
-filter(Media == 'TC' |
-       concentration_fold_difference > 3) %>%
-head(3)
-```
-
-### Filtering on string conditions
-
-
-```{r}
-df %>% filter(str_length(Media) == 3) %>% head(3)
+mtdata %>% arrange(desc(replicate))
 ```
 
 
 ```{r}
-df %>% filter(str_detect(i7_index, '^A.+')) %>% head(3)
-```
-
-## 3. Arrange in ascending or descening order
-
-
-```{r}
-df %>% arrange(concentration_fold_difference) %>% head(3)
-```
-
-
-```{r}
-df %>% arrange(desc(concentration_fold_difference)) %>% head(3)
-```
-
-
-```{r}
-df %>% 
-arrange(Replicate, 
-        desc(concentration_fold_difference))%>% 
-head(3)
-```
-
-### Using `top_n`
-
-
-```{r}
-df %>% top_n(3, concentration_fold_difference)
-```
-
-
-```{r}
-df %>% top_n(3, desc(concentration_fold_difference))
+mtdata %>% 
+arrange(treatment, 
+        desc(rep_num))
 ```
 
 ## 4. Mutate values
 
+
+
+We'll use a built-in R data set to do some more examples, because our sample metadata has no numeric values.
+
+```{r}
+iris %>% head
+```
+
+```{r}
+iris %>% mutate(Ratio = Sepal.Width/Sepal.Length) %>% head()
+```
+
+```{r}
+iris %>% transmute(Ratio = Sepal.Width/Sepal.Length) %>% head()
+```
+
+```{r}
+iris %>% distinct(Species)
+```
+
+
+**Exercise**
+
+1. Use the `select` function to get all columns with Width.
+2. Use the `filter` command to get the rows whose species is either setosa or versicolor
+3. Add a column that is the sum of Sepal.Width and Petal.Width
 
 ```{r}
 df %>% 
@@ -1267,14 +836,14 @@ head(3)
 
 
 ```{r}
-df %>% summarize(avg_fold_change=mean(concentration_fold_difference),
-                 min_fold_change=min(concentration_fold_difference),
-                 max_fold_change=max(concentration_fold_difference))
+iris %>% summarize(Average.Petal.Width=mean(Petal.Width),
+                 Min.Petal.Width=min(Petal.Width),
+                 Max.Petal.Width=max(Petal.Width))
 ```
 
 
 ```{r}
-df %>% summarize_if(is.numeric, mean)
+iris %>% summarize_if(is.numeric, mean)
 ```
 
 ## Group_by
@@ -1283,35 +852,34 @@ df %>% summarize_if(is.numeric, mean)
 
 
 ```{r}
-df %>% 
-group_by(Media, Strain, enrichment_method) %>%
-summarize(mean_fold_diff=mean(concentration_fold_difference))
+iris %>% 
+group_by(Species) %>%
+summarize(Avg.Petal.Width = mean(Petal.Width))
 ```
 
 
 ```{r}
-df %>% 
-group_by(Media, Strain, enrichment_method) %>%
+iris %>% 
+group_by(Species) %>%
 summarize_if(is.numeric, mean) 
 ```
 
 
 ```{r}
-df %>% 
-group_by(Media, Strain) %>%
-summarize_if(is.numeric, funs(mean, sd))
+iris %>% 
+group_by(Species) %>%
+summarize_if(is.numeric, list(mean = mean, sd = sd)) #Note the funny syntax 'mean = mean'
 ```
 
-What experimental conditions produced the greatest mean fold change?
+**Exercises** Using the starwars data set
+
+1. Get the average height of a characters by species
+2. Add a column called BMI (mass/height^2) and store the new data frame in a variable called `df`
+3. Find the ten characters with the lowest BMI. Find the ten characters with the highest
+4. Get a count of the number of characters with any given eye color (the count summary function is n())
 
 
-```{r}
-df %>% 
-group_by(Media, Strain, enrichment_method) %>%
-summarize(mean_fold_diff=mean(concentration_fold_difference)) %>%
-arrange(desc(mean_fold_diff)) %>%
-head(1)
-```
+
 # Using `tidyr` to create tidy data sets
 
 **Description**
@@ -1323,7 +891,7 @@ A tidy data frame is one where
 - Each row is an observation
 - Each value is a cell
 
-As we have seen, tidy data sets can be easily plotted with `ggplot2` and manipulated with `dplyr`. In this notebook, we see how to convert messy data sets into tidy ones using the verbs `gather`, `spread`, `separate`, `extract`, `separte_rows` and `unite`.
+As we have seen, tidy data sets can be easily plotted with `ggplot2` and manipulated with `dplyr`. In this notebook, we see how to convert messy data sets into tidy ones using the verbs `gather`, `spread`, `separate`, `extract`, `separate_rows` and `unite`. There are two other commands that do essentially what `gather` and `spread` do, but they are a little more intuitive. They are called `pivot_wider` and `pivot_longer`.
 
 For more complicated tidying jobs, see the full range of functions in the [`tidyr` documentation](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf).
 
@@ -1332,48 +900,11 @@ For more complicated tidying jobs, see the full range of functions in the [`tidy
 library(tidyverse)
 ```
 
-## Data
-
-We will work with a subset of the pilot metadata that we are familiar with from the `dplyr` session.
-
-
-```{r}
-path='../data/hts_2018_data/2018_pilot_metadata_anon.tsv'
-```
-
-
-```{r}
-df <- read_tsv(path)
-```
-
-### Subset the data
-
-
-```{r}
-df <- df %>% select(
-    Label,
-    RNA_sample_num,
-    Media,
-    Strain,
-    Replicate,
-    concentration_fold_difference,
-    `i7 index`,
-    `i5 index`,  
-    `i5 primer`,
-    `i7 primer`,
-)
-```
-
-
-```{r}
-head(df)
-```
-
 ## 1. Use `gather` to combine multiple columns into one
 
 We note thet there are two "index" and "primer" columns - for a tidy data frame, we probably want to combine them. We cna do this using `gather`.
 
-### Warm-up
+### Data
 
 The use of `gather` can be confusing, so we will start with a toy example.
 
@@ -1669,21 +1200,6 @@ library(tidyverse)
 library(stringr)
 ```
 
-    Registered S3 methods overwritten by 'ggplot2':
-      method         from 
-      [.quosures     rlang
-      c.quosures     rlang
-      print.quosures rlang
-    ── [1mAttaching packages[22m ─────────────────────────────────────── tidyverse 1.2.1 ──
-    [32m✔[39m [34mggplot2[39m 3.1.1     [32m✔[39m [34mpurrr  [39m 0.3.2
-    [32m✔[39m [34mtibble [39m 2.1.2     [32m✔[39m [34mdplyr  [39m 0.8.1
-    [32m✔[39m [34mtidyr  [39m 0.8.3     [32m✔[39m [34mstringr[39m 1.4.0
-    [32m✔[39m [34mreadr  [39m 1.3.1     [32m✔[39m [34mforcats[39m 0.4.0
-    ── [1mConflicts[22m ────────────────────────────────────────── tidyverse_conflicts() ──
-    [31m✖[39m [34mdplyr[39m::[32mfilter()[39m masks [34mstats[39m::filter()
-    [31m✖[39m [34mdplyr[39m::[32mlag()[39m    masks [34mstats[39m::lag()
-
-
 ## Extended example
 
 Suppose we have the following scenario:
@@ -1726,23 +1242,6 @@ We want to visualize the correlation between the gene and protein expression cha
 df_dg1 <- read_tsv('../data/misc_data/duke_genes_v1.tsv')
 df_dg2 <- read_tsv('../data/misc_data/duke_genes_v2.tsv')
 ```
-
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      gene_A = [32mcol_double()[39m,
-      gene_B = [32mcol_double()[39m,
-      gene_C = [32mcol_double()[39m
-    )
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      gene_A = [32mcol_double()[39m,
-      gene_B = [32mcol_double()[39m,
-      gene_C = [32mcol_double()[39m
-    )
-
-
 
 ```{r}
 df_dg1
@@ -1847,44 +1346,9 @@ df_dp <- bind_rows(df_dp1, df_dp2, .id = "visit")
 df_dp.scaled <- df_dp %>%  mutate_if(is.numeric, scale)
 ```
 
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      prot_A = [32mcol_double()[39m,
-      prot_B = [32mcol_double()[39m,
-      prot_C = [32mcol_double()[39m
-    )
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      prot_A = [32mcol_double()[39m,
-      prot_B = [32mcol_double()[39m,
-      prot_C = [32mcol_double()[39m
-    )
-
-
-
 ```{r}
 head(df_dp.scaled)
 ```
-
-
-<table>
-<caption>A tibble: 6 × 5</caption>
-<thead>
-	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>prot_A</th><th scope=col>prot_B</th><th scope=col>prot_C</th></tr>
-	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
-</thead>
-<tbody>
-	<tr><td>1</td><td>Ann    </td><td>-0.4967020</td><td> 0.9830005</td><td>-1.37774584</td></tr>
-	<tr><td>1</td><td>Bob    </td><td>-1.0132844</td><td>-1.1799912</td><td>-1.01496776</td></tr>
-	<tr><td>1</td><td>Charlie</td><td>-0.3455620</td><td>-0.8561590</td><td> 0.60497113</td></tr>
-	<tr><td>2</td><td>Ann    </td><td>-0.4191436</td><td> 0.3772850</td><td> 0.88392265</td></tr>
-	<tr><td>2</td><td>Bob    </td><td> 1.7870904</td><td>-0.5388750</td><td>-0.05597907</td></tr>
-	<tr><td>2</td><td>Charlie</td><td> 0.4876017</td><td> 1.2147397</td><td> 0.95979888</td></tr>
-</tbody>
-</table>
-
 
 
 UNC gene expression
@@ -1897,44 +1361,9 @@ df_ug <- bind_rows(df_ug1, df_ug2, .id = "visit")
 df_ug.scaled <- df_ug %>%  mutate_if(is.numeric, scale)
 ```
 
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      gene_A = [32mcol_double()[39m,
-      gene_B = [32mcol_double()[39m,
-      gene_C = [32mcol_double()[39m
-    )
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      gene_A = [32mcol_double()[39m,
-      gene_B = [32mcol_double()[39m,
-      gene_C = [32mcol_double()[39m
-    )
-
-
-
 ```{r}
 head(df_ug.scaled)
 ```
-
-
-<table>
-<caption>A tibble: 6 × 5</caption>
-<thead>
-	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
-	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
-</thead>
-<tbody>
-	<tr><td>1</td><td>David</td><td>-0.59425311</td><td>-1.2262407</td><td>-0.30771429</td></tr>
-	<tr><td>1</td><td>Ed   </td><td>-1.17645232</td><td>-0.5087640</td><td> 0.02835355</td></tr>
-	<tr><td>1</td><td>Fiona</td><td> 0.36658576</td><td>-0.3217073</td><td>-1.82700451</td></tr>
-	<tr><td>2</td><td>David</td><td> 0.08382534</td><td> 0.5735718</td><td> 0.66994801</td></tr>
-	<tr><td>2</td><td>Ed   </td><td>-0.40047124</td><td>-0.1817827</td><td> 0.92567540</td></tr>
-	<tr><td>2</td><td>Fiona</td><td> 1.72076557</td><td> 1.6649228</td><td> 0.51074184</td></tr>
-</tbody>
-</table>
-
 
 
 UNC protein expression
@@ -1946,23 +1375,6 @@ df_up2 <- read_tsv('../data/misc_data/unc_proteins_v2.tsv')
 df_up <- bind_rows(df_up1, df_up2, .id = "visit")
 df_up.scaled <- df_up %>%  mutate_if(is.numeric, scale)
 ```
-
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      prot_A = [32mcol_double()[39m,
-      prot_B = [32mcol_double()[39m,
-      prot_C = [32mcol_double()[39m
-    )
-    Parsed with column specification:
-    cols(
-      pet = [31mcol_character()[39m,
-      prot_A = [32mcol_double()[39m,
-      prot_B = [32mcol_double()[39m,
-      prot_C = [32mcol_double()[39m
-    )
-
-
 
 ```{r}
 head(df_up.scaled)
@@ -2344,21 +1756,6 @@ df_dd <- read_tsv('../data/misc_data/duke_demographics.tsv')
 df_ud <- read_tsv('../data/misc_data/unc_demographics.tsv')
 ```
 
-    Parsed with column specification:
-    cols(
-      patients = [31mcol_character()[39m,
-      age = [32mcol_double()[39m,
-      sex = [31mcol_character()[39m
-    )
-    Parsed with column specification:
-    cols(
-      patients = [31mcol_character()[39m,
-      age = [32mcol_double()[39m,
-      sex = [31mcol_character()[39m
-    )
-
-
-
 ```{r}
 head(df_dd)
 ```
@@ -2551,9 +1948,3 @@ xlim(c(-3, 3)) +
 ylim(c(-3, 3)) +
 facet_grid(~ gene)
 ```
-
-
-    
-![png](output_50_0.png)
-    
-

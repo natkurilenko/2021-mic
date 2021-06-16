@@ -1,0 +1,238 @@
+<!-- #region -->
+# Why Version Control
+* [R and version control for the solo data analyst](https://stackoverflow.com/questions/2712421/r-and-version-control-for-the-solo-data-analyst)
+
+## Why Git
+* Popular
+* Powerful
+* Distributed
+* Free
+* Open Source
+
+# Using Git with Jupyter
+The most straightforward way to use git in Jupyter is through the terminal. Except where noted, everything we do in this tutorial will be done in the Jupyter terminal (**NOT** in a bash notebook).
+
+> Note: RStudio provides a nice GUI for using git, which can reduce the git learning curve. There is an [RStudio version of this tutorial](git_in_rstudio.Rmd).
+	
+## Configure Git
+1. Go to the Jupyter Terminal
+2. First we need to do a bit of configuration. Run the following commands, replacing "you@example.com" and "Your Name" with your information.
+```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
+3. You can confirm that you successful configured your name and email with this command: `git config --list`
+
+## Create a New Repo
+A local git repository consist of a directory and all of its contents (including subdirectories). When you make a directory into a repository, git makes a hidden subdirectory (named `.git`) where it keeps files that it needs to do its job; you should *never touch  this directory or its contents*
+
+Let's create a new repository!
+
+1. Create a new subdirectory in your home directory with `mkdir ~/planets`
+2. Change into the new directory with `cd ~/planets`
+3. Make the planets directory into a repository with `git init`
+4. Name the default branch "main" `git checkout -b main`
+4. Confirm that the current directory is a git repo with `git status`, which should print the following
+
+```
+On branch main
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+```
+
+
+## Tracking Changes
+Now we are ready to do some work. First we need to make a new file.
+
+### Adding a New File
+1. In a Jupyter page, click on the Jupyter logo in the top left corner to take the Jupyter file browser to Jupyter home directory.
+2. Click on **planets** to go in the planets directory.
+3. Now click on the **New** button and select **Text File**.
+4. Add some text: "Cold and dry, but everything is my favorite color"
+5. Change the name to **mars.txt**.
+6. Save by selecting **Save** in the *Jupyter* **File** menu (not the **File** menu for your web-browser).
+7. Now go back to the terminal and run `git status`. Git should report back:
+
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        mars.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+**Untracked files** are files that are in the repository's directory, but are not managed by git.  In other words, git is telling us that it sees **mars.txt**, but we haven't told it what to do about it yet.
+
+8. Run `git add mars.txt` to tell git that we want it to formally make **mars.txt** part of the repository. This  *stages* **mars.txt**. We can see this if we run `git status` again:
+
+```
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   mars.txt
+```
+
+9. At this point **mars.txt** is not part of the repository quite yet, to include it in the repository we have to **commit** it. To commit it we use the command `git commit -m "Start notes on Mars as a base"`. The `-m` tells git that what comes next is the commit message.  Git *requires* every commit to have a commit message.  Good commit should explain what changes have been made in the commit, without listing them out.
+
+10. Now that we have committed, **mars.txt** is part of the repository. We can confirm this by running `git status` again, which should report:
+
+```
+On branch main
+nothing to commit, working tree clean
+```
+
+### Making changes
+Now lets keep working!
+
+1. Go back to **mars.txt** in the Jupyter text editor and add a second line: "The two moons may be a problem
+for Wolfman" and save.
+2. In the terminal run `git status`, which should report:
+
+```
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   mars.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+Git sees that we have made changes to a file that is part of the repo.
+
+3. We can look at exactly what changes were made using `git diff mars.txt`. Usually `git diff` only shows the changes, plus a few lines above and below the changes for context. Since our file is only two lines, we see the whole thing. The old version is colored red and the new version is colored green.
+
+4. Now we can commit these changes with `git commit -m "Add concerns about effects of Mars moons on Wolfman"`. That said the same thing as `git status`.  Why? Git messages are usually very informative! Git is telling us that we
+can't commit because we didn't *add* anything to the commit: "no changes added to commit".  We forgot to `git add`! So now run `git add mars.txt`, then `git commit -m "Add concerns about effects of Mars moons on Wolfman"`, and confirm that everything is committed with `git status`
+
+### Staging
+Git insists that we add files to the set we want to commit before actually committing anything. This allows us to commit our changes in stages and capture changes in logical portions rather than only large batches. For example, suppose we’re adding a few citations to our supervisor’s work to our thesis. We might want to commit those additions, and the corresponding addition to the bibliography, but not commit the work we’re doing on the conclusion (which we haven’t finished yet).
+
+To allow for this, Git has a special staging area where it keeps track of things that have been added to the current changeset but not yet committed.
+
+> ##### Staging Area
+> If you think of Git as taking snapshots of changes over the life of a project, git add specifies what will go in a snapshot (putting things in the staging area), and git commit then actually takes the snapshot, and makes a permanent record of it (as a commit). If you don’t have anything staged when you type git commit, Git will prompt you to use git commit -a or git commit --all, which is kind of like gathering everyone for the picture! However, it’s almost always better to explicitly add things to the staging area, because you might commit changes you forgot you made. (Going back to snapshots, you might get the extra with incomplete makeup walking on the stage for the snapshot because you used -a!) Try to stage things manually, or you might find yourself searching for “git undo commit” more than you would like!
+
+Let's examine this process more carefully . . .
+
+1. Add a third line to `mars.txt`: "But the Mummy will appreciate the lack of humidity" and save.
+2. Run `git diff` and notice the output.
+3. Stage the changes with `git add mars.txt`
+4. Now run `git diff` again. Confusingly it reports nothing! That's because, if there are changes staged `git diff` show us what is different between the staging area and the current state of the file. Since we just staged all the changes, there aren't any. If we want to compare the staging area to the most recent commit, we need to use `git diff --staged`
+5. Now commit with the message "Discuss concerns about Mars climate for Mummy" and check `git status`
+
+### Looking back
+We can look back at our commit history with `git log`, which tells us when each commit was made, who made it, and the commit message. This is why good commit messages are important they can help you six months from now when you are trying to find the commit where you fixed that important bug, etc.
+
+### Challenge: Choosing a Commit Message
+Which of the following commit messages would be most appropriate for the last commit made to mars.txt?
+
+1. “Changes”
+2. “Added line ‘But the Mummy will appreciate the lack of humidity’ to mars.txt”
+3. “Discuss effects of Mars’ climate on the Mummy”
+
+### Reverting Changes
+"If I could turn back time . . ." -- Cher
+
+One of the key benefits of using version control is the ability to do
+something not usually possible in life - going back in time.  Lot's of
+software has **Undo**, but when version control is used well, it is
+like an infinite super-duper undo with a safety net.
+
+#### Basic Reversion
+1. Add a forth line to `mars.txt`: "An ill-considered change" and save.
+2. Run `git diff`
+3. If we want to get rid of this change, `git status` tells us how: `git restore mars.txt`
+4. `git status` confirms that the previous version of the file has been restored.
+5. Unfortunately the Jupyter text editor does not update, so we need to close it and reopen the file.
+
+Git also allows us to stage some of the changes in a file using `git add --interactive`, but this is a bit more complicated.
+
+#### Going Further Back
+Git is super powerful!  It will let you do all sorts of things.  For example, you can revert some or all files back to any previous commit. The Software Carpentry module [Version Control with Git](http://swcarpentry.github.io/git-novice/) covers this, and google will help you figure out how to do just about anything with git. Just be careful, git makes it harder to do stupid things, but it won't stop you if you are set on doing something.
+
+### Ignoring Things
+
+What if we have files that we do not want Git to track for us, like backup files created by our editor or intermediate files created during data analysis. Let’s create a few dummy files in the repository directory and in a subdirectory named "results" (these can be empty files): 
+
+```
+touch a.dat b.dat c.dat
+mkdir results
+touch results/a.out results/b.out
+```
+
+Putting these files under version control would be a waste of disk space. What’s worse, having them all listed could distract us from changes that actually matter, so let’s tell Git to ignore them.
+
+1. Run `git status` to confirm that git recognizes these new files as Untracked.
+2. In a Jupyter page, click on the Jupyter logo in the top left corner to take the Jupyter file browser to Jupyter home directory.
+3. Click on **planets** to go in the planets directory.
+4. Click on the **New** button and select **Text File**.
+5. Change the name to **.gitignore** (the spelling is important, including the leading period).
+6. Type "a.dat" in the **.gitignore** file and save.
+7. Now go back to the terminal and run `git status`, which should not show **a.dat**, because you have told git to ignore it.
+8. We could add each of the data files separately, but there is a more efficient way. We can use a glob. Replace "a.dat" with "*.dat", this will tell git to ignore *any* file that ends in ".dat".
+9. Save .gitignore and check `git status` again.  All the .dat files should have disappeared from git's radar.
+5. Let's also add `results` directory. It is a good idea to add it as "results/", the forward slash at the end means that we are specifically refering to a directory (and its contents)
+7. Notice that `git status` shows **.gitignore** as Untracked. Sometimes you will want to include **.gitignore** in the repo, and sometimes you won't.  In cases where you don't want to include it in the repo, you will want to add ".gitignore" to the list of files to ignore in the **.gitignore** file, which is very meta! Let's do that now.
+
+
+# Remote Git Repository
+
+## Why a Remote Repository
+* Collaborate
+* Remote backup
+* Share/Publish
+
+## Setup SSH Key
+
+### Create Key
+1. In the terminal run `ssh-keygen -t ed25519 -C "mic_cmgr"`. The part in quotes after the `-C` is a label for the key. I like this label to indicate which computer the key is for (MIC container on CMGR), but you can choose something different if you like. ssh-keygen will ask you several questions
+    - "Enter file in which to save the key" (hit "return" to accept the default)
+    - "Enter a passphrase" (I always supply one, but you can hit "return" for no passphrase)
+5. Run `cat ~/.ssh/id_ed25519.pub` to show the public key, then select and copy it.
+
+### Add Key to Github
+Follow these instructions to
+	[Add an SSH key to your GitHub account](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/), starting with step #2.
+
+## Remotes in GitHub
+
+1. Follow  [Version Control with Git: 7. Remotes in GitHub](http://swcarpentry.github.io/git-novice/07-github/) through where it says "The next step is to connect the two repositories. We do this by making the GitHub repository a remote for the local repository. The home page of the repository on GitHub includes the string we need to identify it:"
+2. In Github, under "Quick setup — if you’ve done this kind of thing before", *click on "SSH"*
+3. Below that, copy the text in the section **. . . or push an existing repository from the command line** by clicking on the "copy to clipboard" button on the right side.
+3. In the Jupyter terminal do `cd ~/planets` to be sure you are in the planets repository. 
+4. Paste the command you copied from Github.  It should look like this (except your github username should be there instead of "GITHUB_USER_NAME"):
+
+```
+git remote add origin git@github.com:GITHUB_USER_NAME/planets.git
+git branch -M main
+git push -u origin main
+```
+
+If you entered a passphrase when you generated your SSH key, you will be prompted to enter it.
+> The "git remote . . ." command associates your local repo with the repo you just made on Github.  The "git push . . ." command pushes everything from your local repo to the Github repo. Now the Github repo should be a perfect copy of your local repo.
+
+5. Let's check that these two commands worked . . . go to your Github account in your webbrower and click on "planets" near the top.  You should see the **mars.txt** file that we commited to our local repo.
+6. Let's add another line to `mars.txt` in Jupyter: "Rhymes with cars". Then stage and commit it.
+7. When you do `git status` notice that it says "Your branch is ahead of 'origin/main' by 1 commit." This is because we have commited local changes, but haven't updated our remote repo (on Github). Git is usually informative and it tells us: **use "git push" to publish your local commits**. So let's do `git push` to sync our changes to the remote repo.  Check on Github for the changes!
+8. Now when we do `git status` it tells us: "Your branch is up to date with 'origin/main'." 
+<!-- #endregion -->
+
+# References
+The bulk of this set of lessons is a translation from Unix command line to RStudio GUI of the The Software Carpentry module [Version Control with Git](http://swcarpentry.github.io/git-novice/), specifically:
+
+- [Create a Project with Version Control](#create-a-project-with-version-control) is based on [Version Control with Git: 3. Creating a Repository](http://swcarpentry.github.io/git-novice/03-create/)
+- [Tracking Changes](#tracking-changes) is based on: [Version Control with Git: 4. Tracking Changes](http://swcarpentry.github.io/git-novice/04-changes/)
+- [Reverting Changes](#reverting-changes) is loosely based on: [Version Control with Git: 5. Exploring History](http://swcarpentry.github.io/git-novice/05-history/)
+- [Ignoring Things](#ignoring-things) is based on [Version Control with Git: 6. Ignoring Things](http://swcarpentry.github.io/git-novice/06-ignore/)
+- [Remotes in GitHub](#remotes-in-github) is based on [Version Control with Git: 7. Remotes in GitHub](http://swcarpentry.github.io/git-novice/07-github/)
+

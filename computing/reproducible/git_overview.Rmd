@@ -90,16 +90,6 @@ On branch main
 nothing to commit, working tree clean
 ```
 
-
-~/planets` the Notice that `mars.txt` is now in the Git pane.  The two question
-   marks under **Status** mean that git doesn't know anything about
-   this file (and is not responsible for it)
-5. Click the checkbox under **Staged** to add the file to the repo,
-notice that **Status** changes to "A" (for "added").
-6. Now click **Commit** to open the **Review Changes** dialog, put in the
-   commit message "Start notes on Mars as a base", commit the
-   file, and close the dialog boxes.
-
 ### Making changes
 Now lets keep working!
 
@@ -233,7 +223,7 @@ If you entered a passphrase when you generated your SSH key, you will be prompte
 
 5. Let's check that these two commands worked . . . go to your Github account in your webbrower and click on "planets" near the top.  You should see the **mars.txt** file that we commited to our local repo.
 6. Let's add another line to `mars.txt` in Jupyter: "Rhymes with cars". Then stage and commit it.
-7. When you do `git status` notice that it says "Your branch is ahead of 'origin/main' by 1 commit." This is because we have commited local changes, but haven't updated our remote repo (on Github). Git is usually informative and it tells us: **use "git push" to publish your local commits**. So let's do `git push` Let's sync the remote repo by clicking the **Push** button.  Check on Github for the changes!
+7. When you do `git status` notice that it says "Your branch is ahead of 'origin/main' by 1 commit." This is because we have commited local changes, but haven't updated our remote repo (on Github). Git is usually informative and it tells us: **use "git push" to publish your local commits**. So let's do `git push` to sync our changes to the remote repo.  Check on Github for the changes!
 8. Now when we do `git status` it tells us: "Your branch is up to date with 'origin/main'." 
 <!-- #endregion -->
 

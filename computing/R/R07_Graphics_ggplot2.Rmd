@@ -1,0 +1,299 @@
+# R Graphics
+
+
+```R
+library(tidyverse)
+```
+
+
+```R
+options.orig <- options(repr.plot.width=6, repr.plot.height=4)
+```
+
+## Simulate some data for plotting
+
+
+```R
+n <- 100
+x <- sort(runif(n))
+y <- x^2 + x + 3 + 0.2*rnorm(n)
+z <- x^2
+g <- as.factor(sample(1:4, n, replace=T))
+df <- tibble(x=x, y=y, z=z, g=g)
+```
+
+## Grammar of Graphics
+
+`ggplot2` uses a Grammar of Graphics convention to define plots. See [The fundamentals of `gggplot2` explained](https://www.aridhia.com/technical-tutorials/the-fundamentals-of-ggplot-explained/) for a simple explanation.
+
+The main concepts are
+
+- **data source**
+- **map** data elements to visual characteristics (aes)
+- **type of visual elements** in plot (geom)
+- **layers** (+)
+- **facet** to automatically show "group by" plots
+- **scale** to control how the mapping is made
+- **statistics** to add summary data to the plot
+- **themes** to define the look and feel of the plot
+
+
+
+
+```R
+g0 <- ggplot(df, aes(x=x, y=y)) 
+
+g1 <- g0 +
+geom_point(aes(col=z)) +
+geom_smooth(method='lm', 
+            formula=y ~ poly(x, 2, raw=TRUE))
+
+g2 <- g1 + 
+labs(title="ggplot2", 
+     subtitle="Graphics example",
+     caption="HTS 2019",
+     x="x-coordinate",
+     y="y-coordiante")
+
+g3 <- g2 +
+guides(col=FALSE)
+```
+
+
+```R
+g0
+```
+
+
+```R
+g1
+```
+
+
+```R
+g2
+```
+
+
+```R
+g3
+```
+
+### Interpration
+
+- What is the data source?
+- What mappings are applied to the plot as a whole? To the points?
+- What labels are specified and where do they appear?
+- What geometric objects are used for plotting?
+- What statistics are added to the plot?
+- How was layering used to build the plot incrementally?
+- How were partially completed plot stages saved?
+
+### Themes
+
+
+```R
+g3 + theme_minimal()
+```
+
+
+```R
+g3 + theme_linedraw()
+```
+
+
+```R
+g3 + theme_dark()
+```
+
+### Facets
+
+
+```R
+g3 + facet_wrap(facets='g', nrow = 2)
+```
+
+
+```R
+g3 + facet_grid(~ g)
+```
+
+
+```R
+g3 + facet_grid(g ~ .)
+```
+
+### Scales
+
+
+```R
+g4 <- ggplot(df, aes(x=x, y=y, col=as.factor(g)) ) +
+geom_point() +
+geom_smooth(method='lm', 
+            formula=y ~ poly(x, 2, raw=TRUE)) +
+labs(title="ggplot2", 
+     subtitle="Graphics example",
+     caption="HTS 2019",
+     x="x-coordinate",
+     y="y-coordinate") +
+facet_grid(~ g) +
+guides(col=FALSE)
+```
+
+#### Colors
+
+
+```R
+g4
+```
+
+
+```R
+g4 + scale_color_brewer()
+```
+
+
+```R
+g4 + scale_color_brewer(type = 'seq', palette = 'Reds')
+```
+
+
+```R
+g4 + scale_color_brewer(type = 'qual', palette = 2)
+```
+
+#### Palettes available from `brewer`
+
+The 3 plots show color maps that are
+
+1. Sequential
+2. Qualitiative
+3. Divergent
+
+
+```R
+library(RColorBrewer)
+```
+
+
+```R
+options.orig <- options(repr.plot.width=6, repr.plot.height=12)
+display.brewer.all() 
+```
+
+
+```R
+options.orig <- options(repr.plot.width=6, repr.plot.height=4)
+```
+
+#### Scales can be used for changing the mapping of `color`, `fill`, `hue`, `size`, `coordinates` ...
+
+Here we scale the y-coordinate to show log values.
+
+
+```R
+g4 + scale_y_log10()
+```
+
+### Geoms
+
+
+```R
+g0 + geom_point()
+```
+
+
+```R
+g0 + geom_line()
+```
+
+
+```R
+ggplot(df, aes(x=z, fill=g)) + 
+geom_density(aes(alpha=0.1)) +
+guides(alpha=F)
+```
+
+
+```R
+g0 + 
+geom_density_2d() + 
+geom_rug()
+```
+
+
+```R
+head(df)
+```
+
+#### `geom_bar` shows counts by default
+
+
+```R
+ggplot(df, aes(x=g)) + 
+geom_bar() +
+labs(y="Sum of y") 
+```
+
+#### Specify `weight` parameter to sum over a column by group
+
+
+```R
+ggplot(df, aes(x=g, weight=y) )+ 
+geom_bar() +
+labs(y="Sum of y") 
+```
+
+#### If you already have counts, specify `stat=identity`
+
+
+```R
+df_ <- tibble(x=c('A', 'B', 'C'), y=c(10, 14, 18))
+```
+
+
+```R
+head(df_)
+```
+
+
+```R
+ggplot(df_, aes(x=x, y=y, fill=x)) + 
+geom_bar(stat='identity') + 
+guides(fill=F)
+```
+
+
+```R
+ggplot(df, aes(x=g, y=z, fill=g)) + 
+geom_boxplot() +
+geom_jitter(width=0.2)  + 
+guides(fill=FALSE)
+```
+
+
+```R
+ggplot(df, aes(x=g, y=z, fill=g)) + 
+geom_boxplot() +
+geom_jitter(width=0.2) +
+coord_flip() +
+guides(fill=FALSE)
+```
+
+## Saving plots
+
+
+```R
+ggsave('figs/box.png')
+```
+
+
+```R
+ggsave('figs/g3.png', g3)
+```
+
+### Retrieve saved files
+
+<img src="figs/box.png" alt="drawing" width="200px"/>
+
+<img src="figs/g3.png" alt="drawing" width="200px"/>

@@ -1,0 +1,349 @@
+# Using `tidyr` to create tidy data sets
+
+**Description**
+> Easily Tidy Data with 'spread()' and 'gather()' Functions
+
+A tidy data frame is one where
+
+- Each column is a variable
+- Each row is an observation
+- Each value is a cell
+
+As we have seen, tidy data sets can be easily plotted with `ggplot2` and manipulated with `dplyr`. In this notebook, we see how to convert messy data sets into tidy ones using the verbs `gather`, `spread`, `separate`, `extract`, `separte_rows` and `unite`.
+
+For more complicated tidying jobs, see the full range of functions in the [`tidyr` documentation](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf).
+
+
+```R
+library(tidyverse)
+```
+
+## Data
+
+We will work with a subset of the pilot metadata that we are familiar with from the `dplyr` session.
+
+
+```R
+path='../data/hts_2018_data/2018_pilot_metadata_anon.tsv'
+```
+
+
+```R
+df <- read_tsv(path)
+```
+
+### Subset the data
+
+
+```R
+df <- df %>% select(
+    Label,
+    RNA_sample_num,
+    Media,
+    Strain,
+    Replicate,
+    concentration_fold_difference,
+    `i7 index`,
+    `i5 index`,  
+    `i5 primer`,
+    `i7 primer`,
+)
+```
+
+
+```R
+head(df)
+```
+
+## 1. Use `gather` to combine multiple columns into one
+
+We note thet there are two "index" and "primer" columns - for a tidy data frame, we probably want to combine them. We cna do this using `gather`.
+
+### Warm-up
+
+The use of `gather` can be confusing, so we will start with a toy example.
+
+
+```R
+name <- c('ann', 'bob', 'charlie')
+jan <- c(102, 155, 211)
+feb <- c(112, 150, 211)
+mar <- c(123, 147, 213)
+apr <- c(130, 140, 210)
+
+wts <- tibble(name=name, jan=jan, feb=feb, mar=mar, apr=apr)
+```
+
+
+```R
+wts
+```
+
+### Messy data
+
+In the current form, it is not possible to subgroup by month or to plot by month easily.
+
+### Using `gather` to creat a new column called `weight` to store monthly weights
+
+
+```R
+wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+
+```R
+wts.1 <- wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+### To get menth sorted correctly, we make it a factor
+
+
+```R
+wts.1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+
+```R
+wts.2 <- wts.1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+### Now we can easily work wtih the tidy data set
+
+
+```R
+wts.2 %>% 
+group_by(month) %>% 
+summarize_at('weight', funs(min, max, mean)) 
+```
+
+
+```R
+options(repr.plot.width=6, repr.plot.height=3)
+```
+
+
+```R
+ggplot(wts.2, aes(x=month, y=weight, fill=name)) + 
+geom_bar(stat='identity') + 
+facet_wrap('name')
+```
+
+### Using `gather` on experiment metadata
+
+
+```R
+df %>% 
+select(Label, ends_with('index')) %>% 
+head()
+```
+
+
+```R
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+head()
+```
+
+
+```R
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+mutate(index=str_extract(index, '^..')) %>%
+head()
+```
+
+## 2. Use `spread` to convert one column into multiple
+
+We can undo `gather` with `spread`. This is less commonly used than `gather`.
+
+
+```R
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+head()
+```
+
+
+```R
+df %>% 
+select(Label, ends_with('index')) %>% 
+gather(index, sequence, -Label) %>% 
+spread(index, sequence) %>%
+head()
+```
+
+## 3. Use `separate` to split a single column containing multiple values
+
+The label column actually contains three pieces of informaiton separated by underscores - a sample number, the RNA enrichment methd, and code for the person presenting the sample. Assuuming that we do not have this informatio nduplicate in other columns, it woujld be tricky to compare, say, results by the sampling method.
+
+The `separate` function is designed to address this problem.
+
+
+```R
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+head(3)
+```
+
+
+```R
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+head(3)
+```
+
+#### It is now easy to condition on sample_number, enrichment method or person
+
+Here is a summary of the data.
+
+
+```R
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, into=c('sample_num', 'enrichment', 'person'), sep='_') %>%
+add_count(enrichment) %>%
+group_by(person, enrichment, n) %>%
+summarize_at('concentration_fold_difference', mean) 
+```
+
+## 4. Use `unite` to craate a single variable from multiple columns
+
+Sometimes we want to do the opposite and combine multiple columns into a single column. Use `unite` to do this.
+
+
+```R
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+head
+```
+
+
+```R
+df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, sep='_', into=c('sample_num', 'enrichment', 'person')) %>%
+unite(Label, c('sample_num', 'enrichment', 'person'), sep='_') %>% 
+head
+```
+
+#### Extract parts with regular expressions
+
+Sometiems there is no simple delimiter between parts of a value. In such cases, we may need to use reuglar expressions to extract parts from a string.
+
+
+```R
+bad_labels <- df %>% 
+select(Label, concentration_fold_difference) %>% 
+separate(Label, 
+         sep='_', 
+         into=c('sample_num', 'enrichment', 'person')) %>%
+unite(Label, c('sample_num', 'enrichment', 'person'), sep='')
+head(bad_labels)
+```
+
+The regular expression consists of 3 capture groups in parentheses that will form the new columns.
+
+`'([0-9]+)(.*)(.$)'`
+
+where
+
+- Capture group 1 `[0-9]+`  means match one or more `+` of any digits  `[0-9]`
+- Capture group 2 `.*`     means match zero or more `*` of any character `.`
+- Capture gorup 3 `.$`     means match any character `.` at the end `$`
+
+
+```R
+bad_labels %>% 
+extract(Label, 
+         into=c('sample_num', 'enrichment', 'person'), 
+         '([0-9]+)(.*)(.$)') %>%
+head
+```
+
+### Using `separate_rows` rows when multiple values are in a single cell.
+
+Very occassionally, we find data sets where multiple values are stored in a single cell. We will make up and exmple here as this does not occur in the metadata data set.
+
+
+```R
+bad_primer <- df %>% 
+select(Label, `i5 index`, `i7 index`) %>% 
+unite(primer, c(`i5 index`, `i7 index`), sep=',') %>%
+arrange(Label)
+head(bad_primer)
+```
+
+
+```R
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+head
+```
+
+#### Challenge: Reconstruct column structure  of orignial metadata file
+
+Since `separate_rows` will place the items in each row in alternating columns, we create a temporary variable to store the position in the original cell.
+
+
+```R
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+mutate(tmp=rep_len(1:2, n())) %>% 
+head
+```
+
+We then `spread` the primer values by the temporary variable and rename the columns as appropriate.
+
+
+```R
+bad_primer %>% 
+separate_rows(primer, sep=',') %>%
+mutate(tmp=rep_len(1:2, n())) %>% 
+spread(tmp, primer) %>%
+rename(`i5 index`=`1`, `i7 index`=`2`) %>%
+head
+```
+
+Comapre with original
+
+
+```R
+df %>%
+select(Label, `i5 index`, `i7 index`) %>%
+arrange(Label) %>%
+head
+```
+
+## Challenge exercise 
+
+Let's look at the index and primer columne more closely. It seems that the index and primer values are linked and are just different ways of labeling the same thing. So we really should be have columns like this
+
+| primer_type | code | seq |
+| - | - | - |
+| i5 | i501 | AGGCTATA | 
+| i5 | i502 | GCCTCTAT |
+| i7 | i701 | ATTACTCG |
+| i7 | i702 | TCCGGAGA |
+
+We can do this by combining the operatios we have seen above.
+
+
+```R
+df %>% 
+unite(i7, c(`i7 primer`, `i7 index`), sep=':') %>%
+unite(i5, c(`i5 primer`, `i5 index`), sep=':') %>%
+gather(primer_type, val, c(i7, i5)) %>%
+separate(val, into=c('code', 'seq'), sep=':') %>%
+mutate(code=str_extract(code, '..$')) %>%
+arrange(primer_type, code) %>% 
+head(10)
+```

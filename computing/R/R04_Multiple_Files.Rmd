@@ -1,0 +1,896 @@
+# Working with multiple files
+
+
+```R
+library(tidyverse)
+library(stringr)
+```
+
+    Registered S3 methods overwritten by 'ggplot2':
+      method         from 
+      [.quosures     rlang
+      c.quosures     rlang
+      print.quosures rlang
+    ── [1mAttaching packages[22m ─────────────────────────────────────── tidyverse 1.2.1 ──
+    [32m✔[39m [34mggplot2[39m 3.1.1     [32m✔[39m [34mpurrr  [39m 0.3.2
+    [32m✔[39m [34mtibble [39m 2.1.2     [32m✔[39m [34mdplyr  [39m 0.8.1
+    [32m✔[39m [34mtidyr  [39m 0.8.3     [32m✔[39m [34mstringr[39m 1.4.0
+    [32m✔[39m [34mreadr  [39m 1.3.1     [32m✔[39m [34mforcats[39m 0.4.0
+    ── [1mConflicts[22m ────────────────────────────────────────── tidyverse_conflicts() ──
+    [31m✖[39m [34mdplyr[39m::[32mfilter()[39m masks [34mstats[39m::filter()
+    [31m✖[39m [34mdplyr[39m::[32mlag()[39m    masks [34mstats[39m::lag()
+
+
+## Extended example
+
+Suppose we have the following scenario:
+
+A multi-center experiment is conducted at Duke and UNC.
+
+- Duke has patients `Ann`, `Bob`, `Charle`
+- UNC has patients `David`, `Ed`, `Fiona`
+- Each patient has blood sampled at 2 time points 
+- The genomics core at each center measures 3 genes for each patient at each time point
+- The proteomics core at each center measures 3 proteins from each patient at each time point
+- Each center has additional information about patient demographics in a different database
+
+We have a ten files to work with:
+
+```
+duke_demographics.tsv
+duke_genes_v1.tsv
+duke_genes_v2.tsv
+duke_proteins_v1.tsv
+duke_proteins_v2.tsv
+unc_demographics.tsv
+unc_genes_v1.tsv
+unc_genes_v2.tsv
+unc_proteins_v1.tsv
+unc_proteins_v2.tsv
+```
+
+## Objective
+
+We want to visualize the correlation between the gene and protein expression changes from visit 1 to visit 2 for all patients in the study. We also want to augment the data with demographic variables for each patient.
+
+- Assume that labs within an institution *do not* have batch effects across visits
+- Assume that labs at different institutions *have* batch affects and must be normalized before comparison
+
+### Combine gene expression data from Duke and normalize to zero mean and unit standard deviation 
+
+
+```R
+df_dg1 <- read_tsv('../data/misc_data/duke_genes_v1.tsv')
+df_dg2 <- read_tsv('../data/misc_data/duke_genes_v2.tsv')
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+
+
+
+```R
+df_dg1
+```
+
+
+<table>
+<caption>A spec_tbl_df: 3 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td> 91.09792</td><td>64.62166</td><td>124.4608</td></tr>
+	<tr><td>Bob    </td><td> 88.81115</td><td>78.24940</td><td>113.6644</td></tr>
+	<tr><td>Charlie</td><td>107.52933</td><td>70.52984</td><td>124.5951</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_dg2
+```
+
+
+<table>
+<caption>A spec_tbl_df: 3 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td>108.67919</td><td> 90.38630</td><td>137.5395</td></tr>
+	<tr><td>Bob    </td><td>113.44700</td><td>101.52725</td><td>144.7763</td></tr>
+	<tr><td>Charlie</td><td> 98.12047</td><td> 97.70863</td><td>131.1964</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_dg <- bind_rows(df_dg1, df_dg2, .id = "visit")
+df_dg
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td> 91.09792</td><td> 64.62166</td><td>124.4608</td></tr>
+	<tr><td>1</td><td>Bob    </td><td> 88.81115</td><td> 78.24940</td><td>113.6644</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>107.52933</td><td> 70.52984</td><td>124.5951</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>108.67919</td><td> 90.38630</td><td>137.5395</td></tr>
+	<tr><td>2</td><td>Bob    </td><td>113.44700</td><td>101.52725</td><td>144.7763</td></tr>
+	<tr><td>2</td><td>Charlie</td><td> 98.12047</td><td> 97.70863</td><td>131.1964</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_dg.scaled <- df_dg  %>% mutate_if(is.numeric, scale)
+df_dg.scaled
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-1.0073042</td><td>-1.2805845</td><td>-0.4479685</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.2335142</td><td>-0.3723877</td><td>-1.4327190</td></tr>
+	<tr><td>1</td><td>Charlie</td><td> 0.6181059</td><td>-0.8868438</td><td>-0.4357137</td></tr>
+	<tr><td>2</td><td>Ann    </td><td> 0.7318518</td><td> 0.4364545</td><td> 0.7449587</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.2034879</td><td> 1.1789234</td><td> 1.4050414</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>-0.3126272</td><td> 0.9244382</td><td> 0.1664011</td></tr>
+</tbody>
+</table>
+
+
+
+### Do the same for the other data sets
+
+Duke protein expression
+
+
+```R
+df_dp1 <- read_tsv('../data/misc_data/duke_proteins_v1.tsv')
+df_dp2 <- read_tsv('../data/misc_data/duke_proteins_v2.tsv')
+df_dp <- bind_rows(df_dp1, df_dp2, .id = "visit")
+df_dp.scaled <- df_dp %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+
+
+
+```R
+head(df_dp.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>prot_A</th><th scope=col>prot_B</th><th scope=col>prot_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-0.4967020</td><td> 0.9830005</td><td>-1.37774584</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.0132844</td><td>-1.1799912</td><td>-1.01496776</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>-0.3455620</td><td>-0.8561590</td><td> 0.60497113</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>-0.4191436</td><td> 0.3772850</td><td> 0.88392265</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.7870904</td><td>-0.5388750</td><td>-0.05597907</td></tr>
+	<tr><td>2</td><td>Charlie</td><td> 0.4876017</td><td> 1.2147397</td><td> 0.95979888</td></tr>
+</tbody>
+</table>
+
+
+
+UNC gene expression
+
+
+```R
+df_ug1 <- read_tsv('../data/misc_data/unc_genes_v1.tsv')
+df_ug2 <- read_tsv('../data/misc_data/unc_genes_v2.tsv')
+df_ug <- bind_rows(df_ug1, df_ug2, .id = "visit")
+df_ug.scaled <- df_ug %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      gene_A = [32mcol_double()[39m,
+      gene_B = [32mcol_double()[39m,
+      gene_C = [32mcol_double()[39m
+    )
+
+
+
+```R
+head(df_ug.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>David</td><td>-0.59425311</td><td>-1.2262407</td><td>-0.30771429</td></tr>
+	<tr><td>1</td><td>Ed   </td><td>-1.17645232</td><td>-0.5087640</td><td> 0.02835355</td></tr>
+	<tr><td>1</td><td>Fiona</td><td> 0.36658576</td><td>-0.3217073</td><td>-1.82700451</td></tr>
+	<tr><td>2</td><td>David</td><td> 0.08382534</td><td> 0.5735718</td><td> 0.66994801</td></tr>
+	<tr><td>2</td><td>Ed   </td><td>-0.40047124</td><td>-0.1817827</td><td> 0.92567540</td></tr>
+	<tr><td>2</td><td>Fiona</td><td> 1.72076557</td><td> 1.6649228</td><td> 0.51074184</td></tr>
+</tbody>
+</table>
+
+
+
+UNC protein expression
+
+
+```R
+df_up1 <- read_tsv('../data/misc_data/unc_proteins_v1.tsv')
+df_up2 <- read_tsv('../data/misc_data/unc_proteins_v2.tsv')
+df_up <- bind_rows(df_up1, df_up2, .id = "visit")
+df_up.scaled <- df_up %>%  mutate_if(is.numeric, scale)
+```
+
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+    Parsed with column specification:
+    cols(
+      pet = [31mcol_character()[39m,
+      prot_A = [32mcol_double()[39m,
+      prot_B = [32mcol_double()[39m,
+      prot_C = [32mcol_double()[39m
+    )
+
+
+
+```R
+head(df_up.scaled)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>prot_A</th><th scope=col>prot_B</th><th scope=col>prot_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>David</td><td> 1.04580136</td><td> 0.1280673</td><td>-0.6867668</td></tr>
+	<tr><td>1</td><td>Ed   </td><td>-1.65977553</td><td> 0.2117860</td><td> 0.9772767</td></tr>
+	<tr><td>1</td><td>Fiona</td><td> 0.05811210</td><td>-0.6413509</td><td>-1.4593511</td></tr>
+	<tr><td>2</td><td>David</td><td>-0.44575884</td><td>-0.7384114</td><td> 0.9175770</td></tr>
+	<tr><td>2</td><td>Ed   </td><td> 0.02765904</td><td> 1.8317201</td><td> 0.6595148</td></tr>
+	<tr><td>2</td><td>Fiona</td><td> 0.97396187</td><td>-0.7918110</td><td>-0.4082508</td></tr>
+</tbody>
+</table>
+
+
+
+### Find the change in each gene from visit 1 to visit 2
+
+
+```R
+df_dg.scaled
+```
+
+
+<table>
+<caption>A spec_tbl_df: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene_A</th><th scope=col>gene_B</th><th scope=col>gene_C</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th><th scope=col>&lt;dbl[,1]&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>-1.0073042</td><td>-1.2805845</td><td>-0.4479685</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>-1.2335142</td><td>-0.3723877</td><td>-1.4327190</td></tr>
+	<tr><td>1</td><td>Charlie</td><td> 0.6181059</td><td>-0.8868438</td><td>-0.4357137</td></tr>
+	<tr><td>2</td><td>Ann    </td><td> 0.7318518</td><td> 0.4364545</td><td> 0.7449587</td></tr>
+	<tr><td>2</td><td>Bob    </td><td> 1.2034879</td><td> 1.1789234</td><td> 1.4050414</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>-0.3126272</td><td> 0.9244382</td><td> 0.1664011</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+# To avoid a bunch or harmless warnigns, we will temprarily suppress them
+
+options(warn=-1)
+```
+
+
+```R
+df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+head
+```
+
+
+<table>
+<caption>A tibble: 6 × 4</caption>
+<thead>
+	<tr><th scope=col>visit</th><th scope=col>pet</th><th scope=col>gene</th><th scope=col>value</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>1</td><td>Ann    </td><td>gene_A</td><td>-1.0073042</td></tr>
+	<tr><td>1</td><td>Bob    </td><td>gene_A</td><td>-1.2335142</td></tr>
+	<tr><td>1</td><td>Charlie</td><td>gene_A</td><td> 0.6181059</td></tr>
+	<tr><td>2</td><td>Ann    </td><td>gene_A</td><td> 0.7318518</td></tr>
+	<tr><td>2</td><td>Bob    </td><td>gene_A</td><td> 1.2034879</td></tr>
+	<tr><td>2</td><td>Charlie</td><td>gene_A</td><td>-0.3126272</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+head
+```
+
+
+<table>
+<caption>A tibble: 6 × 4</caption>
+<thead>
+	<tr><th scope=col>pet</th><th scope=col>gene</th><th scope=col>1</th><th scope=col>2</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>gene_A</td><td>-1.0073042</td><td>0.7318518</td></tr>
+	<tr><td>Ann</td><td>gene_B</td><td>-1.2805845</td><td>0.4364545</td></tr>
+	<tr><td>Ann</td><td>gene_C</td><td>-0.4479685</td><td>0.7449587</td></tr>
+	<tr><td>Bob</td><td>gene_A</td><td>-1.2335142</td><td>1.2034879</td></tr>
+	<tr><td>Bob</td><td>gene_B</td><td>-0.3723877</td><td>1.1789234</td></tr>
+	<tr><td>Bob</td><td>gene_C</td><td>-1.4327190</td><td>1.4050414</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_dg.diff <- df_dg.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          gene=str_extract(gene, '[^_]+$'), 
+          gene.change=`2`-`1`)
+head(df_dg.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>A</td><td>1.739156</td></tr>
+	<tr><td>Ann</td><td>B</td><td>1.717039</td></tr>
+	<tr><td>Ann</td><td>C</td><td>1.192927</td></tr>
+	<tr><td>Bob</td><td>A</td><td>2.437002</td></tr>
+	<tr><td>Bob</td><td>B</td><td>1.551311</td></tr>
+	<tr><td>Bob</td><td>C</td><td>2.837760</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine with UNC data
+
+
+```R
+df_ug.diff <- df_ug.scaled %>% 
+gather(gene, value, starts_with('gene'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          gene=str_extract(gene, '[^_]+$'), 
+          gene.change=`2`-`1`)
+head(df_ug.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David</td><td>A</td><td>0.6780785</td></tr>
+	<tr><td>David</td><td>B</td><td>1.7998124</td></tr>
+	<tr><td>David</td><td>C</td><td>0.9776623</td></tr>
+	<tr><td>Ed   </td><td>A</td><td>0.7759811</td></tr>
+	<tr><td>Ed   </td><td>B</td><td>0.3269814</td></tr>
+	<tr><td>Ed   </td><td>C</td><td>0.8973218</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_g <- bind_rows(list(duke=df_dg.diff, unc=df_ug.diff), .id='site')
+df_g
+```
+
+
+<table>
+<caption>A tibble: 18 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td></tr>
+</tbody>
+</table>
+
+
+
+### Now do the same with protein data
+
+
+```R
+df_dp.diff <- df_dp.scaled %>% 
+gather(protein, value, starts_with('prot'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          protein=str_extract(protein, '[^_]+$'), 
+          protein.change=`2`-`1`)
+head(df_dp.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann</td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>Ann</td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>Ann</td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>Bob</td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>Bob</td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>Bob</td><td>C</td><td> 0.95898869</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_up.diff <- df_up.scaled %>% 
+gather(protein, value, starts_with('prot'))  %>% 
+spread(visit, value) %>%
+transmute(patient=pet, 
+          protein=str_extract(protein, '[^_]+$'), 
+          protein.change=`2`-`1`)
+head(df_up.diff)
+```
+
+
+<table>
+<caption>A tibble: 6 × 3</caption>
+<thead>
+	<tr><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David</td><td>A</td><td>-1.4915602</td></tr>
+	<tr><td>David</td><td>B</td><td>-0.8664787</td></tr>
+	<tr><td>David</td><td>C</td><td> 1.6043438</td></tr>
+	<tr><td>Ed   </td><td>A</td><td> 1.6874346</td></tr>
+	<tr><td>Ed   </td><td>B</td><td> 1.6199340</td></tr>
+	<tr><td>Ed   </td><td>C</td><td>-0.3177619</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_p <- bind_rows(list(duke=df_dp.diff, unc=df_up.diff), .id='site')
+df_p
+```
+
+
+<table>
+<caption>A tibble: 18 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 0.95898869</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td> 0.83316369</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 2.07089865</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.35482775</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td>-1.49156020</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td>-0.86647868</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 1.60434377</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 1.68743457</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 1.61993404</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td>-0.31776193</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 0.91584977</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td>-0.15046013</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 1.05110029</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine gene and protein data into single data frame
+
+Since the rows are perfectly aligned, we can just bind columns together. If we are not certain that the rows match up exactly, it is safer to use a `join` to combine columns.
+
+
+```R
+bind_cols(df_g, df_p, )
+```
+
+
+<table>
+<caption>A tibble: 18 × 8</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>site1</th><th scope=col>patient1</th><th scope=col>protein</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td>duke</td><td>Ann    </td><td>A</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>duke</td><td>Ann    </td><td>B</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td>duke</td><td>Ann    </td><td>C</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td>duke</td><td>Bob    </td><td>A</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td>duke</td><td>Bob    </td><td>B</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td>duke</td><td>Bob    </td><td>C</td><td> 0.95898869</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td>duke</td><td>Charlie</td><td>A</td><td> 0.83316369</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td>duke</td><td>Charlie</td><td>B</td><td> 2.07089865</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td>duke</td><td>Charlie</td><td>C</td><td> 0.35482775</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>unc </td><td>David  </td><td>A</td><td>-1.49156020</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>unc </td><td>David  </td><td>B</td><td>-0.86647868</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td>unc </td><td>David  </td><td>C</td><td> 1.60434377</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td><td>unc </td><td>Ed     </td><td>A</td><td> 1.68743457</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td><td>unc </td><td>Ed     </td><td>B</td><td> 1.61993404</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td><td>unc </td><td>Ed     </td><td>C</td><td>-0.31776193</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td>unc </td><td>Fiona  </td><td>A</td><td> 0.91584977</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>unc </td><td>Fiona  </td><td>B</td><td>-0.15046013</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td>unc </td><td>Fiona  </td><td>C</td><td> 1.05110029</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_gp <- bind_cols(df_g, df_p %>% select(-site, -patient, -protein))
+head(df_gp)
+```
+
+
+<table>
+<caption>A tibble: 6 × 5</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann</td><td>A</td><td>1.739156</td><td> 0.07755833</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>B</td><td>1.717039</td><td>-0.60571547</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>C</td><td>1.192927</td><td> 2.26166848</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>A</td><td>2.437002</td><td> 2.80037479</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>B</td><td>1.551311</td><td> 0.64111624</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>C</td><td>2.837760</td><td> 0.95898869</td></tr>
+</tbody>
+</table>
+
+
+
+### Combine with demographic data
+
+
+```R
+df_dd <- read_tsv('../data/misc_data/duke_demographics.tsv')
+df_ud <- read_tsv('../data/misc_data/unc_demographics.tsv')
+```
+
+    Parsed with column specification:
+    cols(
+      patients = [31mcol_character()[39m,
+      age = [32mcol_double()[39m,
+      sex = [31mcol_character()[39m
+    )
+    Parsed with column specification:
+    cols(
+      patients = [31mcol_character()[39m,
+      age = [32mcol_double()[39m,
+      sex = [31mcol_character()[39m
+    )
+
+
+
+```R
+head(df_dd)
+```
+
+
+<table>
+<caption>A tibble: 4 × 3</caption>
+<thead>
+	<tr><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>Ann    </td><td>16</td><td>F</td></tr>
+	<tr><td>Bob    </td><td>23</td><td>M</td></tr>
+	<tr><td>Beth   </td><td>43</td><td>F</td></tr>
+	<tr><td>Charlie</td><td>53</td><td>M</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+head(df_ud)
+```
+
+
+<table>
+<caption>A tibble: 3 × 3</caption>
+<thead>
+	<tr><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>David </td><td>49</td><td>K</td></tr>
+	<tr><td>Edward</td><td>53</td><td>M</td></tr>
+	<tr><td>Fiona </td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_d <- bind_rows(list(duke=df_dd, unc=df_ud), .id='site')
+df_d
+```
+
+
+<table>
+<caption>A spec_tbl_df: 7 × 4</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patients</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Beth   </td><td>43</td><td>F</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>David  </td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+left_join(df_gp, df_d, by = c('site', c('patient'='patients')))
+```
+
+
+<table>
+<caption>A tibble: 18 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td> 0.07755833</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>-0.60571547</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td> 2.26166848</td><td>16</td><td>F </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td> 2.80037479</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td> 0.64111624</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td> 0.95898869</td><td>23</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td> 0.83316369</td><td>53</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td> 2.07089865</td><td>53</td><td>M </td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td> 0.35482775</td><td>53</td><td>M </td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>-1.49156020</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>-0.86647868</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td> 1.60434377</td><td>49</td><td>K </td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>A</td><td> 0.7759811</td><td> 1.68743457</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>B</td><td> 0.3269814</td><td> 1.61993404</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Ed     </td><td>C</td><td> 0.8973218</td><td>-0.31776193</td><td>NA</td><td>NA</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td> 0.91584977</td><td>67</td><td>F </td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>-0.15046013</td><td>67</td><td>F </td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td> 1.05110029</td><td>67</td><td>F </td></tr>
+</tbody>
+</table>
+
+
+
+There are missing values for Ed because the names don't match. We know that Ed's name in this case is really Edward, so we fix and try again.
+
+
+```R
+left_join(df_gp %>% mutate(patient=recode(patient, 'Ed'='Edward')),
+          df_d, 
+          by = c('site', c('patient'='patients')))
+```
+
+
+<table>
+<caption>A tibble: 18 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann    </td><td>A</td><td> 1.7391560</td><td> 0.07755833</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>B</td><td> 1.7170389</td><td>-0.60571547</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann    </td><td>C</td><td> 1.1929272</td><td> 2.26166848</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>A</td><td> 2.4370022</td><td> 2.80037479</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>B</td><td> 1.5513112</td><td> 0.64111624</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob    </td><td>C</td><td> 2.8377604</td><td> 0.95898869</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>A</td><td>-0.9307330</td><td> 0.83316369</td><td>53</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>B</td><td> 1.8112820</td><td> 2.07089865</td><td>53</td><td>M</td></tr>
+	<tr><td>duke</td><td>Charlie</td><td>C</td><td> 0.6021148</td><td> 0.35482775</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>David  </td><td>A</td><td> 0.6780785</td><td>-1.49156020</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>David  </td><td>B</td><td> 1.7998124</td><td>-0.86647868</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>David  </td><td>C</td><td> 0.9776623</td><td> 1.60434377</td><td>49</td><td>K</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>A</td><td> 0.7759811</td><td> 1.68743457</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>B</td><td> 0.3269814</td><td> 1.61993404</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Edward </td><td>C</td><td> 0.8973218</td><td>-0.31776193</td><td>53</td><td>M</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>A</td><td> 1.3541798</td><td> 0.91584977</td><td>67</td><td>F</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>B</td><td> 1.9866301</td><td>-0.15046013</td><td>67</td><td>F</td></tr>
+	<tr><td>unc </td><td>Fiona  </td><td>C</td><td> 2.3377464</td><td> 1.05110029</td><td>67</td><td>F</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+df_all <- left_join(df_gp %>% mutate(patient=recode(patient, 'Ed'='Edward')),
+          df_d, 
+          by = c('site', c('patient'='patients')))
+```
+
+
+```R
+head(df_all)
+```
+
+
+<table>
+<caption>A tibble: 6 × 7</caption>
+<thead>
+	<tr><th scope=col>site</th><th scope=col>patient</th><th scope=col>gene</th><th scope=col>gene.change</th><th scope=col>protein.change</th><th scope=col>age</th><th scope=col>sex</th></tr>
+	<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>
+</thead>
+<tbody>
+	<tr><td>duke</td><td>Ann</td><td>A</td><td>1.739156</td><td> 0.07755833</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>B</td><td>1.717039</td><td>-0.60571547</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Ann</td><td>C</td><td>1.192927</td><td> 2.26166848</td><td>16</td><td>F</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>A</td><td>2.437002</td><td> 2.80037479</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>B</td><td>1.551311</td><td> 0.64111624</td><td>23</td><td>M</td></tr>
+	<tr><td>duke</td><td>Bob</td><td>C</td><td>2.837760</td><td> 0.95898869</td><td>23</td><td>M</td></tr>
+</tbody>
+</table>
+
+
+
+
+```R
+options(repr.plot.width=8, repr.plot.height=3)
+```
+
+Plotting the data suggests that there may be an increase in most genes and proteins from visit 1 to visit 2 (since most of the changes are positive), but there is no obvious correlation between the gene and its protein product.
+
+
+```R
+ggplot(df_all, aes(x=gene.change, y=protein.change, color=site)) + 
+geom_point() + 
+geom_hline(yintercept = 0, color='grey') + 
+geom_vline(xintercept = 0, color='grey') +
+xlim(c(-3, 3)) +
+ylim(c(-3, 3)) +
+facet_grid(~ gene)
+```
+
+
+    
+![png](output_50_0.png)
+    
+

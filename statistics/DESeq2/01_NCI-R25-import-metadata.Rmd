@@ -6,7 +6,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
@@ -69,4 +69,12 @@ tools::md5sum(mtfile)
 
 ```{r}
 sessionInfo()
+```
+
+```{r}
+
+```
+
+```{r}
+
 ```

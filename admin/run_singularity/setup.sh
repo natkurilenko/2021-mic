@@ -11,7 +11,7 @@ SINGULARITY_CACHEDIR="${SINGULARITY_CACHEDIR:-$SINGULARITY_DIR/cachedir}"
 SINGULARITY_PULLFOLDER="${SINGULARITY_PULLFOLDER:-$SINGULARITY_DIR/pulldir}"
 SINGULARITY_IMAGE="/hpc/group/chsi/container_images/mic_course/jupyter-mic-2021_latest.sif"
 
-# -
+CONTAINER_SCRATCH="${HOME}/scratch"
 
 # -------------------------------------------------
 # DO NOT MODIFY ANYTHING BELOW HERE!
@@ -36,11 +36,12 @@ else
 fi
 
 if [ -d "${WORKSPACE}" ]; then
-    BIND_ARGS="$BIND_ARGS --bind ${WORKSPACE}:/workspace"
+    BIND_ARGS="$BIND_ARGS --bind ${WORKSPACE}:${CONTAINER_SCRATCH}"
 else
     echo "Make sure WORKSPACE exists: $WORKSPACE"
     echo "The location of WORKSPACE can be controlled by setting WORKSPACE_BASE_DIR before running this or in your .bashrc file"
     exit 1
+
 fi
 
 #-----------------

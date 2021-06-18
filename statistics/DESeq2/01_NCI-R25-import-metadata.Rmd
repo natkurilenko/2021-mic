@@ -1,5 +1,4 @@
 ---
-title: Import SRA meta data
 jupyter:
   jupytext:
     text_representation:
@@ -15,6 +14,12 @@ jupyter:
 
 
 
+
+
+# Import metadata file
+
+
+The objective of this notebook is to import the project's meta data into an R object.
 
 ```{r}
 library(tidyverse)
@@ -69,12 +74,4 @@ tools::md5sum(mtfile)
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-
-```
-
-```{r}
-
 ```

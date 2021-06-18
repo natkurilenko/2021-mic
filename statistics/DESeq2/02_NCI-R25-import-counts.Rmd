@@ -1,5 +1,4 @@
 ---
-title: Import STAR counts
 jupyter:
   jupytext:
     text_representation:
@@ -12,6 +11,9 @@ jupyter:
     language: R
     name: ir
 ---
+
+# Import Count files
+
 
 The objective of this notebook is to import the project's STAR count files into an R object.
 
@@ -159,8 +161,8 @@ readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
 countdata <- foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
     cntfile <- file.path(cntdir, fname)
     readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
-        dplyr::select(X1, X2) %>%
-            rlang::set_names(c("gene", fname))
+    dplyr::select(X1, X2) %>%
+    rlang::set_names(c("gene", fname))
 }
 ```
 

@@ -1,5 +1,4 @@
 ---
-title: QC plots
 jupyter:
   jupytext:
     text_representation:
@@ -12,6 +11,12 @@ jupyter:
     language: R
     name: ir
 ---
+
+# QC plots of mapping metrics
+
+
+This notebook illustrates the use of the ggplot2 package for producing QC plots mapping metrics
+
 
 ### Load packages
 
@@ -30,10 +35,10 @@ PRJNA668393qcData <- readRDS(qcfile)
 tools::md5sum(qcfile)
 ```
 
-### Specify a theme for the plots
+Note that the libraries are across the rows (the variables are across the columns)
 
 ```{r}
-mytheme <-  ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+PRJNA668393qcData
 ```
 
 ## Visualize proportion of mapped reads
@@ -44,7 +49,7 @@ mytheme <-  ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, h
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
-        ggplot2::geom_point()
+    ggplot2::geom_point()
 ```
 
 ### Add a theme
@@ -52,8 +57,18 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped)) + 
-        ggplot2::geom_point() +
-            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::geom_point() +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Define common theme
+
+
+One can define a common theme to be applied to multiple figures
+
+```{r}
+mytheme <- theme_bw() + ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ### Annotate treatment information with colors
@@ -61,8 +76,8 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment)) + 
-        ggplot2::geom_point() + 
-           ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::geom_point() + 
+    mytheme
 ```
 
 ### Annotate treatment information with colors and cell line levels with shape
@@ -70,8 +85,8 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) + 
-        ggplot2::geom_point() + 
-            ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::geom_point() + 
+    mytheme
 ```
 
 ### Annotate treatment information with colors and cell line levels with shape(with additional customization)
@@ -79,13 +94,28 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = treatment, shape = cell_line)) +
-        ggplot2::geom_point(size = 3) +
-            ggplot2::labs(col = "Treatment") +
-                ggplot2::labs(shape = "Cell Line") +
-                    ggplot2::xlab("Run Label") + 
-                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
-                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
-                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::geom_point(size = 3) +
+    ggplot2::labs(col = "Treatment") +
+    ggplot2::labs(shape = "Cell Line") +
+    ggplot2::xlab("Run Label") + 
+    ggplot2::ylab("Total reads (depth)") +
+    ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+    mytheme
+```
+
+This is a variation of the previous figure where the legends have been combined
+
+```{r}
+PRJNA668393qcData %>%
+    dplyr::mutate(grouplab = factor(paste(cell_line, treatment, sep = ", "))) %>%
+    ggplot2::ggplot(aes(x = Run, y = prop.mapped, col = grouplab, shape = grouplab)) +
+    ggplot2::geom_point(size = 3) +
+    ggplot2::scale_colour_manual(name = "Cell Line, Treatment", values=c("blue3","red3","blue3","red3")) +   
+    ggplot2::scale_shape_manual(name = "Cell Line, Treatment", values=c(19, 19, 17, 17)) +
+    ggplot2::xlab("Run Label") + 
+    ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
+    mytheme
+    
 ```
 
 ## Visualize depth
@@ -93,31 +123,22 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = depth)) +
-        ggplot2::geom_point(size = 3) +
-            ggplot2::theme_bw()
+    ggplot2::geom_point(size = 3) +
+    mytheme
 ```
+
+A slightly customized version of the previous plot suggesting that the UV2 cell lines were sequenced at higher depth
 
 ```{r}
 PRJNA668393qcData %>%
     ggplot2::ggplot(aes(x = Run, y = depth, col = treatment, shape = cell_line)) +
-        ggplot2::geom_point(size = 3) +
-            ggplot2::labs(col = "Treatment") +
-                ggplot2::labs(shape = "Cell Line") +
-                    ggplot2::xlab("Run Label") + 
-                        ggplot2::ylab("Total reads (depth)") +
-                            ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
-                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-```{r}
-PRJNA668393qcData %>%
-    ggplot2::ggplot(aes(x = depth, y = prop.mapped, col = treatment, shape = cell_line)) +
-        ggplot2::geom_point(size = 3) +
-            ggplot2::labs(col = "Treatment") +
-                ggplot2::labs(shape = "Cell Line") +
-                    ggplot2::xlab("Run Label") + 
-                        ggplot2::ylab("Proportion of Uniquely Mapped Reads") +
-                                ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::geom_point(size = 3) +
+    ggplot2::labs(col = "Treatment") +
+    ggplot2::labs(shape = "Cell Line") +
+    ggplot2::xlab("Run Label") + 
+    ggplot2::ylab("Total reads (depth)") +
+    ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+    mytheme
 ```
 
 ## Visualize proportion of uniquely mapped reads with facets
@@ -125,11 +146,11 @@ PRJNA668393qcData %>%
 ```{r}
 PRJNA668393qcData %>% ggplot(aes(x=Run, y=prop.mapped, shape =cell_line, color=treatment))+
     ggplot2::geom_point(size = 3) +
-        ggplot2::labs(col = "Treatment") +
-            ggplot2::labs(shape = "Cell Line") +
-                ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
-                    ggplot2::facet_grid(treatment~ cell_line, drop=TRUE, scales="free_x", space="free") +
-                        ggplot2::theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::labs(col = "Treatment") +
+    ggplot2::labs(shape = "Cell Line") +
+    ggplot2::scale_colour_manual(values = c("red3", "blue3", "green3")) +
+    ggplot2::facet_grid(treatment~ cell_line, drop=TRUE, scales="free_x", space="free") +
+    mytheme
 ```
 
 ```{r}

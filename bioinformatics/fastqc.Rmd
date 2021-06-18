@@ -1,0 +1,108 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+# Quality Control
+<!--
+** Add Intro Text***
+-->
+
+## Shell Variables
+Assign the variables in this notebook.
+
+```{bash}
+set -u
+
+DATA_BASE="/data"
+RAW_FASTQ_DIR="$DATA_BASE/sra_data"
+
+# The following are new for this notebook
+CUROUT=$HOME/scratch/bioinf_intro
+QC=$CUROUT/qc_output
+
+TOTAL_THREADS=20
+```
+
+## Making New Directories
+The directories *do* carry over between notebooks, they are a function of the server, so we only need to make the directories that are new in this notebook
+
+```{bash}
+mkdir -p $QC
+```
+
+Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$OUTPUT` directory.
+
+```{bash}
+ls $CUROUT
+```
+
+## Fastqc
+Now that we have had a quick look at our fastq file, let's run some basic analysis using a program called fastqc.  This will take less than a minute to run.  Remember that while "long" jobs are running it will say "In [\*]:" in the left margin, once it is done, a number will replace the asterisk.
+
+```{bash}
+fastqc -h
+```
+
+```{bash}
+ls -lSrh $RAW_FASTQ_DIR
+```
+
+```{bash}
+# fastqc --threads 2 --quiet $DEMUX/r1.8A_pilot.fq.gz -o $QC
+fastqc --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR12804466_1.fastq.gz -o $QC
+```
+
+Once fastqc is done running we can view the results by finding the output in the Jupyter browser, it should be in:
+
+```{bash}
+echo $QC
+```
+
+## MultiQC
+FastQC is a useful tool, but it has one problem: it generates one report for each FASTQ file.  When you have more than a handful of FASTQs (as most projects will), it is tedious to look at each one, and there is no simple way to compare them.
+
+MultiQC is a solution to this problem.  It mines the results from FastQC (and other HTS analysis tools) and generates reports that combine and summarize results for all the FASTQs analyzed.
+
+### Run FastQC on Multiple FASTQs
+Let's pick a selection of FASTQs to look at.
+
+```{bash}
+ls $RAW_FASTQ_DIR/SRR1280446[456]_1.fastq.gz
+```
+
+`--threads $TOTAL_THREADS` tells fastqc to run using `$TOTAL_THREADS` cores.
+
+```{bash}
+fastqc --quiet --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR1280446[457]_1.fastq.gz -o $QC
+```
+
+### Run MultiQC
+
+```{bash}
+multiqc -h
+```
+
+```{bash}
+multiqc $QC --outdir $QC
+```
+
+```{bash}
+multiqc -h
+```
+
+Once multiqc is done running we can view the results by finding the output in the Jupyter browser, it should be in a file named `multiqc_report.html` in :
+
+```{bash}
+echo $QC
+```

@@ -1,7 +1,6 @@
 ---
 jupyter:
   jupytext:
-    formats: ipynb,Rmd
     text_representation:
       extension: .Rmd
       format_name: rmarkdown

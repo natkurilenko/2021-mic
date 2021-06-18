@@ -1,4 +1,5 @@
 ---
+title: Import STAR counts
 jupyter:
   jupytext:
     text_representation:
@@ -11,10 +12,6 @@ jupyter:
     language: R
     name: ir
 ---
-
-# Import STAR counts
-
-
 
 The objective of this notebook is to import the project's STAR count files into an R object.
 
@@ -189,8 +186,4 @@ tools::md5sum(countfile)
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-
 ```

@@ -1,4 +1,5 @@
 ---
+title: Import SRA meta data
 jupyter:
   jupytext:
     text_representation:
@@ -12,7 +13,7 @@ jupyter:
     name: ir
 ---
 
-# Import SRA meta data
+
 
 
 ```{r}
@@ -68,6 +69,10 @@ tools::md5sum(mtfile)
 
 ```{r}
 sessionInfo()
+```
+
+```{r}
+
 ```
 
 ```{r}

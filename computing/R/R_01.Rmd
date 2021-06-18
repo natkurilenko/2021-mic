@@ -581,7 +581,6 @@ hist(iris$Petal.Length)
 ```
 
 
-<!-- #region -->
 #### Examples
 
 1. Explore the data frame mtcars. What variables does it contain? What are their data types?

@@ -1,0 +1,158 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
+<!-- #region -->
+# Bioinformatics Notebooks Table of Contents
+
+## RNA-Seq Bioinformatic Steps
+
+
+
+1. [Quality Control](fastqc.Rmd)
+1. [Trimming and Filtering](fastq_trimming.Rmd) UPDATE PROSE
+
+1. [Download and Index Genome](genome_prep.Rmd) FIXME
+1. [Mapping Reads to a Reference Genome](mapping.ipynb)
+
+<!---  
+1. [Making Generic Commands](making_generic_commands.ipynb)
+
+## A Pipeline with Multiple Samples
+
+1. [Making a Pipeline](making_a_pipeline.ipynb)
+1. [Pipeline in a Loop](loop_pipeline.ipynb)
+1. [Running Multiple FASTQs](multifastq_loop_pipeline.ipynb)
+1. [Looping with Globs](glob_loop.ipynb)
+1. [IGV visualization](igv_visualization.ipynb)
+    * [Shorter Introns](igv_shorter_introns.ipynb)
+
+## Exercises
+1. [Hands On Exercise #1](bioinf_hands_on_1.ipynb) 
+1. [Hands On Exercise #2](bioinf_hands_on_2.ipynb)
+1. [Hands On Exercise #3](bioinf_hands_on_3.ipynb) 
+
+
+## Appendix
+
+
+### All In One Pipeline
+1. [All in one pipeline](everything_together.ipynb)
+
+
+### Paired End Data
+1. [PE: Setup](pe_analysis_prep.ipynb)
+1. [PE: Trimming and Filtering](pe_fastq_trimming.ipynb)
+1. [PE: Mapping Reads to a Reference Genome](pe_mapping.ipynb)
+1. [PE: Looping with Globs](pe_glob_loop.ipynb)
+
+-->
+
+
+
+<!---
+1. [Hands On Exercise #4](bioinf_hands_on_4.ipynb)
+-->
+
+<!---
+## 6/17/2019: Week 5, Day 1, Sessions 3 & 4 
+1. [FASTQs in Bioconductor](ShortRead/bioinformatics_shortread_intro.ipynb)
+1. [FASTAs in Bioconductor](ShortRead/readfasta.ipynb)
+## 6/18/2019: Week 5, Day 2, Session 2
+1. [Hands On Exercise #4](bioinf_hands_on_4.ipynb)
+-->
+<!---
+## 6/19/2019: Week 5, Day 3, Session 1
+1. [Microbiome Analysis Demo](dada2_tutorial_1_6_miseqsop.ipynb)
+-->
+
+<!---
+## 6/19/2019: Week 5, Day 3, Session 3 & 4 
+1. [Hands On Exercise #4](bioinf_hands_on_4.ipynb): continue if not done
+1. [Hands On Exercise #5](bioinf_hands_on_5.ipynb) 
+-->
+
+
+<!---
+## Week 4, Day 1 (7/23/2018)
+IGV Here?
+Check KOs?
+1. [Working with Paired Reads](paired_data_pipeline.ipynb)
+## Week 4, Day 2 (7/24/2018)
+
+-->
+
+
+
+<!---
+* [Setup for Full Run](prep_for_full_run.ipynb)
+-->
+<!---
+* [Demultiplex Raw FASTQs](demultiplex.ipynb)
+* [Bash Functions](bash_functions.ipynb)
+-->
+
+<!---
+
+1. [Pipeline with Loops](filled_nb/loop_pipeline.ipynb) ([clean notebook](clean_nb/loop_pipeline_clean.ipynb))
+1. [Pipeline for Multiple Samples](filled_nb/full_pilot_data_pipeline.ipynb) ([clean notebook](clean_nb/full_pilot_data_pipeline_clean.ipynb))
+
+## Pipeline for All 2015 Data
+
+1. [Demultiplex All 2015 Data](filled_nb/full_2015_data_demux.ipynb)
+1. [Demuxed FASTQ to Counts for All 2015 Data](filled_nb/full_2015_data_pipeline.ipynb)
+
+* [Using Bash in a Python Notebook](filled_nb/bash_magic.ipynb)
+
+## Parallelize
+* https://unix.stackexchange.com/questions/103920/parallelize-a-bash-for-loop
+* https://stackoverflow.com/questions/38160/parallelize-bash-script-with-maximum-number-of-processes
+* https://stackoverflow.com/questions/38774355/how-to-parallelize-for-loop-in-bash-limiting-number-of-processes
+-->
+
+<!---
+
+## Bonus
+* [Does Filtering Matter? Mapping unfiltered paired reads](filled_nb/paired_pilot_data_pipeline_unfiltered.ipynb)
+1. [demux_exploration](filled_nb/demux_exploration.ipynb) ([clean notebook](clean_nb/demux_exploration_clean.ipynb))
+1. [working_with_your_data](filled_nb/working_with_your_data.ipynb) ([clean notebook](clean_nb/working_with_your_data_clean.ipynb))
+
+#### Bioinformatics Pipeline on Full Dataset
+
+
+-->
+
+
+<!---
+### Lecture Slides
+* 
+
+#### TODO
+* Add intro text to each notebooks with overview of what it will cover
+* add in md5sum discussion (in QC?)
+
+
+data_provenance.ipynb
+quality_scores.ipynb
+-->
+
+<!---
+## 6/3/2019: Week 3, Day 1, Sessions 3 & 4 
+-->
+
+<!---
+1. [Lecture Slides: Bioinformatics Pipeline](../slides/0713_bioinformatics_overview.pdf)
+-->
+<!--- 1. [Counting Reads](counting.ipynb)  -->
+
+<!-- #endregion -->

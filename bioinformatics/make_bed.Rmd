@@ -1,0 +1,33 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+```{r}
+library(rtracklayer)
+library(GenomicFeatures)
+library(fs)
+library(dplyr)
+
+genome_dir= "/data/genome"
+gff_file=file.path(genome_dir,"gencode.vM27.primary_assembly.annotation.gff3")
+
+gff_file %>%
+    path_ext_set("bed") ->
+    bed_file
+```
+
+```{r}
+gff_file %>%
+makeTxDbFromGFF %>%
+  export(bed_file, "BED")
+```

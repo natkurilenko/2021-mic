@@ -1,5 +1,4 @@
 ---
-title: QC plots
 jupyter:
   jupytext:
     text_representation:
@@ -12,6 +11,9 @@ jupyter:
     language: R
     name: ir
 ---
+
+# Pipeline - generate plots
+
 
 ### Load packages
 

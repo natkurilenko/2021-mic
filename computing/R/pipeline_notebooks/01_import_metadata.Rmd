@@ -5,14 +5,17 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
 
-# Import SRA meta data
+# Pipeline - import sample information
+
+
+
 
 
 ```{r}
@@ -51,7 +54,14 @@ mtdata %>%
 ```
 
 ```{r}
-# Create cross tabulation
+# Get count of each treatment/cell line combination
+mtdata %>%
+    dplyr::group_by(treatment, cell_line) %>%
+    dplyr::summarize(n = dplyr::n()) 
+```
+
+```{r}
+# Create cross tabulation 
 mtdata %>%
     dplyr::group_by(treatment, cell_line) %>%
     dplyr::summarize(n = dplyr::n()) %>%
@@ -59,6 +69,8 @@ mtdata %>%
 ```
 
 ```{r}
+#save object to be loaded into another R session.
+
 mtfile <- file.path(outdir, "PRJNA668393-metadata.RDS")
 
 saveRDS(mtdata, mtfile)
@@ -68,6 +80,10 @@ tools::md5sum(mtfile)
 
 ```{r}
 sessionInfo()
+```
+
+```{r}
+
 ```
 
 ```{r}

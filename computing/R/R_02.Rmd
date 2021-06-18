@@ -1,0 +1,515 @@
+
+# Using `dplyr` for data manipulation
+
+**Description**
+
+`dplyr` provides a flexible grammar of data manipulation. It’s the next iteration of plyr, focused on tools for working with data frames (hence the d in the name).
+
+
+If you look at [`dplyr` docs](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf), there is a rich collection of data manipulaiton verbs provided. However, most common tasks can be accomplished with just 6 verbs that we will cover in this session:
+
+```
+select
+filter
+mutate
+arrange
+summarize
+group_by
+```
+
+We will also see how to construct data manipulation "sentences" by using these verbs together wtih `pipes`.
+
+<!-- #endregion -->
+
+```{r}
+library(tidyverse)
+```
+
+## Data
+
+We usually bring new data into R by reading in a file, often of the type `.csv` or `.xlsx`. Here we read in the metadata file from the RNAseq experiment you will be analyzing.
+
+
+```{r}
+
+# This is just the path (directory) where the file is stored
+metadir <- normalizePath("/data/sra_data/")
+
+srametafile <- file.path(metadir, "accession_table.csv")
+
+#mdsum is a way to verify a file has not been corrupted
+
+tools::md5sum(srametafile)
+
+#Read the file and store it in a dataframe (actually a tibble)
+read_csv(srametafile) -> mtdata #Note the right arrow assignment
+mtdata
+```
+
+
+We'll do some dplyr operations on this dataframe (tibble), then we'll use some of R's built-in data sets, because they are easy to work with and provide nice, canonical examples.
+
+
+## Pipe
+
+This is the same construction we learned in the bash shell. It's just got a different symbol `%>%`
+
+
+```{r}
+mtdata %>% head(10) # head is a function that shows the beginning lines in a dataframe.
+```
+
+## Select columns
+
+Recall that in base R, columns are selected either by [, col_number] or using names and `$`. Dplyr provides a `select` function.
+
+```{r}
+mtdata %>% select(1:3) %>% head(3)
+```
+
+
+```{r}
+mtdata %>% select(c(1,3,5)) %>% head(3)
+```
+
+
+```{r}
+mtdata %>% select(Run, SampleName, treatment) %>% head(3) # This is the preferred way!!!
+```
+
+### Dropping columns
+
+
+```{r}
+mtdata %>% select(-Run) %>% head(3)
+```
+
+### Selecting using string operations
+
+
+
+```{r}
+mtdata %>% select(ends_with('long')) %>% head(3)
+```
+
+
+```{r}
+mtdata %>% select(starts_with('treatment')) %>% head(3)
+```
+
+
+```{r}
+mtdata %>% select(contains('line')) %>% head(3)
+```
+
+
+```{r}
+mtdata %>% select(matches('.*_.*')) %>% head(3)
+```
+
+## Filter rows
+
+
+```{r}
+# Find out what treatments there are:
+
+mtdata %>% distinct(treatment)  #There is a base R command that does this too: unique(mtdata$treatment).
+                                #What's different?
+```
+
+### Equality and inequality conditions
+
+
+```{r}
+mtdata %>% filter(treatment == 'isotype')
+```
+
+
+```{r}
+#First we'll add a numeric column - replicate number, but numeric. 
+#There is a much better way to do this with tidyr
+
+mtdata %>% mutate(rep_num = rep(1:3,4)) -> mtdata #note the right arrow assignment
+```
+
+```{r}
+mtdata %>% filter(rep_num > 1)
+```
+
+### Combining conditions
+
+
+```{r}
+mtdata %>% 
+filter(treatment != 'isotype', 
+       rep_num > 1) 
+```
+
+
+## Arrange in ascending or descending order
+
+
+```{r}
+mtdata %>% arrange(replicate)
+```
+
+
+```{r}
+mtdata %>% arrange(desc(replicate))
+```
+
+
+```{r}
+mtdata %>% 
+arrange(treatment, 
+        desc(rep_num))
+```
+
+## Mutate values
+
+
+
+We'll use a built-in R data set to do some more examples, because our sample metadata has no numeric values, and the built-in data sets were pretty much chosen for the purpose of examples.
+
+```{r}
+iris %>% head
+```
+
+```{r}
+iris %>% mutate(Ratio = Sepal.Width/Sepal.Length) %>% head()
+```
+
+```{r}
+iris %>% transmute(Ratio = Sepal.Width/Sepal.Length) %>% head()
+```
+
+```{r}
+iris %>% distinct(Species)
+```
+
+
+**Exercise**
+
+1. Use the `select` function to get all columns whose name contains Width.
+2. Use the `filter` command to get the rows whose species is either setosa or versicolor
+3. Add a column that is the sum of Sepal.Width and Petal.Width
+
+
+## 5. Summarize
+
+
+```{r}
+iris %>% summarize(Average.Petal.Width=mean(Petal.Width),
+                 Min.Petal.Width=min(Petal.Width),
+                 Max.Petal.Width=max(Petal.Width))
+```
+
+
+```{r}
+iris %>% summarize_if(is.numeric, mean)
+```
+
+## Group_by
+
+`summarize` is most useful when used with `group_by`
+
+
+```{r}
+iris %>% 
+group_by(Species) %>%
+summarize(Avg.Petal.Width = mean(Petal.Width))
+```
+
+
+```{r}
+iris %>% 
+group_by(Species) %>%
+summarize_if(is.numeric, mean) 
+```
+
+
+```{r}
+iris %>% 
+group_by(Species) %>%
+summarize_if(is.numeric, list(mean = mean, sd = sd)) #Note the funny syntax 'mean = mean'
+```
+
+**Exercises** Using the starwars data set
+
+1. Get the average height of a characters by species
+2. Add a column called BMI (mass/height^2) and store the new data frame in a variable called `df`
+3. Find the ten characters with the lowest BMI. Find the ten characters with the highest
+4. Get a count of the number of characters with any given eye color (the count summary function is n())
+
+
+
+**IMPORTANT NOTE**
+
+When we just run a command like 
+```
+iris %>% 
+group_by(Species) %>%
+summarize_if(is.numeric, list(mean = mean, sd = sd)) #Note the funny syntax 'mean = mean'
+```
+we haven't actually changed `iris`. Just like in `bash`, the output goes to the default (standard output) - the display. If we want to save this in a dataframe, we have to use the assignment operator. We can do this two ways:
+
+```{r}
+new_iris_left <- iris %>% 
+    group_by(Species) %>%
+    summarize_if(is.numeric, list(mean = mean, sd = sd))
+```
+
+```{r}
+iris %>% 
+group_by(Species) %>%
+summarize_if(is.numeric, list(mean = mean, sd = sd)) -> new_iris_right
+```
+
+Both are valid and do exactly the same thing. I like right assignment with the pipe construct, because it keeps things 'flowing' in the same direction (and the right arrow is then analogous to the `>` in `bash`) I'm sure you can find another programmer who will contradict this point of view.
+
+
+
+# Using `tidyr` to create tidy data sets
+
+**Description**
+> Easily Tidy Data with 'spread()' and 'gather()' Functions
+
+A tidy data frame is one where
+
+- Each column is a variable
+- Each row is an observation
+- Each value is a cell
+
+As we have seen, tidy data sets can be easily manipulated with `dplyr`. We'll also see that they make plotting with `ggplot` a breeze. `In this notebook, we see how to convert messy data sets into tidy ones using the verbs `gather`, `spread`, `separate` and `unite`. There are two other commands that do essentially what `gather` and `spread` do, but they are a little more intuitive. They are called `pivot_wider` and `pivot_longer`.
+
+For more complicated tidying jobs, see the full range of functions in the [`tidyr` documentation](https://cran.r-project.org/web/packages/tidyr/tidyr.pdf).
+
+
+```{r}
+library(tidyverse)
+```
+
+## 1. Use `gather` to combine multiple columns into one
+
+We note thet there are two "index" and "primer" columns - for a tidy data frame, we probably want to combine them. We cna do this using `gather`.
+
+### Data
+
+The use of `gather` can be confusing, so we will start with a toy example.
+
+
+```{r}
+name <- c('ann', 'bob', 'charlie')
+jan <- c(102, 155, 211)
+feb <- c(112, 150, 211)
+mar <- c(123, 147, 213)
+apr <- c(130, 140, 210)
+
+wts <- tibble(name=name, jan=jan, feb=feb, mar=mar, apr=apr)
+```
+
+
+```{r}
+wts
+```
+
+### Messy data
+
+'Messy' is often in the eye of the beholder. Our ideal gene count table will look something like this, with rows being samples and columns being genes (or vice-versa). However, in the current form, it is not possible to subgroup by month or to plot by month easily.
+
+### Using `gather` to creat a new column called `weight` to store monthly weights
+
+
+```{r}
+wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+
+```{r}
+wts_1 <- wts %>% gather(key=month, value=weight, jan:apr)
+```
+
+### To get month sorted correctly, we make it a factor
+
+
+```{r}
+wts_1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+
+```{r}
+wts_2 <- wts_1 %>% mutate(month = factor(month, 
+                                ordered = TRUE, 
+                                levels = c('jan', 'feb', 'mar', 'apr')))
+```
+
+### Now we can easily work with the tidy data set
+
+
+```{r}
+wts_2 %>% 
+group_by(month) %>% 
+summarize_at('weight', funs(min, max, mean)) 
+```
+
+
+```{r}
+options(repr.plot.width=6, repr.plot.height=3)
+```
+
+
+```{r}
+# ggplot - coming up!
+
+ggplot(wts_2, aes(x=month, y=weight, fill=name)) + 
+geom_bar(stat='identity') + 
+facet_wrap('name')
+```
+
+```{r}
+wts_2
+```
+
+### Using `gather` and `spread` to transpose
+
+
+```{r}
+# Going back to the original dataframe
+
+wts
+```
+
+When running the RNAseq pipeline, you will at one point generate a dataframe with counts. For some purposes, we want the columns to be the genes and the rows to be samples. For others, we want the opposite: genes to be rows and samples to be columns. The following idiom will transpose a dataframe. It is important that the dataframe's rows are all the same type of thing (such as weights per sample over time, as above, or gene counts per gene and sample)
+
+```{r}
+wts %>% 
+         gather(month, value, -name) %>% 
+         spread(name, value) 
+```
+
+Let's look at this line-by-line:
+
+```{r}
+wts %>% head
+```
+
+```{r}
+wts %>% 
+         gather(month, value, -name) -> wts_long
+wts_long
+#gather all columns except name, place them in a new column called 'value'
+```
+
+```{r}
+wts_long %>% spread(name, value) #spread the column 'value' across names
+```
+
+## 3. Use `separate` to split a single column containing multiple values
+
+Often a column will contain multiple pieces of information, and we need to extract that into multiple columns. The `separate` function is designed to address this problem. First we'll do a simple example using our metadata table. In this case, we don't have such a column, but we do have the replicate column that is a character. Recall that we simply added a numeric column, assuming the replicates were sorted within eaxh sample. We'll do this a better way, using separate.
+
+
+```{r}
+mtdata %>% head(5)
+```
+
+```{r}
+mtdata %>% separate(replicate, into = c("char", "replicate"), sep = "p")
+            
+```
+
+```{r}
+mtdata %>% separate(replicate, into = c("char", "replicate"), sep = "p", convert = TRUE) %>%
+            select(-"char")
+
+```
+
+## 4. Use `unite` to create a single variable from multiple columns
+
+Sometimes we want to do the opposite and combine multiple columns into a single column. Use `unite` to do this.
+
+
+```{r}
+mtdata %>% unite(Run_Exp_rep, c(Run, Experiment, replicate), sep = "_") -> mtdata_united
+
+mtdata_united
+```
+
+
+**Exercise**
+
+Use `dplyr` to change mtdata_united back to the form of mtdata.
+
+
+# ggplot
+
+ggplot is a 'grammar of graphics' plotting package that builds a plot through layers of objects. Key ideas:
+
+1. Aesthetics - mapping data to features, such as x and y axes, colors, symbols, etc.
+2. Geom - geometric objects (these are tied to statistical methods, such as `count` for histogram)
+3. Stats - statistical methods (generally tied to geoms)
+
+We don't have near enough time to cover all the intricacies and features of ggplot. This is just enough to get you going.
+
+We start by creating a plot object with the `ggplot` command.
+
+```{r}
+ggplot()
+```
+
+There's an object, but it's rather boring. We need to give it some data.
+
+```{r}
+iris %>% ggplot()
+```
+
+Not much changed. We have to tell ggplot what part of the data set to plot, and what goes on what axis
+
+```{r}
+iris %>% ggplot(aes(x = Petal.Width, y = Petal.Length))
+```
+
+Better, but where's the data? Well, we only told ggplot where we want the data. So it knows the names of the horizontal and vertical axes, and what the limits are. We need to add a geometric object.
+
+```{r}
+iris %>% ggplot(aes(x = Petal.Width, y = Petal.Length)) + geom_point()
+```
+
+Great! Now let's add a linear regression line.
+
+```{r}
+iris %>% 
+    ggplot(aes(x = Petal.Width, y = Petal.Length)) + 
+    geom_point() +
+    geom_smooth(method="lm")
+```
+
+To understand aes a bit better, lets add a mapping that isn't to the axes:
+
+```{r}
+iris %>% 
+    ggplot(aes(x = Petal.Width, y = Petal.Length)) + 
+    geom_point(aes(color = Species)) +
+    geom_smooth(method = "lm") 
+```
+
+Note that the points are colored by species, but the fit line is overall. That's because we gave the mapping to geom_point, and not the overall plot. Their is a hierarchy.
+
+```{r}
+iris %>% 
+    ggplot(aes(x = Petal.Width, y = Petal.Length, color = Species)) + 
+    geom_point() +
+    geom_smooth(method = "lm") 
+```
+
+```{r}
+iris %>% 
+    ggplot(aes(y = Petal.Length, color = Species)) + 
+    geom_boxplot()
+```
+
+```{r}
+
+```

@@ -5,15 +5,14 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
 
-# Import STAR counts
-
+# Import Count files
 
 
 The objective of this notebook is to import the project's STAR count files into an R object.
@@ -162,10 +161,19 @@ readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
 countdata <- foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
     cntfile <- file.path(cntdir, fname)
     readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
-        dplyr::select(X1, X2) %>%
-            rlang::set_names(c("gene", fname))
+    dplyr::select(X1, X2) %>%
+    rlang::set_names(c("gene", fname))
 }
 ```
+
+The 12 count will be merged by gene name. Without the .combine statement, the loop will read in a list of 12 files. With the .combine statement the files will be merge iteratively as follows
+
+* Merge {f1} and {f2} to get {f1,f2}
+* Merge {f1,f2} and {f3} to get {f1,f2,f3}
+* Merge {f1,f2,f3} and {f4} to get {f1,f2,f3,f4}
+* ....
+* Merge {f1,f2,f3,...,f11} and {f12} to get {f1,f2,f3,...f11,f12}
+
 
 Inspect the dimension of the object
 
@@ -189,8 +197,4 @@ tools::md5sum(countfile)
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-
 ```

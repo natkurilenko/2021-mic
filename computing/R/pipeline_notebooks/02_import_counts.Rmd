@@ -1,17 +1,19 @@
 ---
-title: Import STAR counts
 jupyter:
   jupytext:
     text_representation:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
+
+# Pipeline - import counts
+
 
 The objective of this notebook is to import the project's STAR count files into an R object.
 
@@ -26,6 +28,7 @@ library(foreach)
 ### Set directory containing count files
 
 ```{r}
+
 cntdir <- normalizePath("/data/starout/")
 
 # Output directory for R image files
@@ -40,7 +43,7 @@ if (!dir.exists(outdir)) {
 ### Get count file names
 
 ```{r}
-cntfiles <- list.files(path = cntdir, pattern = "*_ReadsPerGene.out.tab")
+cntfiles <- list.files(path = cntdir, pattern = "*_ReadsPerGene.out.tab") # Just like `ls`
 ```
 
 ### Inspect file names
@@ -110,7 +113,7 @@ Note that the structure of the file is identical to that of the first count file
 testcnt2 %>% head(10)
 ```
 
-### Extract first and fourth columns of first count file
+### Extract first and second columns of first count file
 
 ```{r}
 testcnt1 %>% 
@@ -118,7 +121,7 @@ testcnt1 %>%
     head(10)
 ```
 
-### Extract and rename first and fourth columns of first count file
+### Extract and rename first and second columns of first count file
 
 ```{r}
 testcnt1 %>% 
@@ -127,7 +130,7 @@ testcnt1 %>%
     head(10)
 ```
 
-### Extract and rename first and fourth columns of first and second count files and merge by gene name
+### Extract and rename first and second columns of first and second count files and merge by gene name
 
 ```{r}
 testcnt1 %>% 
@@ -152,11 +155,16 @@ coltypes <- list(col_character(), col_integer(), col_integer(), col_integer())
 readr::read_tsv(testfile1, col_names = FALSE, col_types = coltypes) %>% head(10)
 ```
 
-## Import count files
+## Import all count files
+
+`foreach` works like a for loop, but it has a nice `.combine` option that allows us to tell it how to combine the output at each iteration.
+
+The following iterates over `cntfiles`. For each file in `cntfiles`, it sets the full pathname of the count file, reads it in using `read_tsv`, renames the columns, and then uses the `.combine` function to combine the output using a full-join with the result from the previous iteration, growing the data frame by one column each time.
 
 ```{r}
 ### Iteratively merge count files
-countdata <- foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
+countdata <- 
+   foreach(fname = cntfiles, .combine = function(df1,df2){dplyr::full_join(df1, df2, by = "gene")}) %do% {
     cntfile <- file.path(cntdir, fname)
     readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
         dplyr::select(X1, X2) %>%

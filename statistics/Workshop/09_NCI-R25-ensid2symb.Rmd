@@ -1,20 +1,18 @@
 ---
-title: Import SRA meta data
 jupyter:
   jupytext:
     text_representation:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
 
-
-
+# Import annotation from a GTF or GFF file
 
 ```{r}
 library(tidyverse)
@@ -52,22 +50,39 @@ rtracklayer::import(gfffile) ->
 gffdat
 ```
 
+Filter by gene name
+
+```{r}
+gffdat %>% plyranges::filter(gene_name == "Il17f") %>% tibble::as_tibble()
+```
+
+Filter by gene symbol and exons
+
+```{r}
+gffdat %>% plyranges::filter(gene_name == "Il17f" & type == "exon") %>% tibble::as_tibble()
+```
+
+## Extract select annotation from the object as a tibble
+
 ```{r}
 gffdat %>%
     plyranges::filter(type == "gene") %>%
-        tibble::as_tibble() %>%
-            dplyr::select(seqnames, start, end, strand, gene_type, mgi_id, gene_id, gene_name) ->
-                ens2symbdat
+    tibble::as_tibble() %>%
+    dplyr::select(seqnames, start, end, strand, gene_type, mgi_id, gene_id, gene_name) ->
+    ens2symbdat
 ```
 
 ```{r}
 ens2symbdat
 ```
 
+## Check if the ensembl ids agree with the featureNames in the DESeq2 object
+
 ```{r}
-### do the ensemble ids agree with those in the DESeq2 object
 setequal(rownames(PRJNA668393ddsData), ens2symbdat[["gene_id"]])
 ```
+
+## Examine unqiueness of ensembl ids and symbols
 
 ```{r}
 ### ensembl ids are unique
@@ -82,16 +97,16 @@ ens2symbdat %>% dplyr::pull(gene_name) %>% duplicated() %>% any
 ```{r}
 ### duplicate gene names
 ens2symbdat %>% 
-        dplyr::group_by(gene_name) %>% 
-            dplyr::filter(n()>1)
+    dplyr::group_by(gene_name) %>% 
+    dplyr::filter(n()>1)
 ```
 
 ```{r}
 ### focusing on protein coding genes will reduce the number of duplicate gene ids
 ens2symbdat %>% 
     dplyr::filter(gene_type == "protein_coding") %>% 
-        dplyr::group_by(gene_name) %>% 
-            dplyr::filter(n()>1)
+    dplyr::group_by(gene_name) %>% 
+    dplyr::filter(n()>1)
 ```
 
 ```{r}
@@ -106,8 +121,4 @@ tools::md5sum(outfile)
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-
 ```

@@ -1,27 +1,27 @@
 ---
-title: DEseq2 differential expression analysis
 jupyter:
   jupytext:
     text_representation:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
 
+# Differential Expression Analysis with DESeq2
 
-## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
+
+Carry out a basic set of DE analyses using DESeq2 and visualize the results
 
 Requires the following:
 - ./proc//PRJNA668393-ddsdata.RDS
-- ./proc//PRJNA668393-qcdata.RDS
 
-Generates the following:
--
+
+## Load packages and data object
 
 
 ### Load packages
@@ -58,7 +58,7 @@ see the class of dds object
 class(PRJNA668393ddsData)
 ```
 
-DESeqDataSet is a S4 object. Recall that a S4 object was taught when introducing bioconductor. Note that S4 objects allow users to wrap up multiple elements into a single variables where each element is called a slot.
+DESeqDataSet is an S4 object. Recall that an S4 object was taught when introducing bioconductor. Note that S4 objects allow users to wrap up multiple elements into a single variables where each element is called a slot.
 
 ```{r}
 slotNames(PRJNA668393ddsData)
@@ -67,13 +67,13 @@ slotNames(PRJNA668393ddsData)
 The metadata (columnData) is stored in the slot `colData`
 
 ```{r}
-colData(PRJNA668393ddsData) %>% as.data.frame
+SummarizedExperiment::colData(PRJNA668393ddsData) %>% as.data.frame
 ```
 
 The design formula is stored in the slot `design`. The design holds the R formula which expresses how the counts depend on the variables in colData. We have specified any predictor values, so this currently looks like an intercept-only model.
 
 ```{r}
-design(PRJNA668393ddsData)
+DESeq2::design(PRJNA668393ddsData)
 ```
 
 The first thing you may want to do is **have a look at the raw counts** you have imported. The `DESeq2::counts` function extracts a matrix of counts (with the genes along the rows and samples along the columns). Let us first verify the dimension of this matrix.
@@ -112,33 +112,47 @@ sizeFactors(PRJNA668393ddsData)
   - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
   - $\mu_{ij} = s_{j}q_{ij}$
   - $s_j$ is sample $j$ specific normalization constant to account for the fact that samples can have very different library sizes
-  - $q_{ij}$ is **inserted plain-language definition (please check this)...** gene $i$ and sample $j$ specific estimated mean reads after accounting for sample-specific library size
-  - **I was curious -- why log2? -- and found this info useful https://www.researchgate.net/post/Why_do_we_usually_use_Log2_when_normalizing_the_expression_of_genes some components might be nice to add here**
+  - $q_{ij}$ is  gene $i$ and sample $j$ specific estimated mean reads after accounting for sample-specific library size
   - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
        - $x_j=0$ if treament = isotype, or
        - $x_j=1$ if treatment = anti-PD1
        - $z_j=0$ if cell line = Parental, or
        - $z_j=1$ if cell line = UV2.
-- Mean count 
- -  $x_j=0$ and  $z_j=0$
-	 - $\log_2(q_{ij}) = \beta_{0i}$
- -  $x_j=1$ and  $z_j=0$
-     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i}$
- -  $x_j=0$ and  $z_j=1$
-     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{2i}$
- -  $x_j=1$ and  $z_j=1$
-     - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
   
-- Effect size
+- **Linear predictor**
+ -  $\log_2(q_{ij}|(x_j=0, z_j=0)) = \beta_{0i}$
+ -  $\log_2(q_{ij}|(x_j=1, z_j=0)) = \beta_{0i}  + \beta_{1i}$
+ -  $\log_2(q_{ij}|(x_j=0, z_j=1)) = \beta_{0i}  + \beta_{2i}$
+ -  $\log_2(q_{ij}|(x_j=1, z_j=1)) = \beta_{0i}  + \beta_{1i} +  + \beta_{2i}$
+ 
+- **Mean count** 
+ -  $q_{ij}|(x_j=0, z_j=0) = 2^{\beta_{0i}}$
+ -  $q_{ij}|(x_j=1, z_j=0) = 2^{\beta_{0i}  + \beta_{1i}}$
+ -  $q_{ij}|(x_j=0, z_j=1) = 2^{\beta_{0i}  + \beta_{2i}}$
+ -  $q_{ij}|(x_j=1, z_j=1) = 2^{\beta_{0i}  + \beta_{1i} +  + \beta_{2i}}$
+     
+- **Normalized mean count**
+ -  $\mu_{ij} | (x_j=0,z_j=0) = s_{j} * 2^{\beta_{0i}}$
+ -  $\mu_{ij} | (x_j=1,z_j=0) = s_{j} * 2^{\beta_{0i} + \beta_{1i}}$
+ -  $\mu_{ij} | (x_j=0,z_j=1) = s_{j} * 2^{\beta_{0i} + \beta_{2i}}$
+ -  $\mu_{ij} | (x_j=1,z_j=1) = s_{j} * 2^{\beta_{0i} + \beta_{1i} + \beta_{2i}}$
+  
+- **Effect size**
   - Treatment effect within the parental cell line ($z_j=0$)
-	- $(\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
+	- $\Delta_{i0} = (\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
   - Treatment effect within the UV2 cell line ($z_j=1$)
-	- $(\beta_{0i} + \beta_{1i} + \beta_{2i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i}$
+	- $\Delta_{i1} = (\beta_{0i} + \beta_{1i} + \beta_{2i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i}$
 
-- Parameter interpretation
+- **Parameter interpretation**
 	- $\beta_{1i}$ quantifies the treatment effect
-	- Under the additive model, the treatment effect does not depend on the cell line; ie note that both the treatment effect with the parental cell line and the treatment effect within the UV2 cell line are equal to $\beta_{1i}$
+	- Under the additive model, the treatment effect does not depend on the cell line: $\Delta_{0i} = \Delta_{1i} = \beta_{i1}$
 	
+
+
+## Set up data object for analysis
+
+
+### Specify model design
 
 
 Add the design to the DESeq2 object. This is going to be the format that R uses for most linear models with the form "response ~ fixedeffect1 + fixedeffect2".
@@ -155,7 +169,7 @@ design(ddsobj) <- formula(~ cline + trt)
 design(ddsobj)
 ```
 
-## 01 Size Factors
+### Size Factors
  We begin by estimating the size factors for each sample $s_1,\ldots,s_n$:
 
 ```{r}
@@ -179,35 +193,35 @@ tibble::tibble(sfactor = sizeFactors(ddsobj))
 Summarize size factors
 
 ```{r}
-summary(sizeFactors(ddsobj))
+summary(DESeq2::sizeFactors(ddsobj))
 ```
 
 Now that the size factors have been estimated, we can get "normalized" read counts. Remember that DESeq2 normalizes against size factor.
 
 ```{r}
 # original counts for three genes for samples 3 and 11
-counts(ddsobj)[102:104,c(3,11)]
+DESeq2::counts(ddsobj)[102:104,c(3,11)]
 ```
 
 ```{r}
 # Size factors for samples 3 and 11
 
-sizeFactors(ddsobj)[c(3,11)]
+DESeq2::sizeFactors(ddsobj)[c(3,11)]
 ```
 
 ```{r}
 # normalized count for samples 3 and 11
-counts(ddsobj, normalize = TRUE)[102:104, c(3,11)]
+DESeq2::counts(ddsobj, normalize = TRUE)[102:104, c(3,11)]
 ```
 
 ```{r}
 # normalized manually using size factors for sample 3
-counts(ddsobj)[102:104, 3] / sizeFactors(ddsobj)[3]
+DESeq2::counts(ddsobj)[102:104, 3] / DESeq2::sizeFactors(ddsobj)[3]
 ```
 
 ```{r}
 # normalized manually using size factors for sample 11
-counts(ddsobj)[102:104, 11] / sizeFactors(ddsobj)[11]
+DESeq2::counts(ddsobj)[102:104, 11] / DESeq2::sizeFactors(ddsobj)[11]
 ```
 
 Here is how you can extract the raw and normalized counts for specific genes and samples
@@ -220,7 +234,7 @@ counts(ddsobj, normalize = FALSE)[c("ENSMUSG00000061024.9", "ENSMUSG00000079671.
 counts(ddsobj, normalize = TRUE)[c("ENSMUSG00000061024.9", "ENSMUSG00000079671.9"),c("SRR12804465","SRR12804467")]
 ```
 
-## 02 Dispersion Parameters
+### Dispersion Parameters
 Next, we get the dispersion factors for each gene $\alpha_1,\ldots,\alpha_{m}$
 
 ```{r}
@@ -345,7 +359,7 @@ DESeq2::results(ddsDE, contrast = c("cline", "UV2", "Parental"), tidy = TRUE) %>
         head(10)
 ```
 
-## Extract coefficient estimates
+### Extract and interpret coefficient estimates
 
 
 The results for the top hit (gene with the lowest p-value) for treatment DE are shown below
@@ -361,19 +375,26 @@ This output only provides the estimate for the treament effect $\beta_{1i}$ for 
 coef(ddsDE, se = TRUE)["ENSMUSG00000110537.2", , drop = FALSE]
 ```
 
-We can examine these coefficients to get a better understanding of how the expression of this gene changes with anti-PD-1 treatment and cell line.
+- Parameter estimates for ENSMUSG00000110537.2
 
-Remember that if there is differential treatment and cell line effects for this gene then the effect size ($\log_2(q_{ij})$) can be calculated as $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i}$
+    * $\hat{\beta}_{i0} = 5.240018$
+    * $\hat{\beta}_{i1} = -1.302921$
+    * $\hat{\beta}_{i2} = -0.2218365$
 
-For samples with X treatment and X cell line ...
-* trt == 0 and cline == 0  => $\log2(q_{ij})$= 5.240018	 + 0        + 0
-* trt == 1 and cline == 0  => $\log2(q_{ij})$= 5.240018	 + 0        + (-1.302921)
-* trt == 0 and cline == 1  => $\log2(q_{ij})$= 5.240018	 + (-0.2218365) + 0	
-* trt == 1 and cline == 1  => $\log2(q_{ij})$= 5.240018	 + (-0.2218365)+ (-1.302921)
 
-If we contrast by treatment within each cell line, we can prove to ourselves that the estimated treatment effect does not depend on cell line given the additive model (y~x1+x2).
-* if cline == 0 => (5.240018 + 0 + (-1.302921)) - (5.240018 + 0 + 0) = (-1.302921)
-* if cline == 1 => (5.240018 + (-0.2218365)+ (-1.302921)) - (5.240018 + (-0.2218365) + 0) = (-1.302921)
+- Estimated mean counts
+
+    * trt == 0 and cline == 0  => $\log2(q_{ij})$= 5.240018	+ (0) + (0)  = 5.240018
+    * trt == 1 and cline == 0  => $\log2(q_{ij})$= 5.240018	+ (-1.302921) + (0) = 3.937097
+    * trt == 0 and cline == 1  => $\log2(q_{ij})$= 5.240018	+ (0) + (-0.2218365) = 5.018181
+    * trt == 1 and cline == 1  => $\log2(q_{ij})$= 5.240018	+ (-1.302921) + (-0.2218365) = 3.715261
+
+- The treatment DE effect under the additive model does not depend on cell line
+
+    * if cline == 0 => $\hat{\Delta}_{i0}$ = 3.937097 - 5.240018  = -1.302921
+    * if cline == 1 => $\hat{\Delta}_{i1}$ = 3.715261 - 5.018181 = -1.30292
+
+**As exepected $\hat{\Delta}_{i0} = \hat{\Delta}_{i0} = \hat{\beta}_{i1}$**
 
 
 

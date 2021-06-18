@@ -1,20 +1,28 @@
 ---
-title: DEseq2 differential expression analysis
 jupyter:
   jupytext:
     text_representation:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
 
+# Interaction Analysis with DESeq2
 
-## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
+
+Carry out a basic set of interaction analyses using DESeq2 and visualize the results
+
+Requires the following:
+- ./proc//PRJNA668393-ddsdata.RDS
+
+
+
+## Load packages and data objects
 
 
 ### Load packages
@@ -35,9 +43,6 @@ PRJNA668393ddsData <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
 ```
 
-# Differential expression analysis
-
-
 ## Specify Model
 
 
@@ -46,39 +51,53 @@ tools::md5sum(ddsfile)
 - $K_{ij}$ follows a **negative binomial distribution** with
     - **Mean** $\mu_{ij}$
     - **Dispersion parameter** $\alpha_i$
-- Model:
-    - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
-    - $\mu_{ij} = s_{j}q_{ij}$
-        - $s_j$ is sample $j$ specific normalization constant size factor
-    - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j + \beta_{3i} (x_j*z_j)$
-        - $x_j=0$ if treament = isotype, or
-        - $x_j=1$ if treatment = anti-PD1
-        - $z_j=0$ if cell line = Parental, or
-        - $z_j=1$ if cell line = UV2.
-- Mean count 
-    -  $x_j=0$ and  $z_j=0$
-         - $\log_2(q_{ij}) = \beta_{0i}$
-    -  $x_j=1$ and  $z_j=0$
-         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i}$
-	-  $x_j=0$ and  $z_j=1$
-         - $\log_2(q_{ij}) = \beta_{0i} + \beta_{2i}$
-	-  $x_j=1$ and  $z_j=1$
-		 - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} + \beta_{2i} + \beta_{3i}
-
-- Effect size
-    - Treatment effect within the parental cell line ($z_j=0$)
-        - $(\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
-    - Treatment effect within the UV2 cell line ($z_j=1$)
-        - $(\beta_{0i} + \beta_{1i} + \beta_{2i} + \beta_{3i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i} + \beta_{3i}$
+    
+- **Model**:
+  - $K_{ij} \sim NB(\mu_{ij}, \alpha_i)$ (<em>i.e.,</em> the mean number of reads from library $j$ mapped to gene $i$ follows a negative binomial distribution with mean $\mu_{ij}$ and dispersion parameter $\alpha_i$)
+  - $\mu_{ij} = s_{j}q_{ij}$
+  - $s_j$ is sample $j$ specific normalization constant to account for the fact that samples can have very different library sizes
+  - $q_{ij}$ is  gene $i$ and sample $j$ specific estimated mean reads after accounting for sample-specific library size
+  - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j + \beta_{3i} (x_j*z_j)$
+       - $x_j=0$ if treament = isotype, or
+       - $x_j=1$ if treatment = anti-PD1
+       - $z_j=0$ if cell line = Parental, or
+       - $z_j=1$ if cell line = UV2.
   
-- Parameter interpretation
-    - $\beta_{1i}$ quantifies the treatment effect on mean read count within the parental cell line
-	- $\beta_{1i} + \beta_{3i}$ quantifies the treatment effect on mean read count within the UV2 cell line
-	- When there there is no interaction (<em>i.e.,</em> $\beta_{3i}=0$)
-		- the treatment effect does not depend on the cell line
-		- specifically the treatment effect size is $\beta_{1i}$
-	
-Add the design to the DESeq2 object
+- **Linear predictor**
+ -  $\log_2(q_{ij}|(x_j=0, z_j=0)) = \beta_{0i}$
+ -  $\log_2(q_{ij}|(x_j=1, z_j=0)) = \beta_{0i}  + \beta_{1i}$
+ -  $\log_2(q_{ij}|(x_j=0, z_j=1)) = \beta_{0i}  + \beta_{2i}$
+ -  $\log_2(q_{ij}|(x_j=1, z_j=1)) = \beta_{0i}  + \beta_{1i} +   \beta_{2i} + \beta_{3i} $
+ 
+- **Mean count** 
+ -  $q_{ij}|(x_j=0, z_j=0) = 2^{\beta_{0i}}$
+ -  $q_{ij}|(x_j=1, z_j=0) = 2^{\beta_{0i}  + \beta_{1i}}$
+ -  $q_{ij}|(x_j=0, z_j=1) = 2^{\beta_{0i}  + \beta_{2i}}$
+ -  $q_{ij}|(x_j=1, z_j=1) = 2^{\beta_{0i}  + \beta_{1i} +  \beta_{2i}+ \beta_{3i} }$
+     
+- **Normalized mean count**
+ -  $\mu_{ij} | (x_j=0,z_j=0) = s_{j} * 2^{\beta_{0i}}$
+ -  $\mu_{ij} | (x_j=1,z_j=0) = s_{j} * 2^{\beta_{0i} + \beta_{1i}}$
+ -  $\mu_{ij} | (x_j=0,z_j=1) = s_{j} * 2^{\beta_{0i} + \beta_{2i}}$
+ -  $\mu_{ij} | (x_j=1,z_j=1) = s_{j} * 2^{\beta_{0i} + \beta_{1i} + \beta_{2i}+ \beta_{3i} }$
+  
+- **Effect size**
+  - Treatment effect within the parental cell line ($z_j=0$)
+	- $\Delta_{i0} = (\beta_{0i} + \beta_{1i}) - (\beta_{0i}) = \beta_{1i}$
+  - Treatment effect within the UV2 cell line ($z_j=1$)
+	- $\Delta_{i1} = (\beta_{0i} + \beta_{1i} + \beta_{2i}+ \beta_{3i}) - (\beta_{0i} + \beta_{2i}) = \beta_{1i} + \beta_{3i}$
+
+- **Parameter interpretation**
+	- $\beta_{1i}$ quantifies the treatment effect for the Parental cell line
+    - $\beta_{1i} + \beta_{3i}$ quantifies the treatment effect for the UV2 cell line
+	- Under the multiplicative model, the treatment effect depends on the cell line: $\beta_{i1}=\Delta_{0i} \ne \Delta_{1i} = \beta_{i1}+ \beta_{3i}$
+    - The multiplicative model reduces to an additive model if $\beta_{3i} = 0$
+
+
+## Set up data object for analysis
+
+
+### Specify model design
 
 ```{r}
 ddsobj <- PRJNA668393ddsData
@@ -92,67 +111,21 @@ design(ddsobj) <- formula(~ cline + trt + cline:trt)
 design(ddsobj)
 ```
 
-## 01 Size Factors
+### Size Factors
  We begin by estimating the size factors $s_1,\ldots,s_n$:
 
 ```{r}
 ddsobj <- estimateSizeFactors(ddsobj)
 ```
 
-Now, compare the dds object to that of before applying the estimateSizeFactors() function. What has changed? What remains unchanged?
-
-```{r}
-ddsobj
-```
-
-Note that there is a **sizeFactor** added to **colData**. Let's look at it more carefully
-
-You can also get the size factors directly
-
-```{r}
-tibble::tibble(sfactor = sizeFactors(ddsobj))
-```
-
-Summarize size factors
-
-```{r}
-summary(sizeFactors(ddsobj))
-```
-
-Now that the size factors have been estimated, we can get "normalized" counts (DESeq2 normalizes against size factor)
-
-
-## 02 Dispersion Parameters
+### Dispersion Parameters
 Next, we get the dispersion factors $\alpha_1,\ldots,\alpha_{m}$
 
 ```{r}
 ddsobj <- estimateDispersions(ddsobj)
 ```
 
-Now inspect the dds object again and note that the rowRanges slot has extra information ("metadata column names(0):" before versus "column names(9): baseMean baseVar ... dispOutlier dispMAP")
-- before: 
-    - `metadata column names(0):`
-- after:  
-    - `column names(9): baseMean baseVar ...`
-
-```{r}
-alphas <- dispersions(ddsobj)
-```
-
-Verify that the number of dispersion factors equals the number of genes
-
-```{r}
-summary(alphas)
-```
-
-Summarize the dispersion factors using a box plot (may want to log transform)
-
-```{r}
-boxplot(log(dispersions(ddsobj)))
-```
-
-# Differential Expression Analysis
-We can now conduct a differential expression analysis using the DESeq() function. Keep in mind that to get to this step, we first estimated the size factors and then the dispersion parameters.
+## Interaction Analysis
 
 ```{r}
 ### Carry out interaction analysis
@@ -191,7 +164,7 @@ DESeq2::results(ddsDE, tidy = TRUE) %>%
 We can get the results for the differential expression analysis using results(). Here, we can compare two group of samples specified by the contrast. (If not, the default contrast would be the last term in your additive model `design(dds)`).
 
 
-## Extract coefficient estimates
+### Extract coefficient estimates
 
 
 The results for two genes are shown below
@@ -204,14 +177,17 @@ DESeq2::results(ddsDE, tidy = TRUE) %>%
 This output only provides the estimate for the treament effect $\beta_{1i}$ for this gene. We can get the estimates for the intercept $\beta_{0i}$ and the cell line effect $\beta_{2i}$ as follows
 
 ```{r}
-coef(ddsDE)[ c("ENSMUSG00000022351.15","ENSMUSG00000025964.16"), ]
+coef(ddsDE)[c("ENSMUSG00000022351.15","ENSMUSG00000025964.16"), ]
 ```
 
-```{r}
+- Parameter estimates for ENSMUSG00000022351.15
 
-```
+* $\hat{\beta}_{i0} = 10.511809$
+* $\hat{\beta}_{i1} = -0.1326850$
+* $\hat{\beta}_{i2} = -0.4110139$
+* $\hat{\beta}_{i3} = -1.350313$
 
-First, we estimate the mean counts
+- Estimated mean counts
 
 * trt == 0 and cline == 0  => $\log2(q_{ij})$= 10.511809	
 * trt == 1 and cline == 0  => $\log2(q_{ij})$= 10.511809 + (-0.1326850) = 10.37912
@@ -220,34 +196,34 @@ First, we estimate the mean counts
 
 The treatment DE effect under the multiplicative model depends on cell line: Under cell line 0, the treatment effect is the cell line log2 fold change, under cell line 1, the treatment effect is the cell line loig2 fold chnage + the interaction log 2 fold change
 
-* if cline == 0 => $\Delta_0$ = 10.37912 - 10.511809 = -0.132689
-* if cline == 1 => $\Delta_1$ = 8.617797 - 10.1008 = -1.483003 ( = -0.132689 + (-1.350313))
+* if cline == 0 => $\hat{\Delta}_{i0}$ = 10.37912 - 10.511809 = -0.132689
+* if cline == 1 => $\hat{\Delta}_{i1}$ = 8.617797 - 10.1008 = -1.483003
 
 Note that -1.483003 is equal to $\beta_{2i}$(trt_antiPD1_vs_isotype = -0.132689) plus $\beta_{3i}$(clineUV2.trtantiPD1 = -1.350313)
 
 
-```{r}
-**A bigger-picture sentence about why you should what happens when you flatten the 2 factors with 2 levels into 1 factors with 4 levels would be nice here**
-```
+
+We will now show how to get the within cell line treatment effects directly (this approach is recommended by the DESeq2 developer)
+
+
+First add group variable combining the cell line and treatment effect
 
 ```{r}
 dds1 <- ddsobj
 dds1$group <- as.factor(paste0(dds1$trt,dds1$cline))
-colData(dds1)
 ```
+
+A look at the new group variable
 
 ```{r}
-
+SummarizedExperiment::colData(dds1) %>% data.frame %>% dplyr::select(Run, trt, cline, group)
 ```
+
+Conduct differential expression analysis using group
 
 ```{r}
 DESeq2::design(dds1) <- ~ group
 dds1mod <- DESeq2::DESeq(dds1)
-
-```
-
-```{r}
-
 ```
 
 ```{r}
@@ -255,47 +231,22 @@ results(dds1mod)
 ```
 
 ```{r}
-
-```
-
-```{r}
 DESeq2::resultsNames(dds1mod)
 # instead of 2 factors with two levels each, we now have 1 factor with 4 levels
 ```
 
-```{r}
-
-```
+Get the treament effect within the parental cell line
 
 ```{r}
 DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1Parental","isotypeParental")) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
 ```
 
-```{r}
-
-```
+Get the treament effect within the UV2 cell line
 
 ```{r}
 DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
     dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
-```
-
-```{r}
-
-```
-
-```{r}
-DESeq2::results(ddsDE, tidy = TRUE, contrast = list(c("trt_antiPD1_vs_isotype", "clineUV2.trtantiPD1"))) %>%
-    dplyr::filter(row %in% c("ENSMUSG00000022351.15"))
-```
-
-```{r}
-
-```
-
-```{r}
-resultsNames(ddsDE)
 ```
 
 ## Visualize DE effect
@@ -331,13 +282,6 @@ myinteractplot(ddsobj, "ENSMUSG00000022351.15")
 
 myinteractplot(ddsobj, "ENSMUSG00000025964.16")
 ```
-
-
-```{r}
-
-```
-
-Bonus exercise: The previous helper function allowed us to customize the differential expression visualization. It is however in need of improvement and refinement if to be used for other projects. Specifically, there is substantial hard coding (e.g., the variable name for the merger "Run", the experimental factors "trt" and "cline", the axis labels, the colors. Consider revising this function so that it can be used more generally.
 
 
 ### Volcano plot

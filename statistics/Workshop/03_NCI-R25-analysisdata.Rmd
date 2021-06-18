@@ -1,17 +1,19 @@
 ---
-title: Create analysis ready data sets
 jupyter:
   jupytext:
     text_representation:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
     name: ir
 ---
+
+# Create R objects for QC of metrics and DESeq2 analysis
+
 
 
 ## Import metadata
@@ -74,11 +76,11 @@ starlabs <- c("N_ambiguous", "N_multimapping", "N_noFeature", "N_unmapped")
 
 countdata %>% 
     dplyr::filter(!gene %in% starlabs) %>%
-        data.frame() %>% 
-            tibble::column_to_rownames("gene") %>%
-                dplyr::rename_with(cleancolname) %>%
-                    as.matrix -> 
-                        starcountData
+    data.frame() %>% 
+    tibble::column_to_rownames("gene") %>%
+    dplyr::rename_with(cleancolname) %>%
+    as.matrix -> 
+    starcountData
     
 ```
 
@@ -104,21 +106,15 @@ The DESeq2 package expects the experimental variables (in this case treatment an
 ```{r}
 tibble::tibble(Run = colnames(starcountData)) %>%
     dplyr::full_join(mtdata, by = "Run") %>%
-        dplyr::mutate(trt = factor(gsub("-", "",treatment), levels = c("isotype", "antiPD1")), 
-                      cline = factor(cell_line, levels = c("Parental", "UV2"))) -> 
-            starcolData
+    dplyr::mutate(
+        trt = factor(gsub("-", "",treatment), levels = c("isotype", "antiPD1")), 
+        cline = factor(cell_line, levels = c("Parental", "UV2"))
+    ) -> 
+    starcolData
 ```
 
 ```{r}
 starcolData
-```
-
-```{r}
-
-```
-
-```{r}
-
 ```
 
 ### Create DESeq2 data object
@@ -153,8 +149,8 @@ In the count data object, the genes are across the rows and the libraries are ac
 ```{r}
 countdata %>% 
     tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            head(3)
+    tidyr::spread(gene, value) %>% 
+    head(3)
 ```
 
 Add the total count for each library as a new column (depth) and drop gene counts
@@ -162,11 +158,11 @@ Add the total count for each library as a new column (depth) and drop gene count
 ```{r}
 countdata %>% 
     tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            dplyr::rowwise() %>%
-                dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
-                    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
-                        head(3)
+    tidyr::spread(gene, value) %>% 
+    dplyr::rowwise() %>%
+    dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
+    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
+    head(3)
 ```
 
 Add the number of reads mapped to genes as a new column (N_mapped)
@@ -174,12 +170,12 @@ Add the number of reads mapped to genes as a new column (N_mapped)
 ```{r}
 countdata %>% 
     tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            dplyr::rowwise() %>%
-                dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
-                    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
-                        dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped)) %>%
-                            head(3)
+    tidyr::spread(gene, value) %>% 
+    dplyr::rowwise() %>%
+    dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
+    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
+    dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped)) %>%
+    head(3)
 ```
 
 This function adds three QC statistics to the transposed count matrix: 1. proportion of mapped reads (defined as number of mapped reads over depth count), proportion of reads mapped to regions with no gene annotation, and proportion of unqiuely mapped reads
@@ -188,8 +184,8 @@ This function adds three QC statistics to the transposed count matrix: 1. propor
 mapstat <- function(cntdf) {
     cntdf %>%
         dplyr::mutate(prop.mapped =  N_mapped / depth) %>%
-            dplyr::mutate(prop.nofeat = N_noFeature / depth) %>%
-                dplyr::mutate(prop.unique = (N_mapped + N_noFeature) / depth)
+        dplyr::mutate(prop.nofeat = N_noFeature / depth) %>%
+        dplyr::mutate(prop.unique = (N_mapped + N_noFeature) / depth)
 }
 ```
 
@@ -198,13 +194,13 @@ Now, we add these QC statistics to the transposed count matrix
 ```{r}
 countdata %>% 
     tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            dplyr::rowwise() %>%
-                dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
-                    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
-                        dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped))%>%
-                            mapstat() %>%
-                                head(3)
+    tidyr::spread(gene, value) %>% 
+    dplyr::rowwise() %>%
+    dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
+    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
+    dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped))%>%
+    mapstat() %>%
+    head(3)
 ```
 
 Finally merge in the meta data
@@ -212,15 +208,16 @@ Finally merge in the meta data
 ```{r}
 countdata %>% 
     tidyr::gather(fname, value, -gene) %>% 
-        tidyr::spread(gene, value) %>% 
-            dplyr::rowwise() %>%
-                dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
-                    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
-                        dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped)) %>%
-                            mapstat() %>%
-                                dplyr::mutate(Run = cleancolname(fname)) %>%
-                                    dplyr::full_join(mtdata, by = "Run") ->
-                                          PRJNA668393qcData
+    tidyr::spread(gene, value) %>% 
+    dplyr::rowwise() %>%
+    dplyr::mutate(depth = sum(c_across(!contains(c("fname"))))) %>% 
+    dplyr::select(c(fname, all_of(starlabs), depth)) %>%
+    dplyr::mutate(N_mapped = depth - (N_ambiguous + N_multimapping + N_noFeature + N_unmapped)) %>%
+    mapstat() %>%
+    dplyr::mutate(Run = cleancolname(fname)) %>%
+    dplyr::full_join(mtdata, by = "Run") ->
+    PRJNA668393qcData
+
 PRJNA668393qcData %>% dim
 PRJNA668393qcData %>% head(3)
 ```

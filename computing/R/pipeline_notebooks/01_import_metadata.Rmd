@@ -1,5 +1,4 @@
 ---
-title: Import SRA meta data
 jupyter:
   jupytext:
     text_representation:
@@ -12,6 +11,9 @@ jupyter:
     language: R
     name: ir
 ---
+
+# Pipeline - import sample information
+
 
 
 
@@ -52,7 +54,14 @@ mtdata %>%
 ```
 
 ```{r}
-# Create cross tabulation
+# Get count of each treatment/cell line combination
+mtdata %>%
+    dplyr::group_by(treatment, cell_line) %>%
+    dplyr::summarize(n = dplyr::n()) 
+```
+
+```{r}
+# Create cross tabulation 
 mtdata %>%
     dplyr::group_by(treatment, cell_line) %>%
     dplyr::summarize(n = dplyr::n()) %>%
@@ -60,6 +69,8 @@ mtdata %>%
 ```
 
 ```{r}
+#save object to be loaded into another R session.
+
 mtfile <- file.path(outdir, "PRJNA668393-metadata.RDS")
 
 saveRDS(mtdata, mtfile)

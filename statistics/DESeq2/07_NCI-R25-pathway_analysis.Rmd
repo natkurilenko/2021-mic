@@ -1,0 +1,299 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+
+
+# Bulk RNA-seq: Pathway Analysis
+
+In this workshop, we illustrate how to perform GSEA in R using bulk RNA-seq data. In particular, we focused on using the tool of gene set enrichment analysis (GSEA).
+
+Gene Set Enrichment Analysis (GSEA) was tests whether a set of genes of interest, *e.g.* genes ([Subramanian et al. 2005](https://www.pnas.org/content/102/43/15545)). The software is distributed by the [Broad Institute](https://www.gsea-msigdb.org/gsea/index.jsp) and is freely available for use by academic and non-profit organisations.
+
+GSEA is often slow in implementation. The R package `fgsea` ([Sergushichev 2016](https://www.biorxiv.org/content/10.1101/060012v3)) implements the same algorithm in R [vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/fgsea/inst/doc/fgsea-tutorial.html) “fast preranked gene set enrichment analysis (GSEA)”.
+
+
+[Commentary on GSEA](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1266131/)
+
+
+### Example data description
+
+In the study introduced in [Lo 2021](https://pubmed.ncbi.nlm.nih.gov/33597266/) , mice cell line experiments are performend with two experimental factors (2 by 2 factorial design). 
+
+* Treatment (anti-PD1 vs control)
+* Cell line (UV2 vs parental)
+ 
+There are three mice per cell line ($n$=12).
+ 
+We will focus the gene level analyses on three analyses
+
+1. Treatment differential effect (additive model)
+
+1. Treatment by cell line interaction
+
+1. Estimating treatment effect within each of the two cell lines
+
+### Load library and Data
+
+```{r message=FALSE}
+library("DESeq2")
+library("ashr")
+library("ggplot2")
+library("tidyverse")
+library("fgsea")
+```
+
+```{r load data}
+# procdir <- normalizePath("./proc/")
+# ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
+# PRJNA668393ddsData <- readRDS(ddsfile)
+# tools::md5sum(ddsfile)
+
+procdir <- normalizePath("/Users/jichun/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/")
+ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
+dds <- readRDS(ddsfile)
+tools::md5sum(ddsfile)
+```
+
+### Check dds
+
+```{r}
+dds
+meta.dat <- colData(dds) %>% as.data.frame
+head(meta.dat)
+table(meta.dat[,c("cline","trt")])
+```
+
+Check the design of the `dds`.
+
+```{r}
+design(dds)
+```
+
+### 01 Treatment differential effect (additive model)
+
+#### Create DDS object
+
+We create a DDS object using the design `design <- ~ cline + trt`
+
+```{r}
+design(dds) <- formula(~ cline + trt)
+```
+
+Now we run DESEQ2 to perform differential gene expression analysis. DESEQ2 mainly contains three steps.
+
+1. Estimate size factors
+
+1. Finalize the dispersion estimates 
+
+1. Perform generalized linear model fitting for each gene
+
+```{r}
+dds.fit <- DESeq(dds)
+```
+
+#### Create contrasts
+
+To indicate to DESeq2 the two groups we want to compare, we can use contrasts. Contrasts are then provided to DESeq2 to perform differential expression testing using the Wald test. Contrasts can be providd to DESeq2 in a couple of different ways.
+
+* Do nothing. Automatically DESeq2 will use the base factor level of the condition of interest as the base for statistical testing. The base level is chosen based on alphabetical rder of the levels.
+
+* In the `results()` function you can specify the comparison of interest, and the levels to compare. The level given last is the base level for the comparison.
+
+```
+contrast <- c("condition", "level_to_compare", "base_level") 
+results(dds.fit, contrast = contrast, alpha = alpha_threshold)
+```
+
+```{r}
+contrast_trt <- c("trt", "antiPD1", "isotype")
+```
+
+Noew we check the results. 
+
+#### Run DESEQ2
+```{r}
+res_add <- results(dds.fit, contrast = contrast_trt)
+head(res_add)
+```
+
+You can also perform log fold change (LFC) shrinkage. This is optional. 
+
+* DESeq2 allows for the shrikage of the LFC estimates towards zero when the information for a gene is low, which could include low counts or high dispersion values
+
+* LFC shrinkage uses all genes to generate more accurate estimates. Specifically, the distribution of LFC estimates for all genes is used (as a prior) to shrink the LFC estimates of genes with little information or high dispersion toward more likely (lower) LFC estimates.
+
+* LFC shrinkage does not change the gene P-values.
+
+```{r}
+res_add_shrunken <- lfcShrink(dds.fit, contrast = contrast_trt, res = res_add, type = "ashr")
+```
+
+
+
+#### MA plot
+
+* The MA plot shows the mean of the normalized counts versus the log2 fold changes for all genes tested.
+
+* The genes that are significantly DE are colored to be easily identified.
+
+* This is also a great way to illustrate the effect of LFC shrinkage.
+
+```{r}
+plotMA(res_add, ylim=c(-2,2))
+```
+```{r}
+plotMA(res_add_shrunken, ylim=c(-2,2))
+```
+#### Summarize results
+```{r}
+summary(res_add)
+summary(res_add_shrunken)
+```
+There are in total 27347 genes with nonzero total read count. None of them is found significantly differentially expressed across two treatments. Two possible reasons:
+
+* There is indeed no DE genes.
+
+* The single gene analysis has a small power so that we cannot identify the DE genes.
+
+```{r}
+head(res_add)
+```
+
+
+
+### 02 Perform GSEA based on the statistics obtained from DESEQ2
+
+The analysis is performed by:
+
+1. ranking all genes in the dataset
+
+2. identifying the rank positions of all members of the gene set in the ranked dataset
+
+3. calculating an enrichment score (ES) that represents the difference between the observed rankings and that which would be expected assuming a random rank distribution.
+
+
+#### Create ranks
+
+Rank all genes based on the Wald's statistics.
+
+We notice that some gene statistics are `NA`. This could due to various reasons., *e.g.*, the gene has zero count and thus cannot be used to perform differential expression analysis. For further steps, we need to remove those `NA` values.
+
+```{r}
+res_add.dat <- as_tibble(res_add)
+res_add.dat <- res_add.dat %>% drop_na("stat")
+
+ranks <- res_add.dat$stat
+names(ranks) <- row.names(res_add.dat)
+head(ranks)
+```
+
+Plot the ranked fold change.
+
+```{r}
+barplot(sort(ranks, decreasing = T))
+```
+
+#### Load pathways
+
+```{r}
+Mm.H<- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds")
+```
+
+#### Using `fgsea` package to perform GSEA
+
+```{r}
+set.seed(1234)
+fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
+```
+The warning produced indicates that there are few genes that have the same statistics and so are ranked equally. `fgsea` with arbitrarily order determine which comes first in the ranked list. As long as this number is small it shouldn’t significantly effect the results. If the number is large we need to check further.
+
+Here $21.62\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
+
+Let's look at the top 10 results.
+
+```{r}
+head(fgseaRes[order(padj, -abs(NES)), ], n=10)
+```
+
+
+#### Enrichment score plot
+
+```{r}
+plotEnrichment(pathwaysH[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+```
+
+The [GSEA](https://www.pnas.org/content/102/43/15545.full) paper provided an explanation of the enrichment score plot.
+
+The enrichment score (ES) that reflects the degree to which a set $S$ is overrepresented at the extremes (top or bottom) of the entire ranked list $L$. The score is calculated by walking down the list $L$, increasing a running-sum statistic when we encounter a gene in $S$ and decreasing it when we encounter genes not in $S$. The magnitude of the increment depends on the correlation of the gene with the phenotype. The enrichment score is the maximum deviation from zero encountered in the random walk; it corresponds to a weighted Kolmogorov–Smirnov-like statistic.
+
+#### GSEA Table plot
+
+The function `plotGseaTable`  allows us to plot a summary figure showing the results for multiple pathways.
+
+```{r}
+topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
+topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(pathwaysH[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+```
+
+
+### 03 Treatment by cell line interaction and GSEA
+
+
+#### Update the DDS object 
+
+We update the DDS object using the design `design <- ~ cline + trt + cline:trt`. Then we refit the model.
+
+```{r}
+design(dds) <- formula(~ cline + trt + cline:trt)
+dds.fit <- DESeq(dds)
+```
+Check the results of DESEQ fitting.
+```{r}
+res_int <- results(dds.fit)
+head(res_int)
+```
+
+#### Take out the statistics and prepare for the GSEA.
+
+```{r}
+res_int.dat <- as_tibble(res_int)
+res_int.dat <- res_int.dat %>% drop_na("stat")
+head(res_int.dat)
+
+ranks <- res_int.dat$stat
+names(ranks) <- row.names(res_int.dat)
+head(ranks)
+```
+
+
+#### Using `fgsea` package to perform GSEA
+
+```{r}
+fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
+head(fgseaRes[order(padj, -abs(NES)), ], n=10)
+plotEnrichment(pathwaysH[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+```
+
+
+```{r}
+topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
+topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(pathwaysH[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+```

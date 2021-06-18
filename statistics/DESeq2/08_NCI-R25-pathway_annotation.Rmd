@@ -1,0 +1,47 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+# Pathway Annotation
+
+
+To facilitate GSEA, the Broad Institue also provide a number of very well curated gene sets for testing against your data - the [Molecular Signatures Database (MSigDB)](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp). Unfortunately, these are collections of human genes; however, these lists have been translated to mouse equivalents by the Walter+Eliza Hall Institutes Bioinformatics service and made available for [download](http://bioinf.wehi.edu.au/MSigDB/index.html). Please also check the website for descriptions on how to generate the gene set list.
+
+
+### Load pathways
+
+```{r}
+Mm.H<- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds")
+# load(proc/mouse_H_v5p2.rdata)
+```
+
+
+### Explore the pathway annotation 
+```{r}
+head(names(Mm.H))
+head(Mm.H$HALLMARK_ADIPOGENESIS)
+```
+The numbers here are NCBI gene ids. The pathway collection is created by mapping the corresponding human collection to mouse orthologs using [HGNC Comparison of Orthology Predictions (HCOP)](https://www.genenames.org/tools/hcop). The HCOP tool integrates orthology assertions predicted by eggNOG, Ensembl Compara, HGNC, HomoloGene, Inparanoid, NCBI Gene Orthology, OMA, OrthoDB, OrthoMCL, Panther, PhylomeDB, PomBase, TreeFam and ZFIN. It includes non-coding as well protein-coding genes.
+
+By checking the NCBI gene ids, you can easily find the corresponding Ensembl gene ids.
+
+### Another example
+
+```{r}
+Mm.C1 <- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.c1.all.v7.1.entrez.rds")
+head(names(Mm.C1))
+head(Mm.C1$`10qA1`)
+```
+
+The mouse C1 positional gene set collection was created from the NCBI gene information file Mus_musculus.gene_info.gz downloaded from the [NCBI ftp site](ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/). Cytobands were identified from the map_location column. The positional collection provides GeneIDs for the genes in each cytoband.

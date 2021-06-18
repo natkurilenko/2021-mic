@@ -58,7 +58,8 @@ see the class of dds object
 class(PRJNA668393ddsData)
 ```
 
-DESeqDataSet is a S4 object. Recall that a S4 object was taught when introducing bioconductor. Note that S4 objects allow users to wrap up multiple elements into a single variables where each element is called a slot.
+DESeqDataSet is an S4 object. Recall that an S4 object was taught when
+introducing bioconductor. Note that S4 objects allow users to wrap up multiple elements into a single variables where each element is called a slot.
 
 ```{r}
 slotNames(PRJNA668393ddsData)
@@ -70,13 +71,19 @@ The metadata (columnData) is stored in the slot `colData`
 colData(PRJNA668393ddsData) %>% as.data.frame
 ```
 
-The design formula is stored in the slot `design`. The design holds the R formula which expresses how the counts depend on the variables in colData. We have specified any predictor values, so this currently looks like an intercept-only model.
+The design formula is stored in the slot `design`. The design holds
+the R formula which expresses how the counts depend on the variables
+in colData. We have specified any predictor values, so this currently
+looks like an intercept-only model.
 
 ```{r}
 design(PRJNA668393ddsData)
 ```
 
-The first thing you may want to do is **have a look at the raw counts** you have imported. The `DESeq2::counts` function extracts a matrix of counts (with the genes along the rows and samples along the columns). Let us first verify the dimension of this matrix.
+The first thing you may want to do is **have a look at the raw
+counts** you have imported. The `DESeq2::counts` function extracts a
+matrix of counts (with the genes along the rows and samples along the
+columns). Let us first verify the dimension of this matrix.
 
 ```{r}
 dim(DESeq2::counts(PRJNA668393ddsData))
@@ -86,7 +93,9 @@ dim(DESeq2::counts(PRJNA668393ddsData))
 head(DESeq2::counts(PRJNA668393ddsData),3)
 ```
 
-This slot is empty, but it will be important soon. This is where dispersion estimates for variation in read counts per gene will go, i.e. dispersion parameter $\alpha_i$ (notation below).
+This slot is empty, but it will be important soon. This is where
+dispersion estimates for variation in read counts per gene will go,
+i.e. dispersion parameter $\alpha_i$ (notation below).
 
 ```{r}
 dispersionFunction(PRJNA668393ddsData)
@@ -113,7 +122,6 @@ sizeFactors(PRJNA668393ddsData)
   - $\mu_{ij} = s_{j}q_{ij}$
   - $s_j$ is sample $j$ specific normalization constant to account for the fact that samples can have very different library sizes
   - $q_{ij}$ is **inserted plain-language definition (please check this)...** gene $i$ and sample $j$ specific estimated mean reads after accounting for sample-specific library size
-  - **I was curious -- why log2? -- and found this info useful https://www.researchgate.net/post/Why_do_we_usually_use_Log2_when_normalizing_the_expression_of_genes some components might be nice to add here**
   - $\log_2(q_{ij}) = \beta_{0i} + \beta_{1i} x_j + \beta_{2i} z_j $
        - $x_j=0$ if treament = isotype, or
        - $x_j=1$ if treatment = anti-PD1
@@ -186,7 +194,7 @@ Now that the size factors have been estimated, we can get "normalized" read coun
 
 ```{r}
 # original counts for three genes for samples 3 and 11
-counts(ddsobj)[102:104,c(3,11)]
+counts(ddsobj)[102:104, c(3,11)]
 ```
 
 ```{r}
@@ -437,7 +445,13 @@ myinteractplot(ddsobj, "ENSMUSG00000022564.8")
 ```
 
 
-Bonus exercise: The previous helper function allowed us to customize the differential expression visualization. It is however in need of improvement and refinement if to be used for other projects. Specifically, there is substantial hard coding (e.g., the variable name for the merger "Run", the experimental factors "trt" and "cline", the axis labels, the colors. Consider revising this function so that it can be used more generally.
+Bonus exercise: The previous helper function allowed us to customize
+the differential expression visualization. It is however in need of
+improvement and refinement if to be used for other
+projects. Specifically, there is substantial hard coding (e.g., the
+variable name for the merger "Run", the experimental factors "trt" and
+"cline", the axis labels, the colors. Consider revising this function
+so that it can be used more generally.
 
 
 ### Volcano plot
@@ -451,18 +465,18 @@ Can you think of reasons why we might see some genes that have large effect size
 ### Volcano plot for treatment effect
 DESeq2::results(ddsDE, contrast = c("trt", "antiPD1", "isotype"), tidy = TRUE) %>%
     dplyr::filter(!is.na(pvalue)) %>%
-        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) + 
-            ggplot2::geom_point() + 
-                ggplot2::theme_bw()
+        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) +
+        ggplot2::geom_point() +
+        ggplot2::theme_bw()
 ```
 
 ```{r}
 ### Volcano plot for cell line effect
 DESeq2::results(ddsDE, contrast = c("cline", "UV2", "Parental"), tidy = TRUE) %>%
     dplyr::filter(!is.na(pvalue)) %>%
-        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) + 
-            ggplot2::geom_point() + 
-                ggplot2::theme_bw()
+        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) +
+        ggplot2::geom_point() + 
+        ggplot2::theme_bw()
 ```
 
 ```{r}

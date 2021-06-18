@@ -1,0 +1,131 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+<!-- #region -->
+# Trimming and Filtering a FASTQ
+
+
+## Shell Variables
+Retyping shell variables in every notebook is getting old, and its error prone.  Let's centralize these so we can share them between notebooks.  We can create a shell script that contains the shell variables that we need, and then we can `source` it in each notebook.  Let's call it `bioinf_intro_config.sh`.  We can do this using the Jupyter text editor.
+<!-- #endregion -->
+
+```{bash}
+source bioinf_config.sh
+```
+
+## Making New Directories
+Make the directories that are new in this notebook
+
+```{bash}
+mkdir -p $TRIM_DIR
+```
+
+Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$CUROUT` directory.
+
+```{bash}
+ls $CUROUT
+```
+
+# Trimming and Filtering
+Now we get into some actual preprocessing.  We will use `fastq-mcf` to trim adapter from our reads and do some quality filtering.  We need to trim adapter, because if a fragment is short enough, we will sequence all the way through the fragment and into the adapter.  Obviously the adapter sequence in not found in the genome, and can keep the read from aligning properly.  To do the trimming, we need to generate an adapter file.
+
+## Making an adapter file
+The first step is to get the adapter sequence.  We can get this from the [manual](https://www.neb.com/-/media/catalog/datacards-or-manuals/manuale7600.pdf), but sequences from a PDF can pick up weird characters, so we are better off getting the adapter sequences from the [Primer Sample Sheet](https://www.neb.com/-/media/nebus/worksheet-samples/e7600_reverse-complement-workflow-sample-sheet.csv?rev=2bc14feb223d4f338d3b4ac07c94ed78).  
+
+We can download and display the Sample Sheet using `curl`:
+
+```{bash}
+ADAPTER_FASTA="${OUT_DIR}/adapter.fasta"
+
+# https://support-docs.illumina.com/SHARE/AdapterSeq/Content/SHARE/AdapterSeq/TruSeq/CDIndexes.htm
+echo ">truseq_read_1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+>truseq_read_2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+" > $ADAPTER_FASTA
+```
+
+<!-- #region -->
+We want the adapter sequences from the sample sheet: 
+```
+Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA,,,,,,,,
+AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT,,,,,,,,
+```
+
+Now we need to make the adapter file; this needs to be in FASTA format.
+
+0. Browse to scratch/bioinf_intro/myinfo
+1. Click on the jupyter "File" menu, and select "Open".  
+2. When the the new browser window/tab opens, click on the "Files" tab if it is not already active.
+3. Click on the "home" symbol to go to the top level directory, then click on "myinfo"
+4. In the "New" menu select "Text File".
+5. In this text file, paste the adapter lines from above.
+7. We also want to include the reverse complement of the adapter, in case the adapter contamination as sequenced is the reverse completement of what is given.  The easiest way to do that is to use https://www.bioinformatics.org/sms/rev_comp.html to generate the reverse complement, then name it something like "Adapter_RC"
+8. Now clean up by making sure that . . .
+    1. Each sequence is on its own line
+    2. Each sequence has a name on the line before it
+    3. The sequence name is preceded by a ">"
+    4. All commas and spaces need to be removed, and non-sequence characters need to be removed from the sequence lines
+Now it should look like this:
+```
+>Adapter
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+>AdapterRead2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+>Adapter_rc
+TGACTGGAGTTCAGACGTGTGCTCTTCCGATCT
+>AdapterRead2_rc
+ACACTCTTTCCCTACACGACGCTCTTCCGATCT
+```
+10. Click on "untitled.txt" to change the file name to "neb_e7600_adapters.fasta"
+11. Save the file.
+
+
+## fastq-mcf
+You can run `fastq-mcf -h` to get details about running fastq-mcf.  We will adjust run parameters, because some of the defaults set a low bar (even the author acknowleges this).
+<!-- #endregion -->
+
+```{bash}
+fastq-mcf -h
+```
+
+### Running fastq-mcf
+1. $ADAPTER_FASTA : the adapter file
+2. SRR12804466_1.fastq.gz : the FASTQ with the data (fastq-mcf, like most NGS analysis software, detects gzipped files and automatically decompresses on the fly)
+3. -q 20 : if a read has any bases with quality score lower than this, trim them and anything 3' of that base
+4. -x 0.5 : if this percentage (or higher) of the reads have an "N" in a given position, trim all reads to that position
+5. -o SRR12804466_1.trim.fastq.gz : output file (the .gz ending tells fastq-mcf to compress the output file)
+
+```{bash}
+ls -lSrh $RAW_FASTQ_DIR
+```
+
+```{bash}
+TrimmomaticSE
+```
+
+```{bash}
+TrimmomaticSE \
+        -threads $TOTAL_THREADS \
+        -phred33 \
+        ${RAW_FASTQ_DIR}/SRR12804466_1.fastq.gz \
+        ${TRIM_DIR}/SRR12804466_1_trimmed.fastq.gz \
+        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+```
+
+at this point we could run fastqc on the output of fastq-mcf to see if statistics have improved, but we will skip that for now.
+
+```{bash}
+ls ls -ltr $TRIM_DIR
+```

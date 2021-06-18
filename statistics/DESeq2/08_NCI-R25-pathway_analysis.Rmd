@@ -60,7 +60,7 @@ library("fgsea")
 # PRJNA668393ddsData <- readRDS(ddsfile)
 # tools::md5sum(ddsfile)
 
-procdir <- normalizePath("/Users/jichun/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/")
+procdir <- normalizePath("./proc/")
 ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
 dds <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
@@ -208,7 +208,12 @@ barplot(sort(ranks, decreasing = T))
 #### Load pathways
 
 ```{r}
-Mm.H<- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds")
+annodir <- "./resource/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
 ```
 
 #### Using `fgsea` package to perform GSEA
@@ -296,4 +301,12 @@ topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
 plotGseaTable(pathwaysH[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+```
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+
 ```

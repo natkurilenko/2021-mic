@@ -22,8 +22,12 @@ To facilitate GSEA, the Broad Institue also provide a number of very well curate
 ### Load pathways
 
 ```{r}
-Mm.H<- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds")
-# load(proc/mouse_H_v5p2.rdata)
+annodir <- "./resource/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
 ```
 
 
@@ -39,9 +43,18 @@ By checking the NCBI gene ids, you can easily find the corresponding Ensembl gen
 ### Another example
 
 ```{r}
-Mm.C1 <- readRDS("~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.c1.all.v7.1.entrez.rds")
+annofile2 <- file.path(annodir, "Mm.c1.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile2)
+
+Mm.C1 <- readRDS(annofile2)
+
 head(names(Mm.C1))
 head(Mm.C1$`10qA1`)
 ```
 
 The mouse C1 positional gene set collection was created from the NCBI gene information file Mus_musculus.gene_info.gz downloaded from the [NCBI ftp site](ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/). Cytobands were identified from the map_location column. The positional collection provides GeneIDs for the genes in each cytoband.
+
+```{r}
+sessionInfo()
+```

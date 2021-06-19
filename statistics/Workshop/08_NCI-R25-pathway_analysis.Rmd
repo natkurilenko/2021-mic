@@ -12,9 +12,6 @@ jupyter:
     name: ir
 ---
 
-
-
-
 # Bulk RNA-seq: Pathway Analysis
 
 In this workshop, we illustrate how to perform GSEA in R using bulk RNA-seq data. In particular, we focused on using the tool of gene set enrichment analysis (GSEA).
@@ -38,13 +35,17 @@ There are three mice per cell line ($n$=12).
  
 We will focus the gene level analyses on three analyses
 
-1. Treatment differential effect (additive model)
+1. GSEA for testing the treatment effect in the two factor additive model
 
-1. Treatment by cell line interaction
+1. GSEA for testing the treatment by cell line interaction
 
-1. Estimating treatment effect within each of the two cell lines
+1. GSEA for testing the treatment effect within each of the two cell lines
 
 ### Load library and Data
+
+```{r}
+
+```
 
 ```{r message=FALSE}
 library("DESeq2")
@@ -55,11 +56,6 @@ library("fgsea")
 ```
 
 ```{r load data}
-# procdir <- normalizePath("./proc/")
-# ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
-# PRJNA668393ddsData <- readRDS(ddsfile)
-# tools::md5sum(ddsfile)
-
 procdir <- normalizePath("./proc/")
 ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
 dds <- readRDS(ddsfile)
@@ -81,7 +77,7 @@ Check the design of the `dds`.
 design(dds)
 ```
 
-### 01 Treatment differential effect (additive model)
+### 01 Single gene analysis for testing the treatment effect in the two factor additive model
 
 #### Create DDS object
 
@@ -139,9 +135,6 @@ You can also perform log fold change (LFC) shrinkage. This is optional.
 ```{r}
 res_add_shrunken <- lfcShrink(dds.fit, contrast = contrast_trt, res = res_add, type = "ashr")
 ```
-
-
-
 #### MA plot
 
 * The MA plot shows the mean of the normalized counts versus the log2 fold changes for all genes tested.
@@ -170,10 +163,7 @@ There are in total 27347 genes with nonzero total read count. None of them is fo
 ```{r}
 head(res_add)
 ```
-
-
-
-### 02 Perform GSEA based on the statistics obtained from DESEQ2
+### 02  GSEA based on the statistics obtained from the single gene analysis
 
 The analysis is performed by:
 
@@ -208,7 +198,7 @@ barplot(sort(ranks, decreasing = T))
 #### Load pathways
 
 ```{r}
-annodir <- "./resource/"
+annodir <- "/data/genome/"
 annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
 
 tools::md5sum(annofile)
@@ -224,7 +214,7 @@ fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 ```
 The warning produced indicates that there are few genes that have the same statistics and so are ranked equally. `fgsea` with arbitrarily order determine which comes first in the ranked list. As long as this number is small it shouldn’t significantly effect the results. If the number is large we need to check further.
 
-Here $21.62\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
+Here $21.33\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
 
 Let's look at the top 10 results.
 
@@ -236,7 +226,7 @@ head(fgseaRes[order(padj, -abs(NES)), ], n=10)
 #### Enrichment score plot
 
 ```{r}
-plotEnrichment(pathwaysH[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
 ```
 
 The [GSEA](https://www.pnas.org/content/102/43/15545.full) paper provided an explanation of the enrichment score plot.
@@ -252,11 +242,11 @@ topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
 topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
-plotGseaTable(pathwaysH[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
 ```
 
 
-### 03 Treatment by cell line interaction and GSEA
+### 03 GSEA for testing the treatment by cell line interaction
 
 
 #### Update the DDS object 
@@ -291,7 +281,7 @@ head(ranks)
 ```{r}
 fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 head(fgseaRes[order(padj, -abs(NES)), ], n=10)
-plotEnrichment(pathwaysH[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
 ```
 
 
@@ -300,13 +290,69 @@ topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
 topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
-plotGseaTable(pathwaysH[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+```
+
+### 04 GSEA for testing the treatment effect within each of the two cell lines
+
+
+#### Define the model matrix
+
+```{r}
+mod_mat <- model.matrix(design(dds), colData(dds))
+mod_mat
+```
+
+#### Extract the data in the cell line "Parental"
+
+```{r}
+head(meta.dat)
+table(meta.dat[,c("trt","cline")])
+parental_isotype <- colMeans(mod_mat[(dds$cline =="Parental")&(dds$trt=="isotype"),])
+parental_antipd1 <- colMeans(mod_mat[(dds$cline =="Parental")&(dds$trt=="antiPD1"),])
+```
+
+#### An alternative way to specify constrast and extract estimator of effect size
+
+See this [tutorial](https://github.com/tavareshugo/tutorial_DESeq2_contrasts) for more details on how to define contrasts.
+
+```{r}
+res_trt_pa <- results(dds.fit, contrast = parental_antipd1 - parental_isotype)
+plot(res_trt_pa$log2FoldChange)
 ```
 
 ```{r}
-sessionInfo()
+plotMA(res_trt_pa)
 ```
 
 ```{r}
+head(res_trt_pa)
+```
 
+#### Extract test statistics
+
+```{r}
+res_trt_pa.dat <- as_tibble(res_trt_pa)
+res_trt_pa.dat <- res_trt_pa.dat %>% drop_na("stat")
+head(res_trt_pa.dat)
+
+ranks <- res_trt_pa.dat$stat
+names(ranks) <- row.names(res_trt_pa.dat)
+head(ranks)
+```
+
+#### Use `fgsea` to perform GSEA
+
+```{r}
+fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
+head(fgseaRes[order(padj, -abs(NES)), ], n=10)
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+```
+
+```{r}
+topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
+topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
 ```

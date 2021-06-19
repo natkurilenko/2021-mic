@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.2
+      jupytext_version: 1.11.3
   kernelspec:
     display_name: R
     language: R
@@ -41,18 +41,13 @@ We will focus the gene level analyses on three analyses
 
 1. GSEA for testing the treatment effect within each of the two cell lines
 
-### Load library and Data
-
-```{r}
-
-```
+### Load packages, study and annotation data
 
 ```{r message=FALSE}
-library("DESeq2")
-library("ashr")
-library("ggplot2")
-library("tidyverse")
-library("fgsea")
+library(DESeq2)
+library(ashr)
+library(tidyverse)
+library(fgsea)
 ```
 
 ```{r load data}
@@ -60,6 +55,15 @@ procdir <- normalizePath("./proc/")
 ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
 dds <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
+```
+
+```{r}
+annodir <- "./resource/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
 ```
 
 ### Check dds
@@ -195,18 +199,7 @@ Plot the ranked fold change.
 barplot(sort(ranks, decreasing = T))
 ```
 
-#### Load pathways
-
-```{r}
-annodir <- "/data/genome/"
-annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
-
-tools::md5sum(annofile)
-
-Mm.H <- readRDS(annofile)
-```
-
-#### Using `fgsea` package to perform GSEA
+## Using `fgsea` package to perform GSEA
 
 ```{r}
 set.seed(1234)
@@ -355,4 +348,8 @@ topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
 plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+```
+
+```{r}
+sessionInfo()
 ```

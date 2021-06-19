@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.2
+      jupytext_version: 1.11.3
   kernelspec:
     display_name: R
     language: R
@@ -22,7 +22,7 @@ To facilitate GSEA, the Broad Institue also provide a number of very well curate
 ### Load pathways
 
 ```{r}
-annodir <- "/data/genome/"
+annodir <- "./resource/"
 annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
 
 tools::md5sum(annofile)
@@ -54,3 +54,11 @@ head(Mm.C1$`10qA1`)
 ```
 
 The mouse C1 positional gene set collection was created from the NCBI gene information file Mus_musculus.gene_info.gz downloaded from the [NCBI ftp site](ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/). Cytobands were identified from the map_location column. The positional collection provides GeneIDs for the genes in each cytoband.
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+
+```

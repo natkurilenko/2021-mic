@@ -1,0 +1,94 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+# Working with Loops 
+
+## Shell Variables
+Assign the variables in this notebook.
+
+```{bash}
+source bioinf_config.sh
+mkdir -p $LOOP_TRIM_DIR $LOOP_STAROUT_DIR
+```
+
+## A Brief journey into `for` loops
+`for` loops take our use of the `$SRA_ACCESSION` variable to the next level! It is analogous to how you would teach a child to set the table: "FOR each place at the table, put a plate . . .,
+At the shell you phrase it like this:
+
+    for PERSON in Alice Bob Carol Dave Eve
+    do
+    put plate at PERSON's place
+    put napkin at PERSON's place
+    put fork at PERSON's place
+    put spoon at PERSON's place
+    put knife at PERSON's place
+    done
+
+Here is a real example:
+
+```{bash}
+for SRA_ACCESSION in A B C D E F
+    do
+       echo "______${SRA_ACCESSION}________"
+    done
+```
+
+The `for` loop in Bash is conceptually the same as in any other programming language, although the syntax may be different.  The `do` and `done` are essential - `do` needs to be before the "loop body" (what is going to be repeated) and `done` needs to be after it.
+
+So let's try something almost useful:
+
+```{bash}
+for SRA_ACCESSION in SRR12804466
+    do
+        echo "RUNNING SRA_ACCESSION: ${SRA_ACCESSION}"
+    done
+```
+
+## Now for the real thing . . .
+### Let's run the pipeline in a loop:
+Notice that we are now assigning to the `$SRA_ACCESSION` variable in the `for` statement
+
+```{bash}
+for SRA_ACCESSION in "SRR12804466" ; do
+    echo "---------------- TRIMMING: $SRA_ACCESSION ----------------"
+    TrimmomaticPE \
+        -threads $TOTAL_THREADS \
+        -phred33 \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_2.fastq.gz \
+        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
+        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
+        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
+        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+
+    echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
+    STAR \
+        --runMode alignReads \
+        --twopassMode None \
+        --genomeDir $GENOME_DIR \
+        --readFilesIn ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+        --readFilesCommand gunzip -c \
+        --outFileNamePrefix ${LOOP_STAROUT_DIR}/${SRA_ACCESSION}_ \
+        --quantMode GeneCounts \
+        --outSAMtype None \
+        --runThreadN $TOTAL_THREADS
+done
+```
+
+### And let's check the result
+
+```{bash}
+ls ${LOOP_STAROUT_DIR}
+```

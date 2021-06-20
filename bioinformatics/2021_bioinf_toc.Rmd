@@ -31,6 +31,14 @@ jupyter:
 1. [PE: Looping with Globs](pe_glob_loop.Rmd)
 -->
 
+## A Pipeline with Multiple Samples
+
+1. [Making a Pipeline](making_a_pipeline.Rmd)
+1. [Pipeline in a Loop](loop_pipeline.Rmd)
+1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd)
+1. [Looping with Globs](glob_loop.ipynb)
+
+
 ## Full Dataset
 
 1. [Quality Control](full_data_qc.Rmd) NEED TO CREATE
@@ -39,18 +47,16 @@ jupyter:
 
 
 ## Appendix
-- [Quality Score Tutorial](quality_scores.ipynb)
+- [Quality Score Tutorial](quality_scores.Rmd)
+- [Genome Prep](genome_prep.Rmd) NEED TO CHECK
 
 
 <!---  
+
+
+
 1. [Making Generic Commands](making_generic_commands.ipynb)
 
-## A Pipeline with Multiple Samples
-
-1. [Making a Pipeline](making_a_pipeline.ipynb)
-1. [Pipeline in a Loop](loop_pipeline.ipynb)
-1. [Running Multiple FASTQs](multifastq_loop_pipeline.ipynb)
-1. [Looping with Globs](glob_loop.ipynb)
 1. [IGV visualization](igv_visualization.ipynb)
     * [Shorter Introns](igv_shorter_introns.ipynb)
 

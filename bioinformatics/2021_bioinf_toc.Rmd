@@ -18,11 +18,12 @@ jupyter:
 ## RNA-Seq Basic Bioinformatic Steps
 
 1. [Quality Control](fastqc.Rmd) CHECK text
+1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
 1. [Trimming and Filtering](fastq_trimming.Rmd) WORKS: need to update text
-1. [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
 1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
 
 ## Paired End Data
+1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
 1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd) WORKS: need to update text
 1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd) WORKS: need to update text
 1. [PE: Quality Control](pe_qc.Rmd) WORKS: need to update text
@@ -32,23 +33,25 @@ jupyter:
 -->
 
 ## A Pipeline with Multiple Samples
+1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
+1. [Making a Pipeline](making_a_pipeline.Rmd) WORKS: need to update text
+1. [Pipeline in a Loop](loop_pipeline.Rmd) WORKS: need to update text
+1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd) WORKS: need to update text
+1. [Looping with Globs](glob_loop.Rmd) CHECKING NOW
 
-1. [Making a Pipeline](making_a_pipeline.Rmd)
-1. [Pipeline in a Loop](loop_pipeline.Rmd)
-1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd)
-1. [Looping with Globs](glob_loop.Rmd)
 
-
+<!---  
 ## Full Dataset
 
 1. [Quality Control](full_data_qc.Rmd) NEED TO CREATE
+-->
 
 
 
 
 ## Appendix
 - [Quality Score Tutorial](quality_scores.Rmd)
-- [Genome Prep](genome_prep.Rmd) NEED TO CHECK
+- [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
 
 
 <!---  

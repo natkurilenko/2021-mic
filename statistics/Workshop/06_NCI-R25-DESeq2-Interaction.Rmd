@@ -295,6 +295,17 @@ DESeq2::results(ddsDE, tidy = TRUE) %>%
                 ggplot2::theme_bw()
 ```
 
+## Save results
+
+```{r}
+outdir <- "./proc"
+outfile <- file.path(outdir, "PRJNA668393-DESeq2-multiplicative.RDS")
+
+saveRDS(ddsDE, file = outfile)
+
+tools::md5sum(outfile)
+```
+
 ```{r}
 sessionInfo()
 ```

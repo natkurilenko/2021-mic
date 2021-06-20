@@ -132,7 +132,7 @@ With globs and `basename` in our toolbox, we are ready to **conquer the world** 
 ## A globy pipeline
 
 ```{bash}
-for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz; do
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[56]_1.fastq.gz; do
     echo "FULL PATH IS: ${FASTQ}"
     SRA_ACCESSION="$(basename ${FASTQ} '_1.fastq.gz')"
 

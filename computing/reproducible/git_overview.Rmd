@@ -220,7 +220,7 @@ git push -u origin main
 
 If you entered a passphrase when you generated your SSH key, you will be prompted to enter it.
 > The "git remote . . ." command associates your local repo with the repo you just made on Github.  The "git push . . ." command pushes everything from your local repo to the Github repo. Now the Github repo should be a perfect copy of your local repo.
-
+<!-- STOPPED HERE 6/16/2021 -->
 5. Let's check that these two commands worked . . . go to your Github account in your webbrower and click on "planets" near the top.  You should see the **mars.txt** file that we commited to our local repo.
 6. Let's add another line to `mars.txt` in Jupyter: "Rhymes with cars". Then stage and commit it.
 7. When you do `git status` notice that it says "Your branch is ahead of 'origin/main' by 1 commit." This is because we have commited local changes, but haven't updated our remote repo (on Github). Git is usually informative and it tells us: **use "git push" to publish your local commits**. So let's do `git push` to sync our changes to the remote repo.  Check on Github for the changes!

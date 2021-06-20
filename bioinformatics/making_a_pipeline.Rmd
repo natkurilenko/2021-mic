@@ -20,7 +20,7 @@ Assign the variables in this notebook.
 
 ```{bash}
 source bioinf_config.sh
-mkdir -p $MULTI_TRIM_DIR $MULTI_STAROUT_DIR
+mkdir -p $PIPE_TRIM_DIR $PIPE_STAROUT_DIR
 ```
 
 ## Combining the Steps

@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.2
+      jupytext_version: 1.11.3
   kernelspec:
     display_name: Bash
     language: bash
@@ -27,8 +27,8 @@ DATA_BASE="/data"
 RAW_FASTQ_DIR="$DATA_BASE/sra_data"
 
 # The following are new for this notebook
-CUROUT=$HOME/scratch/bioinf_intro
-QC=$CUROUT/qc_output
+OUT_DIR=$HOME/scratch/bioinf_intro
+QC=$OUT_DIR/qc_output
 
 TOTAL_THREADS=20
 ```
@@ -40,10 +40,10 @@ The directories *do* carry over between notebooks, they are a function of the se
 mkdir -p $QC
 ```
 
-Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$OUTPUT` directory.
+Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$OUT_DIR` directory.
 
 ```{bash}
-ls $CUROUT
+ls $OUT_DIR
 ```
 
 ## Fastqc
@@ -77,7 +77,7 @@ MultiQC is a solution to this problem.  It mines the results from FastQC (and ot
 Let's pick a selection of FASTQs to look at.
 
 ```{bash}
-ls $RAW_FASTQ_DIR/SRR1280446[456]_1.fastq.gz
+ls $RAW_FASTQ_DIR/SRR1280446[457]_1.fastq.gz
 ```
 
 `--threads $TOTAL_THREADS` tells fastqc to run using `$TOTAL_THREADS` cores.
@@ -94,10 +94,6 @@ multiqc -h
 
 ```{bash}
 multiqc $QC --outdir $QC
-```
-
-```{bash}
-multiqc -h
 ```
 
 Once multiqc is done running we can view the results by finding the output in the Jupyter browser, it should be in a file named `multiqc_report.html` in :

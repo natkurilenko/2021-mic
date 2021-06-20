@@ -15,15 +15,15 @@ jupyter:
 <!-- #region -->
 # Bioinformatics Notebooks Table of Contents
 
-## RNA-Seq Bioinformatic Steps
+## RNA-Seq Basic Bioinformatic Steps
+
+1. [Quality Control](fastqc.Rmd) CHECK text
+1. [Trimming and Filtering](fastq_trimming.Rmd) WORKS: need to update text
+1. [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
+1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
 
 
 
-1. [Quality Control](fastqc.Rmd)
-1. [Trimming and Filtering](fastq_trimming.Rmd) UPDATE PROSE
-
-1. [Download and Index Genome](genome_prep.Rmd) FIXME
-1. [Mapping Reads to a Reference Genome](mapping.ipynb)
 
 <!---  
 1. [Making Generic Commands](making_generic_commands.ipynb)

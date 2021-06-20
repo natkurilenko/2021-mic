@@ -486,6 +486,17 @@ DESeq2::results(ddsDE, contrast = c("cline", "UV2", "Parental"), tidy = TRUE) %>
                 ggplot2::theme_bw()
 ```
 
+## Save results
+
+```{r}
+outdir <- "./proc"
+outfile <- file.path(outdir, "PRJNA668393-DESeq2-additive.RDS")
+
+saveRDS(ddsDE, file = outfile)
+
+tools::md5sum(outfile)
+```
+
 ```{r}
 sessionInfo()
 ```

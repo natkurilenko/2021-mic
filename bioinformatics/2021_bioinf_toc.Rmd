@@ -23,12 +23,19 @@ jupyter:
 1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
 
 ## Paired End Data
-1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd)
-1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd)
+1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd) WORKS: need to update text
+1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd) WORKS: need to update text
+1. [PE: Quality Control](pe_qc.Rmd) WORKS: need to update text
 
 <!---  
 1. [PE: Looping with Globs](pe_glob_loop.Rmd)
 -->
+
+## Full Dataset
+
+1. [Quality Control](full_data_qc.Rmd) NEED TO CREATE
+
+
 
 
 ## Appendix
@@ -60,30 +67,10 @@ jupyter:
 1. [All in one pipeline](everything_together.ipynb)
 
 
-### Paired End Data
-1. [PE: Setup](pe_analysis_prep.ipynb)
-1. [PE: Trimming and Filtering](pe_fastq_trimming.ipynb)
-1. [PE: Mapping Reads to a Reference Genome](pe_mapping.ipynb)
-1. [PE: Looping with Globs](pe_glob_loop.ipynb)
-
--->
-
 
 
 <!---
 1. [Hands On Exercise #4](bioinf_hands_on_4.ipynb)
--->
-
-<!---
-## 6/17/2019: Week 5, Day 1, Sessions 3 & 4 
-1. [FASTQs in Bioconductor](ShortRead/bioinformatics_shortread_intro.ipynb)
-1. [FASTAs in Bioconductor](ShortRead/readfasta.ipynb)
-## 6/18/2019: Week 5, Day 2, Session 2
-1. [Hands On Exercise #4](bioinf_hands_on_4.ipynb)
--->
-<!---
-## 6/19/2019: Week 5, Day 3, Session 1
-1. [Microbiome Analysis Demo](dada2_tutorial_1_6_miseqsop.ipynb)
 -->
 
 <!---

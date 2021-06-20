@@ -1,0 +1,49 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+# Quality Control
+<!--
+** Add Intro Text***
+-->
+
+## Shell Variables
+Assign the variables in this notebook.
+
+```{bash}
+# Source the config script
+source bioinf_config.sh
+
+mkdir -p ${PE_QC}
+ls $PE_OUT_DIR
+```
+
+## Fastqc
+Now that we have had a quick look at our fastq file, let's run some basic analysis using a program called fastqc.  This will take less than a minute to run.  Remember that while "long" jobs are running it will say "In [\*]:" in the left margin, once it is done, a number will replace the asterisk.
+
+```{bash}
+# fastqc --threads 2 --quiet $DEMUX/r1.8A_pilot.fq.gz -o $QC
+fastqc --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR12804466_[12].fastq.gz -o $PE_QC
+```
+
+## MultiQC
+
+```{bash}
+multiqc $PE_QC $PE_STAROUT_DIR --outdir $PE_QC
+```
+
+Once multiqc is done running we can view the results by finding the output in the Jupyter browser, it should be in a file named `multiqc_report.html` in :
+
+```{bash}
+echo $PE_QC
+```

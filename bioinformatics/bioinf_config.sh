@@ -22,10 +22,6 @@ RAW_FASTQ_DIR="$DATA_DIR/sra_data"
 OUT_DIR=$HOME/scratch/bioinf_intro
 QC=$OUT_DIR/qc_output
 
-GENOME_DIR="${DATA_DIR}/genome"
-FASTA_PATH="${GENOME_DIR}/GRCm39.primary_assembly.genome.fa"
-GFF_PATH="${GENOME_DIR}/gencode.vM27.primary_assembly.annotation.gff3"
-BED_PATH="${GENOME_DIR}/gencode.vM27.primary_assembly.annotation.bed"
 
 TOTAL_THREADS=20
 TOTAL_RAM=100000000000
@@ -63,3 +59,17 @@ GLOB_OUT_DIR=$HOME/scratch/bioinf_glob
 GLOB_QC=$GLOB_OUT_DIR/qc_output
 GLOB_TRIM_DIR="${GLOB_OUT_DIR}/trimmed_fastq"
 GLOB_STAROUT_DIR="${GLOB_OUT_DIR}/starout"
+
+# +
+# Genome
+GENOME_DIR="${DATA_DIR}/genome"
+
+MOUSE_URL_PREFIX="http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27"
+MOUSE_GFF_URL="${MOUSE_URL_PREFIX}/gencode.vM27.primary_assembly.annotation.gff3.gz"
+MOUSE_FASTA_URL="${MOUSE_URL_PREFIX}/GRCm39.primary_assembly.genome.fa.gz"
+MOUSE_MD5_URL="${MOUSE_URL_PREFIX}/MD5SUMS"
+
+GFF_PATH="${GENOME_DIR}/$(basename $MOUSE_GFF_URL '.gz')"
+BED_PATH="${GENOME_DIR}/$(basename $GFF_PATH '.gff3')"
+FASTA_PATH="${GENOME_DIR}/$(basename $MOUSE_FASTA_URL '.gz')"
+MOUSE_MD5_PATH="${GENOME_DIR}/$(basename $MOUSE_MD5_URL)"

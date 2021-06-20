@@ -30,5 +30,12 @@ BED_PATH="${GENOME_DIR}/gencode.vM27.primary_assembly.annotation.bed"
 TOTAL_THREADS=20
 TOTAL_RAM=100000000000
 
+ADAPTER_FASTA="${OUT_DIR}/adapter.fasta"
 TRIM_DIR="${OUT_DIR}/trimmed_fastq"
 STAROUT_DIR="${OUT_DIR}/starout"
+
+# Paired-end
+PE_OUT_DIR=$HOME/scratch/pe_analysis
+PE_QC=$PE_OUT_DIR/qc_output
+PE_TRIM_DIR="${PE_OUT_DIR}/trimmed_fastq"
+PE_STAROUT_DIR="${PE_OUT_DIR}/starout"

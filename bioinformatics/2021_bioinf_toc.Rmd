@@ -22,7 +22,17 @@ jupyter:
 1. [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
 1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
 
+## Paired End Data
+1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd)
+1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd)
 
+<!---  
+1. [PE: Looping with Globs](pe_glob_loop.Rmd)
+-->
+
+
+## Appendix
+- [Quality Score Tutorial](quality_scores.ipynb)
 
 
 <!---  
@@ -143,7 +153,6 @@ Check KOs?
 
 
 data_provenance.ipynb
-quality_scores.ipynb
 -->
 
 <!---

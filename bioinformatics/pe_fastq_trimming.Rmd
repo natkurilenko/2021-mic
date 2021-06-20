@@ -1,0 +1,74 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+<!-- #region -->
+# Trimming and Filtering a FASTQ
+
+
+## Shell Variables
+Retyping shell variables in every notebook is getting old, and its error prone.  Let's centralize these so we can share them between notebooks.  We can create a shell script that contains the shell variables that we need, and then we can `source` it in each notebook.  Let's call it `bioinf_intro_config.sh`.  We can do this using the Jupyter text editor.
+<!-- #endregion -->
+
+```{bash}
+source bioinf_config.sh
+```
+
+## Making New Directories
+Make the directories that are new in this notebook
+
+```{bash}
+mkdir -p $PE_TRIM_DIR
+```
+
+Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$CUROUT` directory.
+
+```{bash}
+ls $PE_OUT_DIR
+```
+
+# Trimming and Filtering
+Now we get into some actual preprocessing.  We will use `fastq-mcf` to trim adapter from our reads and do some quality filtering.  We need to trim adapter, because if a fragment is short enough, we will sequence all the way through the fragment and into the adapter.  Obviously the adapter sequence in not found in the genome, and can keep the read from aligning properly.
+
+
+### Running fastq-mcf
+1. neb_e7600_adapters.fasta : the adapter file
+2. \$RAW_FASTQS/10_H_S8_L002_R1_001.fastq.gz : the R1 FASTQ 
+3. \$RAW_FASTQS/10_H_S8_L002_R2_001.fastq.gz : the R2 FASTQ 
+3. -q 20 : if a read has any bases with quality score lower than this, trim them and anything 3' of that base
+4. -x 0.5 : if this percentage (or higher) of the reads have an "N" in a given position, trim all reads to that position
+5. -o \$TRIMMED/10_H_S8_L002_R1_001.trim.fastq.gz : output file for trimmed R1 reads
+5. -o \$TRIMMED/10_H_S8_L002_R2_001.trim.fastq.gz : output file for trimmed R1 reads
+
+```{bash}
+TrimmomaticPE
+```
+
+```{bash}
+TrimmomaticPE \
+        -threads $TOTAL_THREADS \
+        -phred33 \
+        ${RAW_FASTQ_DIR}/SRR12804466_1.fastq.gz \
+        ${RAW_FASTQ_DIR}/SRR12804466_2.fastq.gz \
+        ${PE_TRIM_DIR}/SRR12804466_1_trimmed.fastq.gz \
+        ${PE_TRIM_DIR}/SRR12804466_1_unpaired.fastq.gz \
+        ${PE_TRIM_DIR}/SRR12804466_2_trimmed.fastq.gz \
+        ${PE_TRIM_DIR}/SRR12804466_2_unpaired.fastq.gz \
+        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+```
+
+at this point we could run fastqc on the output of fastq-mcf to see if statistics have improved, but we will skip that for now.
+
+```{bash}
+ls $PE_TRIM_DIR
+```

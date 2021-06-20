@@ -46,8 +46,6 @@ The first step is to get the adapter sequence.  We can get this from the [manual
 We can download and display the Sample Sheet using `curl`:
 
 ```{bash}
-ADAPTER_FASTA="${OUT_DIR}/adapter.fasta"
-
 # https://support-docs.illumina.com/SHARE/AdapterSeq/Content/SHARE/AdapterSeq/TruSeq/CDIndexes.htm
 echo ">truseq_read_1
 AGATCGGAAGAGCACACGTCTGAACTCCAGTCA

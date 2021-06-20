@@ -40,6 +40,7 @@ STAR \
     --readFilesCommand gunzip -c \
     --quantMode GeneCounts \
     --outSAMtype BAM SortedByCoordinate \
+    --outSAMunmapped Within \
     --runThreadN $TOTAL_THREADS
 ```
 
@@ -104,11 +105,6 @@ echo ${STAROUT_DIR}
 It is always a good idea to examine a sample of unmapped reads to figure out what they are. The easiest way to do this is with BLAST.  In the past I have discovered that an experiment was contaminated with a different species by BLASTing unmapped reads.  In that case there were a large number of unmapped reads, which raised my suspicions.
 
 Even with a high rate of mapped reads, it is worth spending a few minutes to check them out.  The simplest thing to do is use `samtools` to generate a FASTA from the unmapped.bam, grab a few of these sequences, and then [BLAST them against the nr database](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome)
-
-```{bash}
-samtools view -f 4 ${STAROUT_DIR}/SRR12804466_1_Aligned.sortedByCoord.out.bam
-
-```
 
 ```{bash}
 samtools fasta -f 4 ${STAROUT_DIR}/SRR12804466_1_Aligned.sortedByCoord.out.bam | head -n20

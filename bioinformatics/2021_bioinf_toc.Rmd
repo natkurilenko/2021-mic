@@ -36,7 +36,7 @@ jupyter:
 1. [Making a Pipeline](making_a_pipeline.Rmd)
 1. [Pipeline in a Loop](loop_pipeline.Rmd)
 1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd)
-1. [Looping with Globs](glob_loop.ipynb)
+1. [Looping with Globs](glob_loop.Rmd)
 
 
 ## Full Dataset

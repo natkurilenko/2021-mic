@@ -1,0 +1,173 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+# Looping with Globs
+It can be tedious and error prone to individually specify the files we want to loop over.  Regular expressions, in the form of bash globs allow us to automatically select groups of files to loop over.
+
+## Shell Variables
+Assign the variables in this notebook.
+
+```{bash}
+source bioinf_config.sh
+mkdir -p $GLOB_TRIM_DIR $GLOB_STAROUT_DIR
+```
+
+## Globs?
+Previously we specified the files we wanted to loop over explicitly:
+
+```{bash}
+for SRA_ACCESSION in SRR12804466 SRR12804465
+    do
+        echo "RUNNING SRA_ACCESSION: ${SRA_ACCESSION}"
+    done
+```
+
+This is appropriate in some situations, but often when there is a group of files that we want to work with, we can find a simple way to list these files without specifying them one-by-one.  For example, since the reads for each FASTQ are split across four lanes, we might want to analyze the data from all four lanes at once.  There are several ways that we can specify the FASTQs from all four lanes of FASTQ 21_2019:
+
+1. The easiest is to use the `*` wildcard, which matches any number of any characters (including zero), so we can match the FASTQs from all four lanes like this: `$RAW_FASTQS/21_2019*`
+2. `*` is easy and useful, but often it is better to be more specific, otherwise we might match something unintentionally. Since the only difference in the names between the lanes is the "L001", "L002", "L003", and "L004", we can narrow our match using `?`, which matches any single character: `21_2019_P_M1_S21_L00?_R1_001.fastq.gz`
+3. The best approach is to specify exactly what characters we are allowing in that variable position.  Square brackets allow you to list specific characters that can match `[1234]` or a range `[1-4]`: `21_2019_P_M1_S21_L00[1-4]_R1_001.fastq.gz`
+
+Globs can be confusing.  Keep in mind that here we are using the globs to search through all the file names in a directory and list the files with a name that matches a specific pattern.
+
+
+All the FASTQs in $RAW_FASTQ_DIR
+
+```{bash}
+ls ${RAW_FASTQ_DIR}/*.fastq.gz
+```
+
+All the forward reads (i.e. R1) in $RAW_FASTQ_DIR
+
+```{bash}
+ls ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz
+```
+
+Reads (forward and reverse) from accession numbers SRR12804463 through SRR12804467
+
+```{bash}
+ls ${RAW_FASTQ_DIR}/SRR1280446[34567]_[12].fastq.gz
+```
+
+Reads (forward and reverse) from accession numbers SRR12804463 through SRR12804467 using a range.
+
+```{bash}
+ls ${RAW_FASTQ_DIR}/SRR1280446[3-7]_[12].fastq.gz
+```
+
+## Looping over a glob
+Now we can put together `for` loops with globs, to loop over all forward FASTQs
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz
+    do
+        echo "RUNNING FASTQ: ${FASTQ}"
+    done
+```
+
+## String Manipulation
+
+But we still have a bit of work to do.  Before when we were manually specifying each FASTQ, we looped over a *substring* of the full path, then added on the prefix and suffix, for example: `$TRIMMED/${FASTQ}_001.trim.fastq.gz`.  But now we are grabbing the full path, and we need to manipulate it so that we can generate output file names that are different than the input, and put the output in different directories.  We can do all this with the `basename` bash function. The simple form of `basename` removes the whole directory portion of a path and just returns the filename:
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
+    do
+        echo "FULL PATH IS: ${FASTQ}"
+        echo "basename gives us: $(basename ${FASTQ})"
+        echo ""
+    done
+```
+
+If you give `basename` a string as a second argument, it will strip that string from the end of the path (if it is there):
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
+    do
+        echo "FULL PATH IS: ${FASTQ}"
+        echo "basename gives us: $(basename ${FASTQ} '_1.fastq.gz')"
+        echo ""
+    done
+```
+
+> Note that if the string you give is not a suffix of the path, nothing is stripped from the *end* of the path, but the directory prefix will still be removed:
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
+    do
+        echo "FULL PATH IS: ${FASTQ}"
+        echo "basename gives us: $(basename ${FASTQ} '_1.fastq.gz')"
+        echo "with 'fastq':         $(basename ${FASTQ} 'fastq')"
+        echo "with 'foo':           $(basename ${FASTQ} 'foo')"        
+        echo ""
+    done
+```
+
+And we can assign the results of `basename` to a variable for later use:
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
+    do
+        echo "FULL PATH IS: ${FASTQ}"
+        SRA_ACCESSION="$(basename ${FASTQ} '_1.fastq.gz')"
+        echo "basename gives us: $SRA_ACCESSION"
+        echo "OUTPUT PATH: ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_1_trim.fastq.gz"
+        echo ""
+    done
+```
+
+With globs and `basename` in our toolbox, we are ready to **conquer the world** or at least run multiple FASTQs through our pipeline, without breaking a sweat!
+
+
+## A globy pipeline
+
+```{bash}
+for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz; do
+    echo "FULL PATH IS: ${FASTQ}"
+    SRA_ACCESSION="$(basename ${FASTQ} '_1.fastq.gz')"
+
+    echo "---------------- TRIMMING: $SRA_ACCESSION ----------------"
+    TrimmomaticPE \
+        -threads $TOTAL_THREADS \
+        -phred33 \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz \
+        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_2.fastq.gz \
+        ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
+        ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
+        ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+        ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
+        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+
+    echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
+    STAR \
+        --runMode alignReads \
+        --twopassMode None \
+        --genomeDir $GENOME_DIR \
+        --readFilesIn ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz ${GLOB_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+        --readFilesCommand gunzip -c \
+        --outFileNamePrefix ${GLOB_STAROUT_DIR}/${SRA_ACCESSION}_ \
+        --quantMode GeneCounts \
+        --outSAMtype None \
+        --runThreadN $TOTAL_THREADS
+done
+```
+
+### And let's check the result
+
+```{bash}
+ls ${GLOB_STAROUT_DIR}
+```
+
+## Glob References
+- [Globbing Section](http://tldp.org/LDP/abs/html/globbingref.html) from [The Advanced Bash-Scripting Guide](http://tldp.org/LDP/abs/html/index.html)
+- [Glob](https://en.wikipedia.org/wiki/Glob_%28programming%29) article on Wikipedia

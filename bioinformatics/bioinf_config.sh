@@ -57,3 +57,9 @@ MULTI_OUT_DIR=$HOME/scratch/bioinf_multifastqs
 MULTI_QC=$MULTI_OUT_DIR/qc_output
 MULTI_TRIM_DIR="${MULTI_OUT_DIR}/trimmed_fastq"
 MULTI_STAROUT_DIR="${MULTI_OUT_DIR}/starout"
+
+# Glob Loop
+GLOB_OUT_DIR=$HOME/scratch/bioinf_glob
+GLOB_QC=$GLOB_OUT_DIR/qc_output
+GLOB_TRIM_DIR="${GLOB_OUT_DIR}/trimmed_fastq"
+GLOB_STAROUT_DIR="${GLOB_OUT_DIR}/starout"

@@ -40,10 +40,10 @@ for SRA_ACCESSION in "SRR12804466" "SRR12804465" ; do
         -phred33 \
         ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz \
         ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_2.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
+        ${MULTI_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
+        ${MULTI_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
+        ${MULTI_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+        ${MULTI_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
         ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
 
     echo "---------------- MAPPING: $SRA_ACCESSION ----------------"

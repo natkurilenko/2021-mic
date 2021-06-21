@@ -12,21 +12,22 @@ jupyter:
     name: bash
 ---
 
+<!-- #region -->
 # Quality Control
-<!--
-** Add Intro Text***
--->
+The notebook will go through a basic quality analysis of the raw FASTQs using a program named FastQC to analyzes the FASTQ files and another program named MultiQC to summarize the results across multiple FASTQs
+
 
 ## Shell Variables
-Assign the variables in this notebook.
+First we need to define some variables!
+<!-- #endregion -->
 
 ```{bash}
 set -u
 
-DATA_BASE="/data"
-RAW_FASTQ_DIR="$DATA_BASE/sra_data"
+# Directory for input FASTQs
+RAW_FASTQ_DIR="/data/sra_data"
 
-# The following are new for this notebook
+# Directory for output from FastQC and MultiQC
 OUT_DIR=$HOME/scratch/bioinf_intro
 QC=$OUT_DIR/qc_output
 
@@ -34,7 +35,6 @@ TOTAL_THREADS=20
 ```
 
 ## Making New Directories
-The directories *do* carry over between notebooks, they are a function of the server, so we only need to make the directories that are new in this notebook
 
 ```{bash}
 mkdir -p $QC
@@ -46,20 +46,31 @@ Now let's check to be sure that worked.  We will run `ls` and check that these d
 ls $OUT_DIR
 ```
 
-## Fastqc
-Now that we have had a quick look at our fastq file, let's run some basic analysis using a program called fastqc.  This will take less than a minute to run.  Remember that while "long" jobs are running it will say "In [\*]:" in the left margin, once it is done, a number will replace the asterisk.
+## FastQC
+Let's run some basic analysis using a program called fastqc.  This shouldn't take too long.  Remember that while "long" jobs are running it will say "In [\*]:" in the left margin, once it is done, a number will replace the asterisk.
+
+If you need to know how to run a program, most unix programs will give you some information about themselves if you run with a `-h` or `--help` command line flag
 
 ```{bash}
 fastqc -h
 ```
 
+Let's pick a file to run on. Since we don't want to wait too long for it to run, let's pick the smallest file for now.
+
 ```{bash}
 ls -lSrh $RAW_FASTQ_DIR
 ```
 
+<!-- #region -->
+- `--threads $TOTAL_THREADS` tells FastQC to run using `$TOTAL_THREADS` CPU cores, which will speed things.
+- `--outdir $QC` tells FastQC to output the results to the directory refered to in the `$QC` variable. 
+
+
+If you want to know what `--extract` does, check the help information above.
+<!-- #endregion -->
+
 ```{bash}
-# fastqc --threads 2 --quiet $DEMUX/r1.8A_pilot.fq.gz -o $QC
-fastqc --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR12804466_1.fastq.gz -o $QC
+fastqc --threads $TOTAL_THREADS --extract --outdir $QC $RAW_FASTQ_DIR/SRR12804466_1.fastq.gz
 ```
 
 Once fastqc is done running we can view the results by finding the output in the Jupyter browser, it should be in:
@@ -71,22 +82,14 @@ echo $QC
 ## MultiQC
 FastQC is a useful tool, but it has one problem: it generates one report for each FASTQ file.  When you have more than a handful of FASTQs (as most projects will), it is tedious to look at each one, and there is no simple way to compare them.
 
-MultiQC is a solution to this problem.  It mines the results from FastQC (and other HTS analysis tools) and generates reports that combine and summarize results for all the FASTQs analyzed.
+MultiQC is a solution to this problem.  It mines the results from FastQC (and other HTS analysis tools) and generates a report that summarizes results for all the FASTQs analyzed.
 
-### Run FastQC on Multiple FASTQs
-Let's pick a selection of FASTQs to look at.
-
-```{bash}
-ls $RAW_FASTQ_DIR/SRR1280446[457]_1.fastq.gz
-```
-
-`--threads $TOTAL_THREADS` tells fastqc to run using `$TOTAL_THREADS` cores.
+### Run FastQC and MultiQC on several FASTQs
+Let's run FASTQs on a few more FASTQs to see how MultiQC can help us look at results from multiple FASTQ files.
 
 ```{bash}
-fastqc --quiet --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR1280446[457]_1.fastq.gz -o $QC
+fastqc --quiet --threads $TOTAL_THREADS --extract --outdir $QC $RAW_FASTQ_DIR/SRR1280446[457]_1.fastq.gz -o $QC
 ```
-
-### Run MultiQC
 
 ```{bash}
 multiqc -h

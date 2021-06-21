@@ -17,7 +17,7 @@ jupyter:
 
 ## RNA-Seq Basic Bioinformatic Steps
 
-1. [Quality Control](fastqc.Rmd) CHECK text
+1. [Quality Control](fastqc.Rmd)
 1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
 1. [Trimming and Filtering](fastq_trimming.Rmd) WORKS: need to update text
 1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics

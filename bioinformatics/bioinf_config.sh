@@ -71,6 +71,6 @@ MOUSE_FASTA_URL="${MOUSE_URL_PREFIX}/GRCm39.primary_assembly.genome.fa.gz"
 MOUSE_MD5_URL="${MOUSE_URL_PREFIX}/MD5SUMS"
 
 GFF_PATH="${GENOME_DIR}/$(basename $MOUSE_GFF_URL '.gz')"
-BED_PATH="${GENOME_DIR}/$(basename $GFF_PATH '.gff3')"
+BED_PATH="${GENOME_DIR}/$(basename $GFF_PATH '.gff3').bed"
 FASTA_PATH="${GENOME_DIR}/$(basename $MOUSE_FASTA_URL '.gz')"
 MOUSE_MD5_PATH="${GENOME_DIR}/$(basename $MOUSE_MD5_URL)"

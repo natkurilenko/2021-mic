@@ -19,12 +19,12 @@ jupyter:
 
 1. [Quality Control](fastqc.Rmd)
 1. [Trimming and Filtering](fastq_trimming.Rmd)
-1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
+1. [Mapping Reads to a Reference Genome](mapping.Rmd)
 
 ## Paired End Data
-1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd) WORKS: need to update text
-1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd) WORKS: need to update text
-1. [PE: Quality Control](pe_qc.Rmd) WORKS: need to update text
+1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd)
+1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd)
+1. [PE: Quality Control](pe_qc.Rmd)
 
 <!---  
 1. [PE: Looping with Globs](pe_glob_loop.Rmd)
@@ -32,10 +32,10 @@ jupyter:
 
 ## A Pipeline with Multiple Samples
 1. [Generalizing Bash Commands](generalizing_bash_commands.Rmd)
-1. [Making a Pipeline](making_a_pipeline.Rmd) WORKS: need to update text
-1. [Pipeline in a Loop](loop_pipeline.Rmd) WORKS: need to update text
-1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd) WORKS: need to update text
-1. [Looping with Globs](glob_loop.Rmd) CHECKING NOW
+1. [Making a Pipeline](making_a_pipeline.Rmd)
+1. [Pipeline in a Loop](loop_pipeline.Rmd)
+1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd)
+1. [Looping with Globs](glob_loop.Rmd)
 
 
 <!---  
@@ -50,13 +50,13 @@ jupyter:
 ## Appendix
 - [Quality Score Tutorial](quality_scores.Rmd)
 - [Configuration File](bioinf_config.sh)
-- [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
+- [Download and Index Genome](genome_prep.Rmd)
 - [Make Adapter File](make_adapter_file.Rmd)
 
 
 <!---  
 
-
+Try to add Picard CollectRnaSeqMetrics to mapping.Rmd
 
 1. [Making Generic Commands](making_generic_commands.ipynb)
 

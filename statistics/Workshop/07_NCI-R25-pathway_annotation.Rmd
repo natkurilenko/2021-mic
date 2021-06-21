@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
@@ -22,8 +22,9 @@ To facilitate GSEA, the Broad Institue also provide a number of very well curate
 ### Load pathways
 
 ```{r}
-annodir <- "./resource/"
+annodir <- "/data/genome/"
 annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+#annofile <- "~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds"
 
 tools::md5sum(annofile)
 
@@ -55,10 +56,68 @@ head(Mm.C1$`10qA1`)
 
 The mouse C1 positional gene set collection was created from the NCBI gene information file Mus_musculus.gene_info.gz downloaded from the [NCBI ftp site](ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/). Cytobands were identified from the map_location column. The positional collection provides GeneIDs for the genes in each cytoband.
 
+### Convert gene annotations
+
+Gene Ensembl ids are one of the most commonly used gene annotations. We use the R/Bioconductor package [biomaRt](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) tp transfer between different types of gene annotations.
+
+See [here](http://127.0.0.1:30252/library/biomaRt/doc/accessing_ensembl.html#ensembl-mirror-sites) for biomaRt vignette.
+
 ```{r}
-sessionInfo()
+library("biomaRt")
+```
+
+#### List Esembl dataset
+```{r}
+mart = useEnsembl('ENSEMBL_MART_ENSEMBL')
+listDatasets(mart)[1:5,]
+```
+
+#### Set Ensembl dataset
+
+```{r}
+listEnsemblArchives()
+listEnsembl(version=104)
 ```
 
 ```{r}
+ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
+attr <- listAttributes(ensembl104)
+dim(attr)
+attr[1:5,]
+```
 
+```{r}
+filt <- listFilters(ensembl104)
+dim(filt)
+filt[1:5,]
+
+select(filt, )
+```
+
+There are many filters and attributes. If you would like to search for a certain filter or attribute, please check Section 3.1 in the [vignette](https://www.bioconductor.org/packages/devel/bioc/vignettes/biomaRt/inst/doc/accessing_ensembl.html). 
+
+
+#### Get the gene list
+```{r}
+gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
+                  filter = 'entrezgene_id',
+      values = Mm.H$HALLMARK_ADIPOGENESIS,
+      mart = ensembl104)
+
+length(Mm.H$HALLMARK_ADIPOGENESIS)
+dim(gene.map)[1]
+```
+We noticed that the dimensions do not match. The gene map seem to miss two genes. Let's check whether this is true.
+
+```{r}
+idx <- match(Mm.H$HALLMARK_ADIPOGENESIS,gene.map$entrezgene_id)
+sum(is.na(idx))
+idx <- na.omit(idx)  
+```
+
+`gene.map[idx,]` should have the same order as the orignial vector of entrez gene ids.
+
+```{r}
+head(Mm.H$HALLMARK_ADIPOGENESIS)
+head(gene.map[idx,])
 ```

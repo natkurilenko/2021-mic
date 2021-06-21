@@ -59,7 +59,7 @@ TrimmomaticPE \
     ${GENERAL_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
     ${GENERAL_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
     ${GENERAL_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
-    ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+    ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
 ```
 
 ### Now let's do the same thing for STAR

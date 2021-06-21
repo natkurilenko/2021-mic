@@ -64,7 +64,7 @@ TrimmomaticPE \
     ${PE_TRIM_DIR}/SRR12804466_1_unpaired.fastq.gz \
     ${PE_TRIM_DIR}/SRR12804466_2_trimmed.fastq.gz \
     ${PE_TRIM_DIR}/SRR12804466_2_unpaired.fastq.gz \
-    ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+    ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
 ```
 
 at this point we could run fastqc on the output of fastq-mcf to see if statistics have improved, but we will skip that for now.

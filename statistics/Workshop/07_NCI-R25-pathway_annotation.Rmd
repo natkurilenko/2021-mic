@@ -22,7 +22,7 @@ To facilitate GSEA, the Broad Institue also provide a number of very well curate
 ### Load pathways
 
 ```{r}
-annodir <- "/data/genome/"
+annodir <- "./resource/"
 annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
 #annofile <- "~/Box/Home Folder jx42/Teaching/MIC-2021/Pathway_Analysis_Workshop/Data/Mm.h.all.v7.1.entrez.rds"
 
@@ -56,7 +56,7 @@ head(Mm.C1$`10qA1`)
 
 The mouse C1 positional gene set collection was created from the NCBI gene information file Mus_musculus.gene_info.gz downloaded from the [NCBI ftp site](ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/). Cytobands were identified from the map_location column. The positional collection provides GeneIDs for the genes in each cytoband.
 
-### Convert gene annotations
+### Map the gene annotations
 
 Gene Ensembl ids are one of the most commonly used gene annotations. We use the R/Bioconductor package [biomaRt](https://bioconductor.org/packages/release/bioc/html/biomaRt.html) tp transfer between different types of gene annotations.
 

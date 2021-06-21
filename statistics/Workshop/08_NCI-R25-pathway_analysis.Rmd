@@ -45,7 +45,6 @@ We will focus the gene level analyses on three analyses
 
 ```{r message=FALSE}
 library("DESeq2")
-library("ashr")
 library("ggplot2")
 library("tidyverse")
 library("fgsea")
@@ -53,14 +52,23 @@ library("stringr")
 library("biomaRt")
 ```
 
+
+### 01 Single gene analysis for testing the treatment effect in the two factor additive model
+
+#### Load DDS object for the two-factor additive model
+
+Please review your previous notes on how to generate DDS object and fit an additive model. 
+
 ```{r load data}
 procdir <- normalizePath("./proc/")
-ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
+ddsfile <- file.path(procdir, "PRJNA668393-DESeq2-additive.RDS")
 dds <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
 ```
 
-### Check dds
+#### Check dds
+
+Check the meta data. 
 
 ```{r}
 dds
@@ -75,108 +83,40 @@ Check the design of the `dds`.
 design(dds)
 ```
 
-### 01 Single gene analysis for testing the treatment effect in the two factor additive model
-
-#### Create DDS object
-
-We create a DDS object using the design `design <- ~ cline + trt`
-
+#### Extract fitting results 
 ```{r}
-design(dds) <- formula(~ cline + trt)
-```
-
-Now we run DESEQ2 to perform differential gene expression analysis. DESEQ2 mainly contains three steps.
-
-1. Estimate size factors
-
-1. Finalize the dispersion estimates 
-
-1. Perform generalized linear model fitting for each gene
-
-```{r}
-dds.fit <- DESeq(dds)
-```
-
-#### Create contrasts
-
-To indicate to DESeq2 the two groups we want to compare, we can use contrasts. Contrasts are then provided to DESeq2 to perform differential expression testing using the Wald test. Contrasts can be providd to DESeq2 in a couple of different ways.
-
-* Do nothing. Automatically DESeq2 will use the base factor level of the condition of interest as the base for statistical testing. The base level is chosen based on alphabetical rder of the levels.
-
-* In the `results()` function you can specify the comparison of interest, and the levels to compare. The level given last is the base level for the comparison.
-
-```
-contrast <- c("condition", "level_to_compare", "base_level") 
-results(dds.fit, contrast = contrast, alpha = alpha_threshold)
-```
-
-```{r}
-contrast_trt <- c("trt", "antiPD1", "isotype")
-```
-
-Noew we check the results. 
-
-#### Run DESEQ2
-```{r}
-res_add <- results(dds.fit, contrast = contrast_trt)
+res_add <- results(dds)
 head(res_add)
 ```
 
-You can also perform log fold change (LFC) shrinkage. This is optional. 
-
-* DESeq2 allows for the shrikage of the LFC estimates towards zero when the information for a gene is low, which could include low counts or high dispersion values
-
-* LFC shrinkage uses all genes to generate more accurate estimates. Specifically, the distribution of LFC estimates for all genes is used (as a prior) to shrink the LFC estimates of genes with little information or high dispersion toward more likely (lower) LFC estimates.
-
-* LFC shrinkage does not change the gene P-values.
-
-```{r}
-res_add_shrunken <- lfcShrink(dds.fit, contrast = contrast_trt, res = res_add, type = "ashr")
-```
-#### MA plot
-
-* The MA plot shows the mean of the normalized counts versus the log2 fold changes for all genes tested.
-
-* The genes that are significantly DE are colored to be easily identified.
-
-* This is also a great way to illustrate the effect of LFC shrinkage.
-
-```{r}
-plotMA(res_add, ylim=c(-2,2))
-```
-```{r}
-plotMA(res_add_shrunken, ylim=c(-2,2))
-```
 #### Summarize results
 ```{r}
-summary(res_add)
-summary(res_add_shrunken)
+summary(res_add, alpha=0.05)
 ```
-There are in total 27347 genes with nonzero total read count. None of them is found significantly differentially expressed across two treatments. Two possible reasons:
+There are in total 28406 genes with nonzero total read count. Only 1 of them is found significantly differentially expressed across two treatments (with adjusted p-value <0.05). Two possible reasons:
 
-* There is indeed no DE genes.
+* There is indeed very few DE genes.
 
 * The single gene analysis has a small power so that we cannot identify the DE genes.
 
-```{r}
-head(res_add)
-```
+
 ### 02  GSEA based on the statistics obtained from the single gene analysis
 
-The analysis is performed by:
+The analysis follows the following steps:
 
-1. ranking all genes in the dataset
+1. Extract the statistics and the corresponding gene names
 
-2. identifying the rank positions of all members of the gene set in the ranked dataset
+1. Map the gene annotations
 
-3. calculating an enrichment score (ES) that represents the difference between the observed rankings and that which would be expected assuming a random rank distribution.
+1. Perform GSEA
 
 
-#### Extract the statistics
+#### Extract the statistics and the corresponding gene names
 
 Rank all genes based on the Wald's statistics.
 
 We notice that some gene statistics are `NA`. This could due to various reasons., *e.g.*, the gene has zero count and thus cannot be used to perform differential expression analysis. For further steps, we need to remove those `NA` values.
+
 
 ```{r}
 ranks <- res_add$stat
@@ -207,7 +147,7 @@ Plot the ranked fold change.
 barplot(sort(ranks, decreasing = T))
 ```
 
-#### Mapping the gene annotations
+#### Map the gene annotations
 
 ```{r}
 ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
@@ -263,7 +203,7 @@ trial
 #### Load pathways
 
 ```{r}
-annodir <- "/data/genome/"
+annodir <- "./resource/"
 annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
 
 tools::md5sum(annofile)
@@ -318,18 +258,18 @@ plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
 
 ### 03 GSEA for testing the treatment by cell line interaction
 
-
-#### Update the DDS object 
-
-We update the DDS object using the design `design <- ~ cline + trt + cline:trt`. Then we refit the model.
+#### Update the DDS object using the model with the `trt` and `cline` interaction
 
 ```{r}
-design(dds) <- formula(~ cline + trt + cline:trt)
-dds.fit <- DESeq(dds)
+procdir <- normalizePath("./proc/")
+ddsfile <- file.path(procdir, "PRJNA668393-DESeq2-multiplicative.RDS")
+dds <- readRDS(ddsfile)
+tools::md5sum(ddsfile)
 ```
-Check the results of DESEQ2 fitting.
+Check the design and the results of DESEQ2 fitting.
 ```{r}
-res_int <- results(dds.fit)
+design(dds)
+res_int <- results(dds)
 head(res_int)
 ```
 
@@ -339,25 +279,16 @@ head(res_int)
 ranks <- res_int$stat
 
 ens  <- as.character(rownames(res_int))
-head(ens)
 ens2 <- str_split(ens, pattern=coll("."), simplify=TRUE)[,1]
-head(ens2)
 
 idx <- which(!is.na(ranks)) 
-
 ranks <- ranks[idx]
-head(ranks)
-
 ens3 <- ens2[idx]
-length(ens3)
-length(ranks)
 ```
 
-
-#### Mapping the gene annotations
+#### Map the gene annotations
 
 ```{r}
-ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
 gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
                   filter = 'ensembl_gene_id',
       values = ens3,
@@ -365,7 +296,7 @@ gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
 
 idx <- match(ens3, gene.map[,2])
 length(idx)
-sum(is.na(idx))
+length(ranks)
 
 gene.map2 <- gene.map[idx,]
 head(ens3)
@@ -386,7 +317,6 @@ head(ranks)
 fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 head(fgseaRes[order(padj, -abs(NES)), ], n=10)
 ```
-
 
 ```{r}
 plotEnrichment(Mm.H[["HALLMARK_MITOTIC_SPINDLE"]], ranks)
@@ -424,13 +354,10 @@ parental_antipd1 <- colMeans(mod_mat[(dds$cline =="Parental")&(dds$trt=="antiPD1
 See this [tutorial](https://github.com/tavareshugo/tutorial_DESeq2_contrasts) for more details on how to define contrasts.
 
 ```{r}
-res_trt_pa <- results(dds.fit, contrast = parental_antipd1 - parental_isotype)
+res_trt_pa <- results(dds, contrast = parental_antipd1 - parental_isotype)
 plot(res_trt_pa$log2FoldChange)
 ```
 
-```{r}
-plotMA(res_trt_pa)
-```
 
 ```{r}
 head(res_trt_pa)
@@ -440,8 +367,8 @@ head(res_trt_pa)
 
 Please follow the above examples and finish the listed tasks by yourself.
 
-1. Extract the statistics. 
+1. Extract the statistics and the corresponding gene names
 
-1. Mapping the gene annotations
+1. Map the gene annotations
 
-1. Perform GSEA.
+1. Perform GSEA

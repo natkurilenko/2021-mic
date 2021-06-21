@@ -17,7 +17,7 @@ jupyter:
 
 
 ## Shell Variables
-Retyping shell variables in every notebook is getting old, and its error prone.  Let's centralize these so we can share them between notebooks.  We can create a shell script that contains the shell variables that we need, and then we can `source` it in each notebook.  Let's call it `bioinf_intro_config.sh`.  We can do this using the Jupyter text editor.
+Retyping shell variables in every notebook is gets old, and it is error prone.  Let's centralize these so we can share them between notebooks.  We can create a shell script that contains the shell variables that we need, and then we can `source` it in each notebook.  Let's call it `bioinf_config.sh`.
 <!-- #endregion -->
 
 ```{bash}
@@ -31,36 +31,55 @@ Make the directories that are new in this notebook
 mkdir -p $TRIM_DIR
 ```
 
-Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$CUROUT` directory.
+Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$OUT_DIR` directory.
 
 ```{bash}
 ls $OUT_DIR
 ```
 
 # Trimming and Filtering
-Now we get into some actual preprocessing.  We will use `fastq-mcf` to trim adapter from our reads and do some quality filtering.  We need to trim adapter, because if a fragment is short enough, we will sequence all the way through the fragment and into the adapter.  Obviously the adapter sequence in not found in the genome, and can keep the read from aligning properly.  To do the trimming, we need to generate an adapter file.
+Now we get into some actual preprocessing.  We will use **Trimmomatic** to trim adapter from our reads and do some quality filtering.  We need to trim adapter, because if a fragment is short enough, we will sequence all the way through the fragment and into the adapter.  Obviously the adapter sequence in not found in the genome, and can keep the read from aligning properly.  To do the trimming, we need to generate an adapter file.
 
-## fastq-mcf
-You can run `fastq-mcf -h` to get details about running fastq-mcf.  We will adjust run parameters, because some of the defaults set a low bar (even the author acknowleges this).
+We need to use the `TrimmomaticSE` command for single-end data and `TrimmomaticPE` for paired-end data.
+> Because Trimmomatic is written in Java, the details of how you run it depends on how it was installed, so on other computers you might find the command to run Trimmomatic is slightly different.
 
-```{bash}
-fastq-mcf -h
-```
+## Trimmomatic
+You can run `TrimmomaticSE` without any arguements to get details about the arguments.  We will adjust run parameters, because some of the defaults set a low bar (even the author acknowleges this).
 
-### Running fastq-mcf
-1. $ADAPTER_FASTA : the adapter file
-2. SRR12804466_1.fastq.gz : the FASTQ with the data (fastq-mcf, like most NGS analysis software, detects gzipped files and automatically decompresses on the fly)
-3. -q 20 : if a read has any bases with quality score lower than this, trim them and anything 3' of that base
-4. -x 0.5 : if this percentage (or higher) of the reads have an "N" in a given position, trim all reads to that position
-5. -o SRR12804466_1.trim.fastq.gz : output file (the .gz ending tells fastq-mcf to compress the output file)
-
-```{bash}
-ls -lSrh $RAW_FASTQ_DIR
-```
 
 ```{bash}
 TrimmomaticSE
 ```
+
+
+> Like a lot of research software, the documentation for Trimmomatic is mediocre. There are a few places to find more details, one of the better ones is the [Trimmomatic GitHub Page](https://github.com/usadellab/Trimmomatic). There is also a [Trimmomatic Manual](http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf) for a slightly older version.
+
+
+## Making an adapter file
+As part of trimming and filtering we want to remove adapter contamination. To do this we need to make a file containing the adapter sequences that we can supply to our trimming software.
+
+The first step is find out what the adapter sequences are! To do this, we need to know what adapters were used to make our libraries. If we made the libraries ourselves, then we should know. If the libraries were made by a sequencing core, then it is best to get this information from them at the time of sequencing. Sometimes the core can give us the adapter sequences and sometimes they will just tell us the kit information and we need to look up the sequences ourselves.
+
+In our case, the [paper](https://pubmed.ncbi.nlm.nih.gov/33597266/) doesn't tell us anything about the library prep, but it links to [Supplementary Methods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8130008/bin/NIHMS1696940-supplement-Supplemental_material_Fin.docx) which tells us that the TruSeq RNA Sample Preparation Kit v2 was used for library prep. We can get the [adapter sequences from Illumina](https://support-docs.illumina.com/SHARE/AdapterSeq/Content/SHARE/AdapterSeq/TruSeq/CDIndexes.htm) and make our own adapter file, but we are in luck, because Trimmomatic comes with a set of Illumina adapter files.
+
+
+### Running TrimmomaticSE
+We are mostly going to use the Trimmomatic recommended parameters, because they seem reasonable.
+
+1. -threads : the number of threads (i.e. CPU cores) to use
+2. -phred33 : tell Trimmomatic that our quality scores use the phred33 encoding
+3. SRR12804466_1.fastq.gz : the input FASTQ with the data (Trimmomatic, like most NGS analysis software, detects gzipped files and automatically decompresses on the fly)
+4. SRR12804466_1_trimmed.fastq.gz: what Trimmomatic should name the output, the trimmed version of the FASTQ
+5. ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 - remove adapters with these specifications
+    - TruSeq2-SE.fa: adapter file to use (Trimmomatic will look in its adapter file database if it can't find this at the path specified)
+    - 2: specifies the maximum mismatch count which will still allow a full match to be performed
+    - 30: specifies how accurate the match between the two 'adapter ligated' reads must be for PE palindrome read alignment (not relevant for SE)
+    - 10: specifies how accurate the match between any adapter etc. sequence must be against a read.
+6. LEADING:3 - quality trimming at 5' end of read, remove all bases below this threshold (phred < 3), and other bases 5' of it
+7. TRAILING:3 - quality trimming at 3' end of read, remove all bases below this threshold (phred < 3), and other bases 3' of it
+8. SLIDINGWINDOW:4:15 - Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15
+8. MINLEN:36 - throw out any reads that are shorter than this (36bp) after trimming
+
 
 ```{bash}
 TrimmomaticSE \
@@ -68,7 +87,7 @@ TrimmomaticSE \
         -phred33 \
         ${RAW_FASTQ_DIR}/SRR12804466_1.fastq.gz \
         ${TRIM_DIR}/SRR12804466_1_trimmed.fastq.gz \
-        ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+        ILLUMINACLIP:TruSeq2-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
 ```
 
 at this point we could run fastqc on the output of fastq-mcf to see if statistics have improved, but we will skip that for now.

@@ -22,6 +22,12 @@ Retyping shell variables in every notebook is gets old, and it is error prone.  
 
 ```{bash}
 source bioinf_config.sh
+```
+
+## Making New Directories
+Make the directories that are new in this notebook
+
+```{bash}
 mkdir -p $OUT_DIR
 ```
 

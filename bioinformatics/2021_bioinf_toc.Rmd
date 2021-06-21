@@ -18,12 +18,10 @@ jupyter:
 ## RNA-Seq Basic Bioinformatic Steps
 
 1. [Quality Control](fastqc.Rmd)
-1. [Make Adapter File](make_adapter_file.Rmd)
-1. [Trimming and Filtering](fastq_trimming.Rmd) WORKS: need to update text
+1. [Trimming and Filtering](fastq_trimming.Rmd)
 1. [Mapping Reads to a Reference Genome](mapping.Rmd) WORKS: 1. Update text; 2. Try to include Picard CollectRnaSeqMetrics
 
 ## Paired End Data
-1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
 1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd) WORKS: need to update text
 1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd) WORKS: need to update text
 1. [PE: Quality Control](pe_qc.Rmd) WORKS: need to update text
@@ -33,7 +31,6 @@ jupyter:
 -->
 
 ## A Pipeline with Multiple Samples
-1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
 1. [Generalizing Bash Commands](generalizing_bash_commands.Rmd)
 1. [Making a Pipeline](making_a_pipeline.Rmd) WORKS: need to update text
 1. [Pipeline in a Loop](loop_pipeline.Rmd) WORKS: need to update text
@@ -54,6 +51,7 @@ jupyter:
 - [Quality Score Tutorial](quality_scores.Rmd)
 - [Configuration File](bioinf_config.sh)
 - [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
+- [Make Adapter File](make_adapter_file.Rmd)
 
 
 <!---  

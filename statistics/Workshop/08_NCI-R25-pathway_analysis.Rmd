@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
@@ -41,13 +41,16 @@ We will focus the gene level analyses on three analyses
 
 1. GSEA for testing the treatment effect within each of the two cell lines
 
-### Load packages, study and annotation data
+### Load library and Data
 
 ```{r message=FALSE}
-library(DESeq2)
-library(ashr)
-library(tidyverse)
-library(fgsea)
+library("DESeq2")
+library("ashr")
+library("ggplot2")
+library("tidyverse")
+library("fgsea")
+library("stringr")
+library("biomaRt")
 ```
 
 ```{r load data}
@@ -55,15 +58,6 @@ procdir <- normalizePath("./proc/")
 ddsfile <- file.path(procdir, "PRJNA668393-ddsdata.RDS")
 dds <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
-```
-
-```{r}
-annodir <- "./resource/"
-annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
-
-tools::md5sum(annofile)
-
-Mm.H <- readRDS(annofile)
 ```
 
 ### Check dds
@@ -178,19 +172,33 @@ The analysis is performed by:
 3. calculating an enrichment score (ES) that represents the difference between the observed rankings and that which would be expected assuming a random rank distribution.
 
 
-#### Create ranks
+#### Extract the statistics
 
 Rank all genes based on the Wald's statistics.
 
 We notice that some gene statistics are `NA`. This could due to various reasons., *e.g.*, the gene has zero count and thus cannot be used to perform differential expression analysis. For further steps, we need to remove those `NA` values.
 
 ```{r}
-res_add.dat <- as_tibble(res_add)
-res_add.dat <- res_add.dat %>% drop_na("stat")
+ranks <- res_add$stat
 
-ranks <- res_add.dat$stat
-names(ranks) <- row.names(res_add.dat)
+ens  <- as.character(rownames(res_add))
+head(ens)
+ens2 <- str_split(ens, pattern=coll("."), simplify=TRUE)[,1]
+head(ens2)
+```
+
+Remove those na values in the ranks.
+
+```{r}
+# Find those non-na indices
+idx <- which(!is.na(ranks)) 
+
+ranks <- ranks[idx]
 head(ranks)
+
+ens3 <- ens2[idx]
+length(ens3)
+length(ranks)
 ```
 
 Plot the ranked fold change.
@@ -199,7 +207,71 @@ Plot the ranked fold change.
 barplot(sort(ranks, decreasing = T))
 ```
 
-## Using `fgsea` package to perform GSEA
+#### Mapping the gene annotations
+
+```{r}
+ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
+gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
+                  filter = 'ensembl_gene_id',
+      values = ens3,
+      mart = ensembl104)
+```
+
+Check the mapping results.
+
+```{r}
+dim(gene.map)
+head(gene.map)
+```
+
+```{r}
+idx <- match(ens3, gene.map[,2])
+length(idx)
+sum(is.na(idx))
+```
+
+```{r}
+gene.map2 <- gene.map[idx,]
+head(ens3)
+head(gene.map2)
+```
+
+Change those `NA` to string.
+
+```{r}
+entrez <- gene.map2[,1]
+entrez[is.na(entrez)] <- "NA"
+```
+
+Assign names to the `ranks` vector. 
+
+```{r}
+names(ranks) <- entrez
+head(ranks)
+```
+
+##### Another way to include the gene id version (not recommended).
+
+```{r}
+trial <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id', 'ensembl_gene_id_version'),
+                  filter = 'ensembl_gene_id_version',
+      values = ens[1:10],
+      mart = ensembl104)
+trial
+```
+
+#### Load pathways
+
+```{r}
+annodir <- "/data/genome/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
+```
+
+#### Perform GSEA
 
 ```{r}
 set.seed(1234)
@@ -207,7 +279,7 @@ fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 ```
 The warning produced indicates that there are few genes that have the same statistics and so are ranked equally. `fgsea` with arbitrarily order determine which comes first in the ranked list. As long as this number is small it shouldn’t significantly effect the results. If the number is large we need to check further.
 
-Here $21.33\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
+Here $21.64\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
 
 Let's look at the top 10 results.
 
@@ -216,15 +288,20 @@ head(fgseaRes[order(padj, -abs(NES)), ], n=10)
 ```
 
 
-#### Enrichment score plot
-
-```{r}
-plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
-```
-
 The [GSEA](https://www.pnas.org/content/102/43/15545.full) paper provided an explanation of the enrichment score plot.
 
 The enrichment score (ES) that reflects the degree to which a set $S$ is overrepresented at the extremes (top or bottom) of the entire ranked list $L$. The score is calculated by walking down the list $L$, increasing a running-sum statistic when we encounter a gene in $S$ and decreasing it when we encounter genes not in $S$. The magnitude of the increment depends on the correlation of the gene with the phenotype. The enrichment score is the maximum deviation from zero encountered in the random walk; it corresponds to a weighted Kolmogorov–Smirnov-like statistic.
+
+```{r}
+# not significant
+
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+```
+
+```{r}
+# significant
+plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], ranks)
+```
 
 #### GSEA Table plot
 
@@ -250,33 +327,70 @@ We update the DDS object using the design `design <- ~ cline + trt + cline:trt`.
 design(dds) <- formula(~ cline + trt + cline:trt)
 dds.fit <- DESeq(dds)
 ```
-Check the results of DESEQ fitting.
+Check the results of DESEQ2 fitting.
 ```{r}
 res_int <- results(dds.fit)
 head(res_int)
 ```
 
-#### Take out the statistics and prepare for the GSEA.
+#### Extract the statistcs
 
 ```{r}
-res_int.dat <- as_tibble(res_int)
-res_int.dat <- res_int.dat %>% drop_na("stat")
-head(res_int.dat)
+ranks <- res_int$stat
 
-ranks <- res_int.dat$stat
-names(ranks) <- row.names(res_int.dat)
+ens  <- as.character(rownames(res_int))
+head(ens)
+ens2 <- str_split(ens, pattern=coll("."), simplify=TRUE)[,1]
+head(ens2)
+
+idx <- which(!is.na(ranks)) 
+
+ranks <- ranks[idx]
 head(ranks)
+
+ens3 <- ens2[idx]
+length(ens3)
+length(ranks)
 ```
 
+
+#### Mapping the gene annotations
+
+```{r}
+ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
+gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
+                  filter = 'ensembl_gene_id',
+      values = ens3,
+      mart = ensembl104)
+
+idx <- match(ens3, gene.map[,2])
+length(idx)
+sum(is.na(idx))
+
+gene.map2 <- gene.map[idx,]
+head(ens3)
+head(gene.map2)
+```
+
+```{r}
+entrez <- gene.map2[,1]
+entrez[is.na(entrez)] <- "NA"
+
+names(ranks) <- entrez
+head(ranks)
+```
 
 #### Using `fgsea` package to perform GSEA
 
 ```{r}
 fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 head(fgseaRes[order(padj, -abs(NES)), ], n=10)
-plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
 ```
 
+
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_MITOTIC_SPINDLE"]], ranks)
+```
 
 ```{r}
 topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
@@ -322,34 +436,12 @@ plotMA(res_trt_pa)
 head(res_trt_pa)
 ```
 
-#### Extract test statistics
+#### Homework: 
 
-```{r}
-res_trt_pa.dat <- as_tibble(res_trt_pa)
-res_trt_pa.dat <- res_trt_pa.dat %>% drop_na("stat")
-head(res_trt_pa.dat)
+Please follow the above examples and finish the listed tasks by yourself.
 
-ranks <- res_trt_pa.dat$stat
-names(ranks) <- row.names(res_trt_pa.dat)
-head(ranks)
-```
+1. Extract the statistics. 
 
-#### Use `fgsea` to perform GSEA
+1. Mapping the gene annotations
 
-```{r}
-fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
-head(fgseaRes[order(padj, -abs(NES)), ], n=10)
-plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
-```
-
-```{r}
-topUp <- fgseaRes %>% filter(ES > 0) %>% top_n(10, wt=-padj)
-topDown <- fgseaRes %>% filter(ES < 0) %>% top_n(10, wt=-padj)
-topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
-plot.new()
-plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
-```
-
-```{r}
-sessionInfo()
-```
+1. Perform GSEA.

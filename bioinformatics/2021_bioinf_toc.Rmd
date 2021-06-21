@@ -34,6 +34,7 @@ jupyter:
 
 ## A Pipeline with Multiple Samples
 1. [Make Adapter File](make_adapter_file.Rmd) NEEDS TO BE UPDATED
+1. [Generalizing Bash Commands](generalizing_bash_commands.Rmd)
 1. [Making a Pipeline](making_a_pipeline.Rmd) WORKS: need to update text
 1. [Pipeline in a Loop](loop_pipeline.Rmd) WORKS: need to update text
 1. [Running Multiple FASTQs](multifastq_loop_pipeline.Rmd) WORKS: need to update text
@@ -51,6 +52,7 @@ jupyter:
 
 ## Appendix
 - [Quality Score Tutorial](quality_scores.Rmd)
+- [Configuration File](bioinf_config.sh)
 - [Download and Index Genome](genome_prep.Rmd) NEEDS TO BE UPDATED
 
 

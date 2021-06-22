@@ -37,7 +37,7 @@ TrimmomaticPE \
     ${PIPE_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
     ${PIPE_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
     ${PIPE_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
-    ILLUMINACLIP:${ADAPTER_FASTA}:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+    ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
 
 echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
 STAR \

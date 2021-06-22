@@ -5,7 +5,7 @@ jupyter:
       extension: .Rmd
       format_name: rmarkdown
       format_version: '1.2'
-      jupytext_version: 1.11.3
+      jupytext_version: 1.11.2
   kernelspec:
     display_name: R
     language: R
@@ -36,6 +36,9 @@ annodir <- normalizePath("/data/genome/")
 
 gfffile <- file.path(annodir, "gencode.vM27.primary_assembly.annotation.gff3")
 tools::md5sum(gfffile)
+
+gencodeidfile <- "gencode.vM27.metadata.EntrezGene.gz"
+
 ```
 
 ```{r}
@@ -53,13 +56,47 @@ gffdat
 Filter by gene name
 
 ```{r}
-gffdat %>% plyranges::filter(gene_name == "Il17f") %>% tibble::as_tibble()
+gffdat %>% plyranges::filter(gene_name == "Il17f") %>% tibble::as_tibble() %>% pull(Parent)
 ```
 
 Filter by gene symbol and exons
 
 ```{r}
 gffdat %>% plyranges::filter(gene_name == "Il17f" & type == "exon") %>% tibble::as_tibble()
+```
+
+## Import ensembl id to entrez id file from gencode
+
+```{r}
+readr::read_tsv(gencodeidfile, col_names = c("ensid", "entrez"), col_types = c(col_character(), col_character())) -> 
+    idmapdat
+```
+
+```{r}
+idmapdat
+```
+
+```{r}
+gffdat %>% 
+    plyranges::filter(type == "transcript") %>% 
+    as_tibble() %>% 
+    dplyr::select(gene_id, transcript_id, gene_name, mgi_id) %>% 
+    dplyr::full_join(idmapdat, by = c("transcript_id" = "ensid")) 
+```
+
+```{r}
+%>%
+    dplyr::distinct(gene_id, entrez) %>%
+    dplyr::full_join(tibble(gid = rownames(PRJNA668393ddsData)), by = c("gene_id" = "gid")) -> 
+    idmap
+```
+
+```{r}
+idmap %>% drop_na
+```
+
+```{r}
+
 ```
 
 ## Extract select annotation from the object as a tibble
@@ -121,4 +158,20 @@ tools::md5sum(outfile)
 
 ```{r}
 sessionInfo()
+```
+
+```{r}
+gffdat %>% filter(type == "gene") %>% head(3) %>% as_tibble() %>% colnames()
+```
+
+```{r}
+? rtracklayer::import
+```
+
+```{r}
+wget http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.metadata.EntrezGene.gz
+```
+
+```{r}
+
 ```

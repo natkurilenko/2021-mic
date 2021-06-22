@@ -1,0 +1,338 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+# Query genomic annotation using the biomaRt package from Bioconductor
+
+```{r}
+library(biomaRt)
+library(tidyverse)
+```
+
+```{r}
+mymart <- useMart("ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", version = "Ensembl Genes 104")
+```
+
+## Example: query entrez id, and MGI id and symbol for ensembl ids
+
+
+### List filters
+
+```{r}
+listFilters(mymart) %>% dplyr::filter(stringr::str_detect(name, "ensembl"))
+```
+
+### List attributes
+
+```{r}
+listAttributes(mymart) %>% dplyr::filter(str_detect(name, "ensembl|entrez|mgi"))
+```
+
+### sample query for two genes
+
+
+Query by ensembl id
+
+```{r}
+biomaRt::getBM(
+    filters = "ensembl_gene_id",
+    attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=c("ENSMUSG00000023951", "ENSMUSG00000041872"),
+    mart=mymart
+)
+```
+Conversely, query using entrez ids
+
+```{r}
+biomaRt::getBM(
+    filters = "entrezgene_id",
+    attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=c(22339, 257630),
+    mart=mymart
+)
+```
+
+
+
+
+
+## Query gene ids for pathway analysis
+
+
+A pathway analysis is by deisgn limited to the genes annotated in pathways. Accordingly, can limit our attention to this subset of genes.
+
+
+### Import Pathways
+
+```{r}
+annodir <- "./resource/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
+```
+
+### Query annotation for genes annotated in the pathways
+
+```{r}
+biomaRt::getBM(
+    filters = "entrezgene_id",
+    attributes=c("chromosome_name", "start_position", "end_position" , "strand" , "ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=as.integer(unique(unlist(Mm.H))),
+    mart=mymart
+) -> pathwayids
+```
+
+```{r}
+pathwayids %>% head
+```
+
+### 
+
+
+Number of pathways ids with no query
+
+```{r}
+length(setdiff(as.integer(unlist(Mm.H)), pathwayids[["entrezgene_id"]]))
+```
+
+Pathway ids with non-unique ensembl id
+
+```{r}
+pathwayids %>% dplyr::group_by(ensembl_gene_id) %>% dplyr::filter(n()>1) %>% arrange(ensembl_gene_id)
+```
+
+```{r}
+## 
+biomaRt::getBM(
+    filters = "entrezgene_id",
+    attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=c(19047,434233),
+    mart=mymart
+)          
+```
+
+```{r}
+## 
+biomaRt::getBM(
+    filters = "entrezgene_id",
+    attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=c(100041273, 100042503, 68194),
+    mart=mymart
+)          
+```
+
+```{r}
+56066
+
+biomaRt::getBM(
+    filters = "entrezgene_id",
+    attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=c(56066),
+    mart=mymart
+) 
+```
+
+## Import ensembl ids from study data
+
+```{r}
+listFilters(mymart)[grep("entrez",listFilters(mymart)[,1]),]
+```
+
+## Query annotation data from MGI (http://www.informatics.jax.org)
+
+```{r}
+paste0(rep("c",15), collapse = "")
+```
+
+```{r}
+mgifile <- "http://www.informatics.jax.org/downloads/reports/MGI_Gene_Model_Coord.rpt"
+
+readr::read_tsv(mgifile) -> mgidat
+```
+
+```{r}
+mgidat 
+```
+
+## Get rid of genes listed as "null"
+
+```{r}
+mgidat %>% 
+    dplyr::filter(`6. Entrez gene id` != "null" & `11. Ensembl gene id` != "null") ->
+    mgidat
+
+mgidat
+```
+
+### Check  if ids are unique`
+
+```{r}
+mgidat %>% 
+    dplyr::group_by(`6. Entrez gene id`) %>%
+    dplyr::filter(n()>1)
+```
+
+```{r}
+mgidat %>% 
+    dplyr::group_by(`11. Ensembl gene id`) %>%
+    dplyr::filter(n()>1)
+```
+
+### Number of pathway genes  not in annotation file
+
+```{r}
+length(setdiff(unlist(Mm.H), mgidat[["6. Entrez gene id"]]))
+```
+
+### Set location of analysis results
+
+```{r}
+procdir <- "./proc"
+
+addfile <- file.path(procdir, "PRJNA668393-DESeq2-additive.RDS")
+multfile <- file.path(procdir, "PRJNA668393-DESeq2-multiplicative.RDS")
+
+tools::md5sum(addfile)
+tools::md5sum(multfile)
+```
+
+### 
+
+```{r}
+### The ensembl ids from the gtf file end with version numbers
+### One can use str_remove to remove the ensemble version from id
+stringr::str_remove("ENSMUSG12345.01",".[0-9][0-9]{0,2}$")
+stringr::str_remove("ENSMUSG12345.1",".[0-9][0-9]{0,2}$")
+
+
+```
+
+### Create a named vector (using entrez ids) for statistics from additive model
+
+```{r}
+### drop genes with na statistics
+### clean ensembl id by dropping version number
+### Merge the results by the clean ensemble id using an inner join
+### Only keep 
+
+readRDS(addfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    tidyr:: drop_na(pvalue) %>%
+    dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
+    dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+    dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>% 
+    dplyr::pull(stat, name = "6. Entrez gene id") ->
+    addstat
+```
+
+#### spot check the conversion for three genes
+
+```{r}
+idx <- sample(1:length(addstat), 3)
+idx
+```
+
+```{r}
+mgidat %>% 
+    dplyr::filter(`6. Entrez gene id` %in% names(addstat[idx])) %>%
+    dplyr::select(`6. Entrez gene id`, `11. Ensembl gene id`) ->
+    testres
+    
+testres
+```
+
+```{r}
+addstat[idx]
+readRDS(addfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    dplyr::filter(str_detect(row, paste0(testres[["11. Ensembl gene id"]], collapse = "|")))
+```
+
+```{r}
+# Check top hits (from DE notebook)
+#http://www.informatics.jax.org/marker/MGI:1913418
+#http://www.informatics.jax.org/marker/MGI:1298227
+sort(-abs(addstat))[1:2]
+readRDS(addfile) %>%
+    DESeq2::results(tidy = TRUE) %>% dplyr::arrange(pvalue) %>% head(5)
+```
+
+### Create a named vector (using entrez ids) for statistics from additive model
+
+```{r}
+### drop genes with na statistics
+### clean ensembl id by dropping version number
+### Merge the results by the clean ensemble id using an inner join
+### Only keep 
+
+readRDS(multfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    tidyr:: drop_na(pvalue) %>%
+    dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
+    dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+    dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>% 
+    dplyr::pull(stat, name = "6. Entrez gene id") ->
+    multstat
+```
+
+#### Spot check
+
+```{r}
+idx <- sample(1:length(addstat), 3)
+idx
+```
+
+```{r}
+mgidat %>% 
+    dplyr::filter(`6. Entrez gene id` %in% names(multstat[idx])) %>%
+    dplyr::select(`6. Entrez gene id`, `11. Ensembl gene id`) ->
+    testres
+    
+testres
+```
+
+```{r}
+multstat[idx]
+readRDS(multfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    dplyr::filter(str_detect(row, paste0(testres[["11. Ensembl gene id"]], collapse = "|")))
+```
+
+```{r}
+# Check top hits (from interaction notebook)
+#http://www.informatics.jax.org/marker/MGI:109296
+#http://www.informatics.jax.org/marker/MGI:2442264
+sort(-abs(multstat))[1:2]
+readRDS(multfile) %>%
+    DESeq2::results(tidy = TRUE) %>% dplyr::arrange(pvalue) %>% head(3)
+```
+
+```{r}
+outdir <- "./proc"
+
+addstatfile <- file.path(outdir, "PRJNA668393-DESeq2-addstat.RDS")
+multstatfile <- file.path(outdir, "PRJNA668393-DESeq2-multstat.RDS")
+
+saveRDS(addstat, addstatfile)
+saveRDS(multstat, multstatfile)
+
+tools::md5sum(addstatfile)
+tools::md5sum(multstatfile)
+```
+
+```{r}
+sessionInfo()
+```

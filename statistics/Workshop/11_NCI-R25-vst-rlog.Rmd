@@ -1,5 +1,5 @@
 ---
-title: DEseq2 differential expression analysis
+title: Transform Counts using DESeq2::vst and DESeq2::rlog
 jupyter:
   jupytext:
     text_representation:

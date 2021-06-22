@@ -46,17 +46,16 @@ STAR \
 
 We will start with these parameters, but there is an extensive list of command line options detailed in the [STAR Manual](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf), it is a good idea to read through and try to understand all of them.  We will discuss some more later.
 
-* --runMode alignReads : map reads 
+* --runMode alignReads : map reads (as opposed to indexing the genome)
 * --twopassMode : Run one pass or two? If two-pass mode is on, STAR tries to discover novel junctions, then reruns mapping with these added to the annotation
 * --genomeDir : directory containing the genome index
 * --readFilesIn : input FASTQ
 * --readFilesCommand gunzip -c : use "gunzip -c" to uncompress FASTQ on-the-fly, since it is gzipped
 * --outFileNamePrefix : prefix (and path) to use for all output files
 * --quantMode GeneCounts : output a table of read counts per gene
-* --outSAMtype BAM Unsorted : output an unsort BAM file
+* --outSAMtype BAM SortedByCoordinate : output an sorted BAM file
 * --outSAMunmapped Within : included unmapped reads in the BAM file
-* --runThreadN : tells STAR to run using multiple cores.  I am using it so we don't have to wait too long for this to run during class.  It is OK to use multiple cores, but before you do this you should be sure that the server is not busy, and even then you should use a reasonable number of cores.  Abusing multi-threading is inconsiderate of other users and could crash the server.
-
+* --runThreadN : tells STAR to run using multiple cores and how many. It is OK to use multiple cores, but before you do this you should be sure that the server is not busy, and even then you should use a reasonable number of cores.  Abusing multi-threading is inconsiderate of other users and could crash the server.
 
 
 ### STAR Output
@@ -66,16 +65,19 @@ So what happened? Let's take a look . . .
 ls ${STAROUT_DIR}
 ```
 
-```{bash}
-head ${STAROUT_DIR}/SRR12804466_1*.out ${STAROUT_DIR}/SRR12804466_1*.tab
-```
-
 STAR generates several files for each FASTQ:
 * Log.out : lots of details of the run, including all parameters used
 * Log.final.out : Important summary statistics
 * ReadsPerGene.out.tab : Count table, the main thing we are interested in
 * SJ.out.tab : All splice junctions, including ones from the GTF and novel junctions discovered by STAR
 * Log.progress.out: run statistics updated during run, not so interesting at the end
+* etc
+
+Let's peak at some of these
+
+```{bash}
+head ${STAROUT_DIR}/SRR12804466_1*.out ${STAROUT_DIR}/SRR12804466_1*.tab
+```
 
 Let's take a closer look at Log.final.out
 
@@ -110,12 +112,35 @@ Even with a high rate of mapped reads, it is worth spending a few minutes to che
 samtools fasta -f 4 ${STAROUT_DIR}/SRR12804466_1_Aligned.sortedByCoord.out.bam | head -n20
 ```
 
+<!-- #region -->
 #### Reality Check: Strandness
+RNA-Seq libraries can be prepared in a way that allows us to determine the original strand of the RNA molecule from which a given read was generated, these are refered to as "stranded" or "strand-specific" libraries. Stranded libraries come in two flavors. In same strand (or sense strand) libraries the strand of the read itself is the same as the strand of the original RNA. In opposite (or anti-sense strand) libraries, the read is the reverse complement of the original RNA and therefore corresponds to the opposite strand from the original RNA. A few molecular biology tricks are used to prepare stranded libraries (there are a number of different protocols). 
+
+If nothing is done in the library preparation to "label" the RNA strand, then the library generated will be unstranded, meaning that for a given read there is no way to know the strand of the original RNA molecule from which it was generated.
+
+There are some benefits to stranded libraries, such as being able to detect and distinguish antisense RNAs (e.g. long-noncoding RNAs from mRNA), but the most important thing in analyzing RNA-Seq data is know whether the library is stranded, which strand, and to check the data to be sure it agrees. 
+
+This [paper](https://pubmed.ncbi.nlm.nih.gov/33597266/) doesn't tell us anything about the library prep, but it links to [Supplementary Methods](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8130008/bin/NIHMS1696940-supplement-Supplemental_material_Fin.docx) which tells us that the TruSeq RNA Sample Preparation Kit v2 was used for library prep. The [specification for this kit](https://www.illumina.com/products/by-type/sequencing-kits/library-prep-kits/truseq-rna-v2.html) tells us that the library is "Non-Stranded" (listed under "Strand Specificity." 
+
+
+We can use `infer_experiment.py` to check whether the data agrees with this expectation. If it doesn't we would suspect some problem with the data.
+
+<!---  
+
+# Picard CollectRnaSeqMetrics
+
+`PicardCommandLine CollectRnaSeqMetrics I=/star_output/Aligned.sortedByCoord.out.bam O=/picard_output/RNA_Metrics.txt REF_FLAT=genome.refFlat STRAND=FIRST_READ_TRANSCRIPTION_STRAND RIBOSOMAL_INTERVALS=genome.intervalList`
+-->
+<!-- #endregion -->
+
+```{bash}
+samtools index ${STAROUT_DIR}/SRR12804466_1_Aligned.sortedByCoord.out.bam
+```
 
 ```{bash}
 infer_experiment.py -r ${BED_PATH} -i ${STAROUT_DIR}/SRR12804466_1_Aligned.sortedByCoord.out.bam
 ```
 
-# Picard CollectRnaSeqMetrics
+The results agree with our expectation for an **unstranded** library: about 50% of reads are the same strand as each gene's strand and about 50% are on the opposite strand. 
 
-`PicardCommandLine CollectRnaSeqMetrics I=/star_output/Aligned.sortedByCoord.out.bam O=/picard_output/RNA_Metrics.txt REF_FLAT=genome.refFlat STRAND=FIRST_READ_TRANSCRIPTION_STRAND RIBOSOMAL_INTERVALS=genome.intervalList`
+For a stranded library we would expect almost all of the reads to be "++,--" (same strand) or "+-,-+" (opposite strand).

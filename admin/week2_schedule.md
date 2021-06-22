@@ -5,7 +5,7 @@
 |           | 13:15-14:30 | Bulk RNA-Seq: Bioinformatics Workshop I     | [TOC](../bioinformatics/2021_bioinf_toc.Rmd)                             | Granek                        |
 |           | 14:45-16:00 | Bulk RNA-Seq: Bioinformatics Workshop II    | [TOC](../bioinformatics/2021_bioinf_toc.Rmd)                             | Granek                        |
 |           |             |                                             |                                                                          |                               |
-| Tuesday   | 09:00-10:15 | Bulk RNA-Seq: Statistical Considerations I  |                                                                          | Shi                           |
+| Tuesday   | 09:00-10:15 | Bulk RNA-Seq: Statistical Considerations I  |      [Notes](../statistics/PS_MIC2021_GenStat.pdf)                                                                    | Shi                           |
 |           | 10:30-11:45 | Bulk RNA-Seq: Statistical Considerations II |                                                                          | Shi                           |
 |           | 13:15-14:30 | Bulk RNA-Seq: Statistics Workshop I         |                                                                          | Owzar                         |
 |           | 14:45-16:00 | Bulk RNA-Seq: Statistics Workshop II        |                                                                          | Owzar                         |

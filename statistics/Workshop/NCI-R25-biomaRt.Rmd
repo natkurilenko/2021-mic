@@ -297,7 +297,7 @@ testres
 
 ```{r}
 multstat[idx]
-readRDS(addfile) %>%
+readRDS(multfile) %>%
     DESeq2::results(tidy = TRUE) %>%
     dplyr::filter(str_detect(row, paste0(testres[["11. Ensembl gene id"]], collapse = "|")))
 ```
@@ -317,8 +317,4 @@ tools::md5sum(multstatfile)
 
 ```{r}
 sessionInfo()
-```
-
-```{r}
-
 ```

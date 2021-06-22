@@ -22,9 +22,9 @@ jupyter:
 1. [Mapping Reads to a Reference Genome](mapping.Rmd)
 
 ## Paired End Data
+1. [PE: Quality Control](pe_qc.Rmd)
 1. [PE: Trimming and Filtering](pe_fastq_trimming.Rmd)
 1. [PE: Mapping Reads to a Reference Genome](pe_mapping.Rmd)
-1. [PE: Quality Control](pe_qc.Rmd)
 
 <!---  
 1. [PE: Looping with Globs](pe_glob_loop.Rmd)

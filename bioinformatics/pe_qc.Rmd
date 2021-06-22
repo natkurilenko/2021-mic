@@ -13,33 +13,30 @@ jupyter:
 ---
 
 # Quality Control
-<!--
-** Add Intro Text***
--->
 
-## Shell Variables
-Assign the variables in this notebook.
+So far we have been working with only one FASTQ file, both for simplicity and for execution speed. This means that we have been treating our data as if it was single-end data, but it is is actually paired-end data. So let's use both pairs of reads. Processing paired-end data is a bit more complicated than single-end data, but not a lot. 
+
+Let's load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
-# Source the config script
 source bioinf_config.sh
 
 mkdir -p ${PE_QC}
 ls $PE_OUT_DIR
 ```
 
-## Fastqc
-Now that we have had a quick look at our fastq file, let's run some basic analysis using a program called fastqc.  This will take less than a minute to run.  Remember that while "long" jobs are running it will say "In [\*]:" in the left margin, once it is done, a number will replace the asterisk.
+## FastQC
+FastQC doesn't know anything about paired-end data, so running it out paired-end FASTQ files is just like running it on multiple single-end FASTQs - just list both FASTQ files in the pair.
 
 ```{bash}
-# fastqc --threads 2 --quiet $DEMUX/r1.8A_pilot.fq.gz -o $QC
-fastqc --threads $TOTAL_THREADS --extract $RAW_FASTQ_DIR/SRR12804466_[12].fastq.gz -o $PE_QC
+fastqc --threads $TOTAL_THREADS --extract --outdir $PE_QC $RAW_FASTQ_DIR/SRR12804466_1.fastq.gz $RAW_FASTQ_DIR/SRR12804466_2.fastq.gz 
 ```
 
 ## MultiQC
+And MultiQC doesn't care either, just give it the directory where FastQC put its output and it loads the information from all the files that FastQC processed
 
 ```{bash}
-multiqc $PE_QC $PE_STAROUT_DIR --outdir $PE_QC
+multiqc $PE_QC --outdir $PE_QC
 ```
 
 Once multiqc is done running we can view the results by finding the output in the Jupyter browser, it should be in a file named `multiqc_report.html` in :

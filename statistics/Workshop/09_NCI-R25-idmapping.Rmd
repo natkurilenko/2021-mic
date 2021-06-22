@@ -230,7 +230,7 @@ stringr::str_remove("ENSMUSG12345.1",".[0-9][0-9]{0,2}$")
 
 readRDS(addfile) %>%
     DESeq2::results(tidy = TRUE) %>%
-    tidyr:: drop_na(stat) %>%
+    tidyr:: drop_na(pvalue) %>%
     dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
     dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
     dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>% 
@@ -261,6 +261,15 @@ readRDS(addfile) %>%
     dplyr::filter(str_detect(row, paste0(testres[["11. Ensembl gene id"]], collapse = "|")))
 ```
 
+```{r}
+# Check top hits (from DE notebook)
+#http://www.informatics.jax.org/marker/MGI:1913418
+#http://www.informatics.jax.org/marker/MGI:1298227
+sort(-abs(addstat))[1:2]
+readRDS(addfile) %>%
+    DESeq2::results(tidy = TRUE) %>% dplyr::arrange(pvalue) %>% head(5)
+```
+
 ### Create a named vector (using entrez ids) for statistics from additive model
 
 ```{r}
@@ -271,7 +280,7 @@ readRDS(addfile) %>%
 
 readRDS(multfile) %>%
     DESeq2::results(tidy = TRUE) %>%
-    tidyr:: drop_na(stat) %>%
+    tidyr:: drop_na(pvalue) %>%
     dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
     dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
     dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>% 
@@ -300,6 +309,15 @@ multstat[idx]
 readRDS(multfile) %>%
     DESeq2::results(tidy = TRUE) %>%
     dplyr::filter(str_detect(row, paste0(testres[["11. Ensembl gene id"]], collapse = "|")))
+```
+
+```{r}
+# Check top hits (from interaction notebook)
+#http://www.informatics.jax.org/marker/MGI:109296
+#http://www.informatics.jax.org/marker/MGI:2442264
+sort(-abs(multstat))[1:2]
+readRDS(multfile) %>%
+    DESeq2::results(tidy = TRUE) %>% dplyr::arrange(pvalue) %>% head(3)
 ```
 
 ```{r}

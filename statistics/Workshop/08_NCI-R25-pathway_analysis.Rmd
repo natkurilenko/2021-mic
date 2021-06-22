@@ -41,6 +41,17 @@ We will focus the gene level analyses on three analyses
 
 1. GSEA for testing the treatment effect within each of the two cell lines
 
+
+
+In general, GSEA follows the following steps:
+
+1. Extract the statistics and the corresponding gene names
+
+1. Map the gene annotations
+
+1. Perform GSEA
+
+
 ### Load library and Data
 
 ```{r message=FALSE}
@@ -52,10 +63,11 @@ library("stringr")
 library("biomaRt")
 ```
 
-
 ### 01 Single gene analysis for testing the treatment effect in the two factor additive model
 
-#### Load DDS object for the two-factor additive model
+#### Extract the statistics and the corresponding gene names
+
+Load DDS object for the two-factor additive model
 
 Please review your previous notes on how to generate DDS object and fit an additive model. 
 
@@ -65,8 +77,6 @@ ddsfile <- file.path(procdir, "PRJNA668393-DESeq2-additive.RDS")
 dds <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
 ```
-
-#### Check dds
 
 Check the meta data. 
 
@@ -82,13 +92,13 @@ Check the design of the `dds`.
 design(dds)
 ```
 
-#### Extract fitting results 
+Obtain the fitting results.
+
 ```{r}
-res_add <- results(dds)
-head(res_add)
+res_add <- DESeq2::results(dds, tidy=TRUE)
 ```
 
-#### Summarize results
+Check the summary of the results.
 ```{r}
 summary(res_add, alpha=0.05)
 ```
@@ -98,98 +108,87 @@ There are in total 28406 genes with nonzero total read count. Only 1 of them is 
 
 * The single gene analysis has a small power so that we cannot identify the DE genes.
 
-
-### 02  GSEA based on the statistics obtained from the single gene analysis
-
-The analysis follows the following steps:
-
-1. Extract the statistics and the corresponding gene names
-
-1. Map the gene annotations
-
-1. Perform GSEA
-
-
-#### Extract the statistics and the corresponding gene names
-
-Rank all genes based on the Wald's statistics.
-
-We notice that some gene statistics are `NA`. This could due to various reasons., *e.g.*, the gene has zero count and thus cannot be used to perform differential expression analysis. For further steps, we need to remove those `NA` values.
-
+```{r}
+head(res_add)
+```
+We noticed that some gene statistics are `NA`. This could due to various reasons., *e.g.*, the gene has zero count and thus cannot be used to perform differential expression analysis. Later, we will use these statistics as input for GSEA, so we need to remove those `NA` values.
 
 ```{r}
-ranks <- res_add$stat
-
-ens  <- as.character(rownames(res_add))
-head(ens)
-ens2 <- str_split(ens, pattern=coll("."), simplify=TRUE)[,1]
-head(ens2)
+    res_add %>%
+    tidyr:: drop_na(stat)  -> res_add
 ```
 
-Remove those na values in the ranks.
+Now check the gene ensembl names. Clearly some of the gene ensembl names contain gene version id. For gene annotation, we need to keep the first part of the name and remove the part after the `.`.
 
 ```{r}
 # Find those non-na indices
-idx <- which(!is.na(ranks)) 
-
-ranks <- ranks[idx]
-head(ranks)
-
-ens3 <- ens2[idx]
-length(ens3)
-length(ranks)
+head(res_add$row)
+head(str_remove(res_add$row, ".[0-9][0-9]{0,2}$"))
+res_add %>% dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) -> res_add
 ```
 
 Plot the ranked fold change.
 
 ```{r}
-barplot(sort(ranks, decreasing = T))
+barplot(sort(res_add$stat, decreasing = T))
+```
+
+The whole part can be simplified into the following code.
+
+```{r}
+    readRDS(ddsfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    tidyr:: drop_na(pvalue) %>%
+    dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) -> res_add
 ```
 
 #### Map the gene annotations
 
-```{r}
-ensembl104 <- useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl", version=104)
-gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
-                  filter = 'ensembl_gene_id',
-      values = ens3,
-      mart = ensembl104)
-```
-
-Check the mapping results.
+Load the annotation file and pathway file
 
 ```{r}
-dim(gene.map)
-head(gene.map)
+annodir <- "./resource/"
+annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+mgifile <- file.path(annodir,"MGI_Gene_Model_Coord.rpt")
+
+tools::md5sum(annofile)
+
+Mm.H <- readRDS(annofile)
+mgidat <- readr::read_tsv(mgifile)
 ```
+
+Pre-process the mgi data
 
 ```{r}
-idx <- match(ens3, gene.map[,2])
-length(idx)
-sum(is.na(idx))
+mgidat %>% 
+    dplyr::filter(`6. Entrez gene id` != "null" & `11. Ensembl gene id` != "null") ->
+    mgidat
+head(mgidat)
 ```
+
+Check the number of pathway genes not in annotation file
+```{r}
+length(setdiff(unlist(Mm.H), mgidat[["6. Entrez gene id"]]))
+```
+
 
 ```{r}
-gene.map2 <- gene.map[idx,]
-head(ens3)
-head(gene.map2)
+res_add %>% 
+  dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+  dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) -> res_add
+head(res_add)
 ```
 
-Change those `NA` to string.
+Pull statistics 
 
 ```{r}
-entrez <- gene.map2[,1]
-entrez[is.na(entrez)] <- "NA"
+res_add %>%
+  dplyr::pull(stat, name = "6. Entrez gene id") ->
+  ranks
 ```
 
-Assign names to the `ranks` vector. 
 
-```{r}
-names(ranks) <- entrez
-head(ranks)
-```
-
-##### Another way to include the gene id version (not recommended).
+###### Another way to include the gene id version (not recommended).
 
 ```{r}
 trial <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id', 'ensembl_gene_id_version'),
@@ -199,16 +198,6 @@ trial <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id', 'ensembl_gene_i
 trial
 ```
 
-#### Load pathways
-
-```{r}
-annodir <- "./resource/"
-annofile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
-
-tools::md5sum(annofile)
-
-Mm.H <- readRDS(annofile)
-```
 
 #### Perform GSEA
 
@@ -255,7 +244,7 @@ plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
 ```
 
 
-### 03 GSEA for testing the treatment by cell line interaction
+### 02 GSEA for testing the treatment by cell line interaction
 
 #### Update the DDS object using the model with the `trt` and `cline` interaction
 
@@ -268,49 +257,22 @@ tools::md5sum(ddsfile)
 Check the design and the results of DESEQ2 fitting.
 ```{r}
 design(dds)
-res_int <- results(dds)
+res_int <- results(dds, tidy=TRUE)
 head(res_int)
 ```
 
-#### Extract the statistcs
+#### Simplified code for GSEA 
 
 ```{r}
-ranks <- res_int$stat
-
-ens  <- as.character(rownames(res_int))
-ens2 <- str_split(ens, pattern=coll("."), simplify=TRUE)[,1]
-
-idx <- which(!is.na(ranks)) 
-ranks <- ranks[idx]
-ens3 <- ens2[idx]
+readRDS(ddsfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    tidyr:: drop_na(stat) %>%
+    dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
+    dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+    dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>% 
+    dplyr::pull(stat, name = "6. Entrez gene id") ->
+    ranks
 ```
-
-#### Map the gene annotations
-
-```{r}
-gene.map <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id'),
-                  filter = 'ensembl_gene_id',
-      values = ens3,
-      mart = ensembl104)
-
-idx <- match(ens3, gene.map[,2])
-length(idx)
-length(ranks)
-
-gene.map2 <- gene.map[idx,]
-head(ens3)
-head(gene.map2)
-```
-
-```{r}
-entrez <- gene.map2[,1]
-entrez[is.na(entrez)] <- "NA"
-
-names(ranks) <- entrez
-head(ranks)
-```
-
-#### Using `fgsea` package to perform GSEA
 
 ```{r}
 fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
@@ -329,8 +291,7 @@ plot.new()
 plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
 ```
 
-### 04 GSEA for testing the treatment effect within each of the two cell lines
-
+### 03 GSEA for testing the treatment effect within each of the two cell lines
 
 #### Define the model matrix
 
@@ -364,7 +325,8 @@ head(res_trt_pa)
 
 #### Homework: 
 
-Please follow the above examples and finish the listed tasks by yourself.
+Please follow the above examples and finish the GSEA by yourself.
+Keep in mind the three key steps.
 
 1. Extract the statistics and the corresponding gene names
 

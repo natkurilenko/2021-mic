@@ -187,18 +187,6 @@ res_add %>%
   ranks
 ```
 
-
-###### Another way to include the gene id version (not recommended).
-
-```{r}
-trial <- getBM(attributes =c('entrezgene_id', 'ensembl_gene_id', 'ensembl_gene_id_version'),
-                  filter = 'ensembl_gene_id_version',
-      values = ens[1:10],
-      mart = ensembl104)
-trial
-```
-
-
 #### Perform GSEA
 
 ```{r}

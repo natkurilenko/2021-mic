@@ -13,10 +13,9 @@ jupyter:
 ---
 
 # Making Generic Commands
-Let's let put the Bash shell to work for us by being smart with our variables
+Let's put the Bash shell to work for us by being smart with our variables
 
-## Shell Variables
-Assign the variables in this notebook.
+Load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh
@@ -45,6 +44,9 @@ echo "MAPPING: ${SRA_ACCESSION}"
 ```
 
 ## Now for the real thing . . .
+
+Now we can apply this to actually running the trimming, filtering, and mapping.
+
 ### Let's run Trimmomatic:
 
 ```{bash}
@@ -65,7 +67,6 @@ TrimmomaticPE \
 ### Now let's do the same thing for STAR
 
 ```{bash}
-SRA_ACCESSION="SRR12804466"
 echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
 STAR \
     --runMode alignReads \
@@ -84,3 +85,5 @@ STAR \
 ```{bash}
 ls ${GENERAL_STAROUT_DIR}
 ```
+
+By abstracting the code we can run these two steps on all the samples by only changing the value of `$SRA_ACCESSION`. But wait, it gets even better . . .

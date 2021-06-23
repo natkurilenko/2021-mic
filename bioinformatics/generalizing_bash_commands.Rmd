@@ -67,6 +67,7 @@ TrimmomaticPE \
 ### Now let's do the same thing for STAR
 
 ```{bash}
+SRA_ACCESSION="SRR12804466"
 echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
 STAR \
     --runMode alignReads \

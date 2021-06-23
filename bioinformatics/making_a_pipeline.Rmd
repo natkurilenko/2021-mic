@@ -13,10 +13,11 @@ jupyter:
 ---
 
 # Making a Pipeline
-Combining cells can make things easier
+We are taking baby steps to using Bash in an even more powerful way. First let's just simplify our last notebook by putting the Trimmomatic and STAR commands in the same cell. Before we defined `$SRA_ACCESSION` in both cells and needed to change it in both places. Now we only have it once, which makes for simpler code, which in turn leads to less error prone code
 
-## Shell Variables
-Assign the variables in this notebook.
+> Note: we really only needed to define `$SRA_ACCESSION` once in the last version, but we had a pattern going.
+
+Load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh

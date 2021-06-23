@@ -135,8 +135,6 @@ biomaRt::getBM(
 ```
 
 ```{r}
-56066
-
 biomaRt::getBM(
     filters = "entrezgene_id",
     attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),

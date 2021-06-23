@@ -118,14 +118,20 @@ We noticed that some gene statistics are `NA`. This could due to various reasons
     tidyr:: drop_na(stat)  -> res_add
 ```
 
-Now check the gene ensembl names. Clearly some of the gene ensembl names contain gene version id. For gene annotation, we need to keep the first part of the name and remove the part after the `.`.
+Now check the gene ensembl ids. Clearly some of the gene ensembl names contain gene version id. For gene annotation, we need to keep the first part of the name and remove the part after the `.` because two gene names with the same ensemble ids and different id versions represent the same gene. The ensembl names are the stable gene ids.
+
+See more discussions on ensemble ids and version ids can be found [here](https://m.ensembl.org/Help/Faq?id=488).
+
 
 ```{r}
 # Find those non-na indices
 head(res_add$row)
 head(str_remove(res_add$row, ".[0-9][0-9]{0,2}$"))
-res_add %>% dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) -> res_add
+res_add %>% dplyr::mutate(ensid = str_remove(row, pattern=".[0-9][0-9]{0,2}$")) -> res_add
 ```
+
+The `pattern` argument of `str_remove` function uses [R regular expressions](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html).
+
 
 Plot the ranked fold change.
 
@@ -133,7 +139,7 @@ Plot the ranked fold change.
 barplot(sort(res_add$stat, decreasing = T))
 ```
 
-The whole part can be simplified into the following code.
+Overall, to extract statistics and gene names, we can use the following codes.
 
 ```{r}
     readRDS(ddsfile) %>%
@@ -195,7 +201,7 @@ fgseaRes <- fgsea(Mm.H, ranks, minSize=15, maxSize = 500)
 ```
 The warning produced indicates that there are few genes that have the same statistics and so are ranked equally. `fgsea` with arbitrarily order determine which comes first in the ranked list. As long as this number is small it shouldn’t significantly effect the results. If the number is large we need to check further.
 
-Here $21.33\%$ is a relatively large percentage. However, this is because we use the mice data with a small sample size. It is not surprising that the statistics will have lots of ties. But most of the tied statistics are non-significant. So it won't be a big problem here.
+Usually, when the sample size is smaller, there will be more ties among statistics.
 
 Let's look at the top 10 results.
 

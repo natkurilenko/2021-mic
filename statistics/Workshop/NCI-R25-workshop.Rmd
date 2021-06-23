@@ -1,0 +1,199 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+
+
+
+# Downstream analysis workshop
+
+## Prepratory steps
+
+### Load packages
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(foreach)
+```
+
+### Set input files and directories
+
+
+```{r}
+
+metadir <- normalizePath("/data/sra_data/")
+
+
+
+### Set meta file
+srametafile <- file.path(metadir, "accession_table.csv")
+tools::md5sum(srametafile)
+
+### Set location of directory containing STAR count files
+cntdir <- "/data/starout/"
+
+
+### Output directory for R image files from workshop
+outdir <- "./workproc/"
+
+if (!dir.exists(outdir)) {
+  dir.create(outdir)
+}
+```
+
+## Import meta and count data
+### Import meta data file
+```{r}
+# Import meta data
+readr::read_csv(srametafile) ->
+    mtdata
+
+mtdata
+```
+
+### Import count files
+
+```{r}
+
+### Get count file names 
+cntfiles <- list.files(path = cntdir, pattern = "*_ReadsPerGene.out.tab")
+
+### Set column types for count files (four columns)
+coltypes <- list(col_character(), col_integer(), col_integer(), col_integer())
+
+## Define merge function
+mergefun <- function(df1,df2){
+    dplyr::full_join(df1, df2, by = "gene")
+}
+
+### Iteratively merge count files
+
+countdata <- foreach(fname = cntfiles, .combine = mergefun) %do% {
+    cntfile <- file.path(cntdir, fname)
+    readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
+    dplyr::select(X1, X2) %>%
+    rlang::set_names(c("gene", fname))
+}
+```
+
+## Create DESeq2 data object
+
+
+### Function to clean up 
+```{r}
+cleancolname <- function(x){
+    stringr::str_remove(x, "_ReadsPerGene.out.tab$")
+}
+
+### Test it
+cleancolname('SRR12804463_ReadsPerGene.out.tab')
+```
+
+### Create STAR count data matrix
+
+```{r}
+### Labels for first four rows of STAR count files
+starlabs <- c("N_ambiguous", "N_multimapping", "N_noFeature", "N_unmapped")
+
+countdata %>% 
+    dplyr::filter(!gene %in% starlabs) %>%
+    data.frame() %>% 
+    tibble::column_to_rownames("gene") %>%
+    dplyr::rename_with(cleancolname) %>%
+    as.matrix -> 
+    starcountData
+
+starcountData[1:3,]
+```
+### Create STAR column data
+
+
+```{r}
+tibble::tibble(Run = colnames(starcountData)) %>%
+    dplyr::full_join(mtdata, by = "Run") %>%
+    dplyr::mutate(
+        trt = factor(gsub("-", "",treatment), levels = c("isotype", "antiPD1")), 
+        cline = factor(cell_line, levels = c("Parental", "UV2"))
+    ) -> 
+    starcolData
+```
+
+```{r}
+starcolData
+```
+
+### 
+
+
+### Check that the columns of the count matrix agree wite the Run column in metadata
+
+```{r}
+identical(starcolData[["Run"]], colnames(starcountData))
+```
+
+### Construct DESeq2 data object 
+
+
+```{r}
+PRJNA668393ddsData <- DESeq2::DESeqDataSetFromMatrix(
+                                  countData = starcountData,
+                                  colData = starcolData,
+                                  design = ~1)
+```
+
+
+
+
+## Gene level analysis: Additive Model
+
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+### Specify design (additive model)
+
+```{r}
+design(ddsobj) <- formula(~ cline + trt)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsADD <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results (sorted by adjusted P-value)
+
+```{r}
+DESeq2::results(ddsADD, tidy = TRUE, contrast = c("trt", "antiPD1", "isotype")) %>%
+    dplyr::arrange(padj) %>%
+    head(10)
+```
+
+### Summary of results (using FDR of 0.2)
+
+```{r}
+DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+```
+
+```{r}
+
+```
+
+```{r}
+sessionInfo()
+```

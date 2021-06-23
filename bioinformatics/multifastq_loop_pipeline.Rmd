@@ -15,13 +15,14 @@ jupyter:
 # Working with Loops
 Let's kick it up another notch we have lots of FASTQs, let's run our analysis on more than one!
 
-## Shell Variables
-Assign the variables in this notebook.
+Load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh
 mkdir -p $MULTI_TRIM_DIR $MULTI_STAROUT_DIR
 ```
+
+## First our toy example
 
 ```{bash}
 for SRA_ACCESSION in SRR12804466 SRR12804465

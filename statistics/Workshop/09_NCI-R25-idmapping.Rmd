@@ -115,7 +115,6 @@ pathwayids %>% dplyr::group_by(ensembl_gene_id) %>% dplyr::filter(n()>1) %>% arr
 ```
 
 ```{r}
-## 
 biomaRt::getBM(
     filters = "entrezgene_id",
     attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
@@ -125,7 +124,6 @@ biomaRt::getBM(
 ```
 
 ```{r}
-## 
 biomaRt::getBM(
     filters = "entrezgene_id",
     attributes=c("ensembl_gene_id", "entrezgene_id","mgi_id", "mgi_symbol"),
@@ -150,10 +148,6 @@ listFilters(mymart)[grep("entrez",listFilters(mymart)[,1]),]
 ```
 
 ## Query annotation data from MGI (http://www.informatics.jax.org)
-
-```{r}
-paste0(rep("c",15), collapse = "")
-```
 
 ```{r}
 mgifile <- "http://www.informatics.jax.org/downloads/reports/MGI_Gene_Model_Coord.rpt"

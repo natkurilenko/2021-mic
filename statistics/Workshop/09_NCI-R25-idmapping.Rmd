@@ -223,7 +223,7 @@ genemap <- biomaRt::getBM(
 genemap %>% 
   dplyr::group_by(ensembl_gene_id_version) %>% 
   dplyr::filter(n()>1) %>% 
-  arrange(ensembl_gene_id_version)
+  arrange(ensembl_gene_id_version) %>% head(10)
 ```
 
 ### Remove the gene verision number

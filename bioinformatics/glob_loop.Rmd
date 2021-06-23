@@ -13,14 +13,14 @@ jupyter:
 ---
 
 # Looping with Globs
-It can be tedious and error prone to individually specify the files we want to loop over.  Regular expressions, in the form of bash globs allow us to automatically select groups of files to loop over.
+It can be tedious and error prone to individually specify the files we want to loop over. Why should we when the computer can usually do a better jobs of this. Regular expressions, in the form of bash globs, allow us to automatically select groups of files to loop over.
 
-## Shell Variables
-Assign the variables in this notebook.
+Load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh
 mkdir -p $GLOB_TRIM_DIR $GLOB_STAROUT_DIR
+ls $GLOB_OUT_DIR
 ```
 
 ## Globs?
@@ -33,37 +33,56 @@ for SRA_ACCESSION in SRR12804466 SRR12804465
     done
 ```
 
-This is appropriate in some situations, but often when there is a group of files that we want to work with, we can find a simple way to list these files without specifying them one-by-one.  For example, since the reads for each FASTQ are split across four lanes, we might want to analyze the data from all four lanes at once.  There are several ways that we can specify the FASTQs from all four lanes of FASTQ 21_2019:
+This is appropriate in some situations, but often when there is a group of files that we want to work with, we can find a simple way to list these files without specifying them one-by-one.  In our case, all the FASTQ file names have a standard pattern: SRA_ACCESSION_1.fastq.gz (for the forward reads, for the reverse reads there is a "2" before ".fastq.gz".  FASTQ names tend to have some sort of pattern, which makes it easier to process them using regular expressions. 
 
-1. The easiest is to use the `*` wildcard, which matches any number of any characters (including zero), so we can match the FASTQs from all four lanes like this: `$RAW_FASTQS/21_2019*`
-2. `*` is easy and useful, but often it is better to be more specific, otherwise we might match something unintentionally. Since the only difference in the names between the lanes is the "L001", "L002", "L003", and "L004", we can narrow our match using `?`, which matches any single character: `21_2019_P_M1_S21_L00?_R1_001.fastq.gz`
-3. The best approach is to specify exactly what characters we are allowing in that variable position.  Square brackets allow you to list specific characters that can match `[1234]` or a range `[1-4]`: `21_2019_P_M1_S21_L00[1-4]_R1_001.fastq.gz`
-
-Globs can be confusing.  Keep in mind that here we are using the globs to search through all the file names in a directory and list the files with a name that matches a specific pattern.
-
-
-All the FASTQs in $RAW_FASTQ_DIR
+To warm up let's list all the files in `${RAW_FASTQ_DIR}`
 
 ```{bash}
-ls ${RAW_FASTQ_DIR}/*.fastq.gz
+ls -1 ${RAW_FASTQ_DIR}
 ```
 
-All the forward reads (i.e. R1) in $RAW_FASTQ_DIR
+There is one file that is not a FASTQ, so let's only list the FASTQs in `$RAW_FASTQ_DIR`
 
 ```{bash}
-ls ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz
+ls -1 ${RAW_FASTQ_DIR}/*.fastq.gz
 ```
 
-Reads (forward and reverse) from accession numbers SRR12804463 through SRR12804467
+OK, now let's say we only want to work with SRR12804463 through SRR12804468.  There are several ways that we can specify just these FASTQs. 
+
+1. Since these accession numbers are the only ones in `${RAW_FASTQ_DIR}` that end in 6X (where "X" can be any digit), the easiest is to use the `*` wildcard. `*` matches any number of any characters (including zero), so we can match SRR12804463 through SRR12804468: 
 
 ```{bash}
-ls ${RAW_FASTQ_DIR}/SRR1280446[34567]_[12].fastq.gz
+ls -1 ${RAW_FASTQ_DIR}/SRR1280446*.fastq.gz
 ```
 
-Reads (forward and reverse) from accession numbers SRR12804463 through SRR12804467 using a range.
+2. `*` is easy and useful, but often it is better to be more specific, otherwise we might match something unintentionally. Since we only need one position (the last digit of the accession number) to be "wild", we can narrow our match using `?`, which matches any single character. To keep things simple, for now we will limit ourselves to the forward FASTQs
 
 ```{bash}
-ls ${RAW_FASTQ_DIR}/SRR1280446[3-7]_[12].fastq.gz
+ls -1 ${RAW_FASTQ_DIR}/SRR1280446?_1.fastq.gz
+```
+
+3. The best approach is to be as specific as possible and specify exactly what characters we are allowing in that variable position.  Square brackets allow you to list specific characters that can match `[345678]` or a range `[3-8]`
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/SRR1280446[345678]_1.fastq.gz
+```
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/SRR1280446[3-8]_1.fastq.gz
+```
+
+Globs can be confusing.  Keep in mind that here we are using the globs to search through all the file names in a directory and list the files with a name that matches a specific pattern. Here are a few more examples before we get down to business:
+
+- All the forward reads (i.e. R1) in $RAW_FASTQ_DIR
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz
+```
+
+- Reads (forward and reverse) from accession numbers SRR12804463 through SRR12804467
+
+```{bash}
+ls -1 ${RAW_FASTQ_DIR}/SRR1280446[34567]_[12].fastq.gz
 ```
 
 ## Looping over a glob
@@ -78,7 +97,7 @@ for FASTQ in ${RAW_FASTQ_DIR}/SRR128044??_1.fastq.gz
 
 ## String Manipulation
 
-But we still have a bit of work to do.  Before when we were manually specifying each FASTQ, we looped over a *substring* of the full path, then added on the prefix and suffix, for example: `$TRIMMED/${FASTQ}_001.trim.fastq.gz`.  But now we are grabbing the full path, and we need to manipulate it so that we can generate output file names that are different than the input, and put the output in different directories.  We can do all this with the `basename` bash function. The simple form of `basename` removes the whole directory portion of a path and just returns the filename:
+But we still have a bit of work to do.  Before when we were manually specifying each FASTQ, we looped over a the accession numbers, which are *substrings* of the full path, then we added on the prefix and suffix, for example: `${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz `.  But now we are grabbing the full path, and we need to manipulate it so that we can generate output file names that are different than the input, *and* put the output in different directories.  We can do all this with the `basename` bash function. The simple form of `basename` removes the whole directory portion of a path and just returns the filename:
 
 ```{bash}
 for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
@@ -126,10 +145,10 @@ for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[456]_1.fastq.gz
     done
 ```
 
-With globs and `basename` in our toolbox, we are ready to **conquer the world** or at least run multiple FASTQs through our pipeline, without breaking a sweat!
-
-
 ## A globy pipeline
+With globs and `basename` in our toolbox, we are ready to **conquer the world** or at least run multiple FASTQs through our pipeline, without breaking a sweat! Well, maybe some slight perspiration.
+
+Let's put it all together! We can just run on two accession numbers so it doesn't take too long
 
 ```{bash}
 for FASTQ in ${RAW_FASTQ_DIR}/SRR1280446[56]_1.fastq.gz; do

@@ -201,15 +201,38 @@ tools::md5sum(addfile)
 tools::md5sum(multfile)
 ```
 
-### 
+### Check the annotation with the gene verison number 
+
+```{r}
+readRDS(addfile) %>%
+    DESeq2::results(tidy = TRUE) %>%
+    tidyr:: drop_na(pvalue) -> res_add
+```
+
+
+```{r}
+genemap <- biomaRt::getBM(
+    filters = "ensembl_gene_id_version",
+    attributes=c("ensembl_gene_id", "ensembl_gene_id_version", "entrezgene_id","mgi_id", "mgi_symbol"),
+    values=res_add$row,
+    mart=mymart  
+)   
+```
+
+```{r}
+genemap %>% 
+  dplyr::group_by(ensembl_gene_id_version) %>% 
+  dplyr::filter(n()>1) %>% 
+  arrange(ensembl_gene_id_version)
+```
+
+### Remove the gene verision number
 
 ```{r}
 ### The ensembl ids from the gtf file end with version numbers
 ### One can use str_remove to remove the ensemble version from id
 stringr::str_remove("ENSMUSG12345.01",".[0-9][0-9]{0,2}$")
 stringr::str_remove("ENSMUSG12345.1",".[0-9][0-9]{0,2}$")
-
-
 ```
 
 ### Create a named vector (using entrez ids) for statistics from additive model

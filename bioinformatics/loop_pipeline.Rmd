@@ -12,10 +12,11 @@ jupyter:
     name: bash
 ---
 
-# Working with Loops 
+# Working with Loops
 
-## Shell Variables
-Assign the variables in this notebook.
+Let's take this one step further by wrapping our pipeline in a loop. For now we will just loop over a single accession number.
+
+Load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh
@@ -60,31 +61,32 @@ for SRA_ACCESSION in SRR12804466
 Notice that we are now assigning to the `$SRA_ACCESSION` variable in the `for` statement
 
 ```{bash}
-for SRA_ACCESSION in "SRR12804466" ; do
-    echo "---------------- TRIMMING: $SRA_ACCESSION ----------------"
-    TrimmomaticPE \
-        -threads $TOTAL_THREADS \
-        -phred33 \
-        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz \
-        ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_2.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
-        ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
-        ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
+for SRA_ACCESSION in "SRR12804466" 
+    do
+        echo "---------------- TRIMMING: $SRA_ACCESSION ----------------"
+        TrimmomaticPE \
+            -threads $TOTAL_THREADS \
+            -phred33 \
+            ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_1.fastq.gz \
+            ${RAW_FASTQ_DIR}/${SRA_ACCESSION}_2.fastq.gz \
+            ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz \
+            ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_unpaired.fastq.gz \
+            ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+            ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_unpaired.fastq.gz \
+            ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36
 
-    echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
-    STAR \
-        --runMode alignReads \
-        --twopassMode None \
-        --genomeDir $GENOME_DIR \
-        --readFilesIn ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
-        --readFilesCommand gunzip -c \
-        --outFileNamePrefix ${LOOP_STAROUT_DIR}/${SRA_ACCESSION}_ \
-        --quantMode GeneCounts \
-        --outSAMtype None \
-        --runThreadN $TOTAL_THREADS
-done
+        echo "---------------- MAPPING: $SRA_ACCESSION ----------------"
+        STAR \
+            --runMode alignReads \
+            --twopassMode None \
+            --genomeDir $GENOME_DIR \
+            --readFilesIn ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_1_trimmed.fastq.gz ${LOOP_TRIM_DIR}/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+            --readFilesCommand gunzip -c \
+            --outFileNamePrefix ${LOOP_STAROUT_DIR}/${SRA_ACCESSION}_ \
+            --quantMode GeneCounts \
+            --outSAMtype None \
+            --runThreadN $TOTAL_THREADS
+    done
 ```
 
 ### And let's check the result

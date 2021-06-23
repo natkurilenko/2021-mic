@@ -14,25 +14,58 @@ jupyter:
 
 # Paired-End: Trimming and Filtering a FASTQ
 
+Trimming and filtering paired-end data is a bit more complicated than single-end data, but not too bad.
+
+Let's load variables from bioinf_config.sh, make a new directory for output, and check that it looks OK.
 
 ```{bash}
 source bioinf_config.sh
 mkdir -p $PE_TRIM_DIR
-```
-
-Now let's check to be sure that worked.  We will run `ls` and check that these directories now exist in the `$CUROUT` directory.
-
-```{bash}
 ls $PE_OUT_DIR
 ```
 
 # Trimming and Filtering
 For Trimmomatic we use a different "program" for paired-end data: `TrimmomaticPE`. The parameters are a bit different. 
+Let's run `TrimmomaticSE` and `TrimmomaticPE` without any arguements to get details and compare.
 
+```{bash}
+TrimmomaticSE
+```
 
 ```{bash}
 TrimmomaticPE
 ```
+
+<!-- #region -->
+The big differences are:
+1. **We need to supply both FASTQs in the pair.** It is **very** important to filter and trim the forward and reverse FASTQs simultaneously. If we tried to filter and trim them separately, we are likely to have some cases where a read is filtered from the forward FASTQ because it fails some quality threshold, but its paired read in the reverse FASTQ passes, so it is maintained (and vice-versa). When only one read in a pair is filtered, the FASTQs get out of sync. Some bioinformatics software will detect this, but not all. Out-of-sync FASTQs will generally produce faulty results.
+2. **We need give TrimmomaticPE filenames for unpaired reads** When TrimmomaticPE does filter out a read, instead of just "throwing out" the other read in the pair, it saves it in an "unpaired" file. It saves unpaired reads from the forward FASTQ in an "unpaired forward" file and unpaired reads from the reverse FASTQ in an "unpaired reverse".
+3. **Need adapter file with reverse read adapter** We will use *TruSeq2-PE.fa*
+
+In addition to these differences, we can add two more parameters to the **ILLUMINACLIP** argument (details on the 
+[Trimmomatic GitHub Page](https://github.com/usadellab/Trimmomatic) and [Trimmomatic Manual](http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf).
+
+
+-threads : the number of threads (i.e. CPU cores) to use
+-phred33 : tell Trimmomatic that our quality scores use the phred33 encoding
+- SRR12804466_1.fastq.gz : forward read input FASTQ 
+- SRR12804466_2.fastq.gz : reverse read input FASTQ 
+- SRR12804466_1_trimmed.fastq.gz: name for trimmed forward FASTQ
+- SRR12804466_1_unpaired.fastq.gz: name for upaired (trimmed) forward FASTQ
+- SRR12804466_2_trimmed.fastq.gz: name for trimmed reverse FASTQ
+- SRR12804466_2_unpaired.fastq.gz: name for upaired (trimmed) forward FASTQ
+- ILLUMINACLIP
+    - TruSeq2-PE.fa: adapter file
+    - 2: specifies the maximum mismatch count which will still allow a full match to be performed
+    - 30: specifies how accurate the match between the two 'adapter ligated' reads must be for PE palindrome read alignment
+    - 10: specifies how accurate the match between any adapter etc. sequence must be against a read.
+    - 2: minimum length of adapter match for palindrome mode
+    - keepBothReads: even if palindrome mode detects adapter, keep both forward and reverse reads
+- LEADING:3 - quality trimming at 5' end of read, remove all bases below this threshold (phred < 3), and other bases 5' of it
+- TRAILING:3 - quality trimming at 3' end of read, remove all bases below this threshold (phred < 3), and other bases 3' of it
+- SLIDINGWINDOW:4:15 - Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 15
+- MINLEN:36 - throw out any reads that are shorter than this (36bp) after trimming
+<!-- #endregion -->
 
 ```{bash}
 TrimmomaticPE \

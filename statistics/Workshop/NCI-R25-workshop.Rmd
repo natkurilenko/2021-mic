@@ -1,0 +1,522 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+
+
+
+# Downstream analysis workshop
+
+## Preparatory steps
+
+### Load packages
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(foreach)
+library(fgsea)
+```
+
+### Set random seed
+```{r}
+set.seed(123441)
+```
+
+### Set input files and directories
+
+
+#### Set directories
+```{r}
+### Location of the meta data file
+metadir <- "/data/sra_data/"
+### Location of STAR count files
+cntdir <- "/data/starout/"
+### Location of gene annotation and pathway files
+annodir <- "/data/genome/"
+### Output directory for R image files from workshop
+outdir <- "./workproc/"
+
+if (!dir.exists(outdir)) {
+  dir.create(outdir)
+}
+```
+
+
+#### Meta data file
+```{r}
+srametafile <- file.path(metadir, "accession_table.csv")
+tools::md5sum(srametafile)
+```
+
+#### MGI Annotation file
+```{r}
+# http://www.informatics.jax.org
+mgifile <- file.path(annodir, "MGI_Gene_Model_Coord.rpt")
+tools::md5sum(mgifile)
+```
+
+#### Msigdb pathway file
+```{r}
+# http://bioinf.wehi.edu.au/MSigDB/index.html
+msigdbfile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
+tools::md5sum(msigdbfile)
+```
+
+#### Count files
+```{r}
+### Get count file names
+cntfiles <- list.files(path = cntdir, pattern = "*_ReadsPerGene.out.tab")
+
+### Check count files
+tibble::tibble(
+  cntfiles,
+  md5 = tools::md5sum(file.path(cntdir, cntfiles))
+)
+```
+
+
+### Function for visualizing effect sizes based on normalized counts for 2 by 2 experiment
+
+```{r}
+myinteractplot2by2 <- function(mydds, geneid, mergevar) {
+  SummarizedExperiment::assay(mydds) %>%
+    tibble::as_tibble(rownames = "gene") %>%
+    dplyr::filter(gene == geneid) %>%
+    tidyr::gather(Run, value, -gene) %>%
+    dplyr::select(-gene) ->
+  expdat
+
+  SummarizedExperiment::colData(mydds) %>%
+    as.data.frame() %>%
+    tibble::as_tibble() %>%
+    dplyr::full_join(expdat, by = "Run") ->
+  genedat
+
+  genedat %>%
+    ggplot2::ggplot(aes(x = cline, y = value / sizeFactor, color = trt)) +
+    ggplot2::geom_jitter(width = 0.1) +
+    ggplot2::xlab("Cell line") +
+    ggplot2::ylab(paste(geneid, "(normalized count)")) +
+    ggplot2::scale_colour_manual(name = "", values = c("red3", "blue3")) +
+    ggplot2::theme_bw()
+}
+```
+
+## Import meta and count data
+### Import meta data file
+```{r}
+# Import meta data
+readr::read_csv(srametafile) ->
+mtdata
+
+mtdata
+```
+
+### Import count files
+
+```{r}
+
+
+### Set column types for count files (four columns)
+coltypes <- list(col_character(), col_integer(), col_integer(), col_integer())
+
+## Define merge function
+mergefun <- function(df1, df2) {
+  dplyr::full_join(df1, df2, by = "gene")
+}
+
+### Iteratively merge count files
+
+countdata <- foreach(fname = cntfiles, .combine = mergefun) %do% {
+  cntfile <- file.path(cntdir, fname)
+  readr::read_tsv(cntfile, col_names = FALSE, col_types = coltypes) %>%
+    dplyr::select(X1, X2) %>%
+    rlang::set_names(c("gene", fname))
+}
+```
+
+## Create DESeq2 data object
+
+
+### Function to clean up 
+```{r}
+cleancolname <- function(x) {
+  stringr::str_remove(x, "_ReadsPerGene.out.tab$")
+}
+
+### Test it
+cleancolname("SRR12804463_ReadsPerGene.out.tab")
+```
+
+### Create STAR count data matrix
+
+```{r}
+### Labels for first four rows of STAR count files
+starlabs <- c("N_ambiguous", "N_multimapping", "N_noFeature", "N_unmapped")
+
+countdata %>%
+  dplyr::filter(!gene %in% starlabs) %>%
+  data.frame() %>%
+  tibble::column_to_rownames("gene") %>%
+  dplyr::rename_with(cleancolname) %>%
+  as.matrix() ->
+starcountData
+
+starcountData[1:3, ]
+```
+### Create STAR column data
+
+
+```{r}
+tibble::tibble(Run = colnames(starcountData)) %>%
+  dplyr::full_join(mtdata, by = "Run") %>%
+  dplyr::mutate(
+    trt = factor(gsub("-", "", treatment), levels = c("isotype", "antiPD1")),
+    cline = factor(cell_line, levels = c("Parental", "UV2"))
+  ) ->
+starcolData
+```
+
+```{r}
+starcolData
+```
+
+### 
+
+
+### Check that the columns of the count matrix agree wite the Run column in metadata
+
+```{r}
+identical(starcolData[["Run"]], colnames(starcountData))
+```
+
+### Construct DESeq2 data object 
+
+
+```{r}
+PRJNA668393ddsData <- DESeq2::DESeqDataSetFromMatrix(
+  countData = starcountData,
+  colData = starcolData,
+  design = ~1
+)
+```
+
+
+
+
+## Gene level analysis: Additive Model
+
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+### Specify design (additive model)
+
+```{r}
+design(ddsobj) <- formula(~ cline + trt)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsADD <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results (sorted by adjusted P-value)
+
+```{r}
+DESeq2::results(ddsADD, tidy = TRUE, contrast = c("trt", "antiPD1", "isotype")) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+### Summary of results (using FDR of 0.2)
+
+```{r}
+DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+```
+### Visualize treatrment differential effect size based on normalized counts for ENSMUSG00000110537.2 and ENSMUSG00000022564.8
+
+#### Simple plots
+
+```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000110537.2", intgroup = "trt", normalized = TRUE)
+```
+
+```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000022564.8", intgroup = "trt", normalized = TRUE)
+```
+
+#### Custom plots
+```{r}
+myinteractplot2by2(ddsADD, "ENSMUSG00000110537.2")
+```
+
+```{r}
+myinteractplot2by2(ddsADD, "ENSMUSG00000022564.8")
+```
+
+### Volcano plot
+
+```{r}
+### Volcano plot for treatment effect
+DESeq2::results(ddsADD, tidy = TRUE) %>%
+  dplyr::filter(!is.na(pvalue)) %>%
+  ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) +
+  ggplot2::geom_point() +
+  ggplot2::theme_bw()
+```
+
+
+## Gene level analysis: Multiplicative Model
+
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+### Specify design (multiplicative model)
+
+```{r}
+design(ddsobj) <- formula(~ cline + trt + cline:trt)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsMULT <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results (sorted by adjusted P-value)
+
+```{r}
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+### Summary of results (using FDR of 0.2)
+
+```{r}
+DESeq2::summary(results(ddsMULT, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+```
+### Visualize interaction effect size based on normalized counts for ENSMUSG00000022351.15 and ENSMUSG00000025964.16
+
+
+#### Custom plots
+```{r}
+myinteractplot2by2(ddsMULT, "ENSMUSG00000022351.15")
+```
+
+```{r}
+myinteractplot2by2(ddsMULT, "ENSMUSG00000025964.16")
+```
+
+### Volcano plot 
+
+```{r}
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
+  dplyr::filter(!is.na(pvalue)) %>%
+  ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) +
+  ggplot2::geom_point() +
+  ggplot2::theme_bw()
+```
+
+## Estimate effect size within cell line
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+
+### add group variable combining the cell line and treatment effect
+```{r}
+ddsobj$group <- as.factor(paste0(ddsobj$trt, ddsobj$cline))
+```
+
+
+### Specify design
+
+```{r}
+design(ddsobj) <- formula(~ group)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsGRP <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results within the parental cell line
+```{r}
+DESeq2::results(ddsGRP, tidy = TRUE, contrast = c("group","antiPD1Parental","isotypeParental")) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+### Tabulate results within the UV2 cell line
+```{r}
+DESeq2::results(ddsGRP, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+
+
+## Pathway level analysis
+
+### Import pathway file
+```{r}
+Mm.H <- readRDS(msigdbfile)
+```
+
+###  MGI annotation data
+#### Import MGI file
+```{r}
+readr::read_tsv(mgifile) -> mgidat
+```
+
+#### Inspect format
+```{r}
+mgidat
+```
+
+#### Get rid of genes listed as "null"
+
+```{r}
+mgidat %>%
+  dplyr::filter(`6. Entrez gene id` != "null" & `11. Ensembl gene id` != "null") ->
+mgidat
+```
+
+#### Check  if ids are unique
+
+```{r}
+mgidat %>%
+  dplyr::group_by(`6. Entrez gene id`) %>%
+  dplyr::filter(n() > 1)
+```
+
+```{r}
+mgidat %>%
+  dplyr::group_by(`11. Ensembl gene id`) %>%
+  dplyr::filter(n() > 1)
+```
+
+#### Number of pathway genes  not in annotation file
+
+```{r}
+length(setdiff(unlist(Mm.H), mgidat[["6. Entrez gene id"]]))
+```
+### Pathway analysis for additive model
+#### Create named (by NCBI id) vectors of statistics from additive model
+```{r}
+DESeq2::results(ddsADD, tidy = TRUE) %>%
+  tidyr::drop_na(pvalue) %>%
+  dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
+  dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+  dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>%
+  dplyr::pull(stat, name = "6. Entrez gene id") ->
+addstat
+```
+
+#### GSEA analysis for additive model
+```{r}
+fgseaADD <- fgsea(Mm.H, addstat, minSize = 15, maxSize = 500)
+```
+#### GSEA analysis for additive modelTop 10 hits
+```{r}
+head(fgseaADD[order(padj, -abs(NES)), ], n = 10)
+```
+
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], addstat)
+```
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], addstat)
+```
+
+#### Illustrate top pathways
+```{r}
+topUp <- fgseaADD %>%
+  filter(ES > 0) %>%
+  top_n(10, wt = -padj)
+topDown <- fgseaADD %>%
+  filter(ES < 0) %>%
+  top_n(10, wt = -padj)
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(Mm.H[topPathways$pathway], addstat, fgseaADD, gseaParam = 0.5)
+```
+### Pathway analysis for multiplicative model
+#### Create named (by NCBI id) vectors of statistics from multiplicative model
+
+```{r}
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
+  tidyr::drop_na(pvalue) %>%
+  dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
+  dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
+  dplyr::filter(`6. Entrez gene id` %in% unique(unlist(Mm.H))) %>%
+  dplyr::pull(stat, name = "6. Entrez gene id") ->
+multstat
+```
+
+#### GSEA analysis for multstat model
+```{r}
+fgseaMULT <- fgsea(Mm.H, multstat, minSize = 15, maxSize = 500)
+```
+#### GSEA analysis for multstat modelTop 10 hits
+```{r}
+head(fgseaMULT[order(padj, -abs(NES)), ], n = 10)
+```
+
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], multstat)
+```
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], multstat)
+```
+
+#### Illustrate top pathways
+```{r}
+topUp <- fgseaMULT %>%
+  filter(ES > 0) %>%
+    top_n(10, wt = -padj)
+
+topDown <- fgseaMULT %>%
+  filter(ES < 0) %>%
+  top_n(10, wt = -padj)
+
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(Mm.H[topPathways$pathway], multstat, fgseaMULT, gseaParam = 0.5)
+```
+
+
+## Session Information
+
+```{r}
+sessionInfo()
+```

@@ -18,7 +18,7 @@ jupyter:
 
 # Downstream analysis workshop
 
-## Prepratory steps
+## Preparatory steps
 
 ### Load packages
 ```{r}
@@ -31,16 +31,14 @@ library(foreach)
 
 
 ```{r}
-
-metadir <- normalizePath("/data/sra_data/")
-
-
+### Location of the meta data file
+metadir <- "/data/sra_data/"
 
 ### Set meta file
 srametafile <- file.path(metadir, "accession_table.csv")
 tools::md5sum(srametafile)
 
-### Set location of directory containing STAR count files
+### location of STAR count files
 cntdir <- "/data/starout/"
 
 
@@ -51,6 +49,34 @@ if (!dir.exists(outdir)) {
   dir.create(outdir)
 }
 ```
+
+
+### Function for visualizing effect sizes based on normalized counts for 2 by 2 experiment
+
+```{r}
+myinteractplot2by2 <- function(mydds, geneid, mergevar) {
+    
+    SummarizedExperiment::assay(mydds) %>%
+        tibble::as_tibble(rownames="gene") %>%
+            dplyr::filter(gene == geneid) %>%
+                tidyr::gather(Run, value, -gene) %>%
+                    dplyr::select(-gene) -> 
+                        expdat
+    
+    SummarizedExperiment::colData(mydds) %>%
+        as.data.frame %>%
+            tibble::as_tibble() %>%
+                dplyr::full_join(expdat, by = "Run") -> 
+                    genedat
+    
+    genedat %>%
+        ggplot2::ggplot(aes(x = cline, y = value/sizeFactor, color = trt)) +
+            ggplot2::geom_point() + 
+                ggplot2::xlab("Cell line") + ggplot2::ylab(paste(geneid, "(normalized count)")) +
+                ggplot2::scale_colour_manual(name = "", values = c("red3", "blue3")) +
+                ggplot2::theme_bw()
+}
+
 
 ## Import meta and count data
 ### Import meta data file
@@ -189,11 +215,108 @@ DESeq2::results(ddsADD, tidy = TRUE, contrast = c("trt", "antiPD1", "isotype")) 
 ```{r}
 DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
 ```
+### Visualize effect size based on normalized counts for ENSMUSG00000110537.2 and ENSMUSG00000022564.8
+
+#### Simple plots
 
 ```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000110537.2", intgroup = "trt", normalized = TRUE)
 
 ```
 
 ```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000022564.8", intgroup = "trt", normalized = TRUE)
+```
+
+#### Custom plots
+```{r}
+myinteractplot(ddsobj, "ENSMUSG00000110537.2")
+```
+
+```{r}
+myinteractplot(ddsobj, "ENSMUSG00000022564.8")
+```
+
+### Volcano plot
+
+```{r}
+### Volcano plot for treatment effect
+DESeq2::results(ddsADD, tidy = TRUE) %>%
+    dplyr::filter(!is.na(pvalue)) %>%
+        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) + 
+            ggplot2::geom_point() + 
+                ggplot2::theme_bw()
+```
+
+
+## Gene level analysis: Multiplicative Model
+
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+### Specify design (additive model)
+
+```{r}
+design(ddsobj) <- formula(~ cline + trt + cline:trt)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsMULT <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results (sorted by adjusted P-value)
+
+```{r}
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
+    dplyr::arrange(padj) %>%
+    head(10)
+```
+
+### Summary of results (using FDR of 0.2)
+
+```{r}
+DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+```
+### Visualize effect size based on normalized counts for ENSMUSG00000022351.15 and ENSMUSG00000025964.16
+
+
+#### Simple plots
+
+```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000022351.15", intgroup = "trt", normalized = TRUE)
+
+```
+
+```{r}
+DESeq2::plotCounts(ddsobj, "ENSMUSG00000025964.16", intgroup = "trt", normalized = TRUE)
+```
+
+#### Custom plots
+```{r}
+myinteractplot(ddsobj, "ENSMUSG00000022351.15")
+```
+
+```{r}
+myinteractplot(ddsobj, "ENSMUSG00000025964.16")
+```{r}
+
+```{r}
+### Volcano plot for treatment effect
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
+    dplyr::filter(!is.na(pvalue)) %>%
+        ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) + 
+            ggplot2::geom_point() + 
+                ggplot2::theme_bw()
+```
+
+## Session Information
+
+
 sessionInfo()
 ```

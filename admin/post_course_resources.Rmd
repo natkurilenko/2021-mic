@@ -15,8 +15,8 @@ jupyter:
 # Overview
 1. [Personal Notebooks](#Maintaining-Personal-Files): Downloading notebooks that you modified
 2. [MIC Course Material](#Accessing-Course-Material): Downloading official course material: notebooks, lecture slides, etc
-3. [MIC Computing Environment](#Docker-Containers): Downloading and running the HTS Image in Docker or Singularity
-4. [Course Data](#Course-Data): How to download the data we used in the MIC Course
+3. [Course Data](#Course-Data): How to download the data we used in the MIC Course
+4. [MIC Computing Environment](#Docker-Containers): Downloading and running the HTS Image in Docker or Singularity
 
 <!-- #region -->
 # High Priority
@@ -85,24 +85,8 @@ You can access the course material in three different ways:
 1.  You can browse and download the material from the [2021 MIC Course Repository](https://gitlab.oit.duke.edu/mic-course/2021-mic) by clicking on the Download button, which is right next to the blue **Clone** button. It will give you a choice of format you want. The best options are probably "zip" or "tar.gz"
 2.  You can **clone** the repo using git: `git clone https://gitlab.oit.duke.edu/mic-course/2021-mic.git`
 
-
-# STOPPED HERE
-
-# Docker Containers
-
-## Course Instances
-
-### Duke Affiliates
-
-#### Container Renewal
-Before the begining of the fall semester you **should** receive an email telling you that your HTS2019 container will expire soon, unless you renew it.  If you want to maintain your container, we strongly recommend that you keep an eye out for this email, or just be proactive and regularly check [VM Manage](https://vm-manage.oit.duke.edu/containers) for a "renewal" link.  In the past course participants have lost their containers and contents because they failed to renew in time. 
-
-#### Reduced Capabilities
-Soon after the course ends, the containers will be shifted to a server with drastically reduced the resources. That means that running analyses on those containers may not work and may crash the container.
-
-### Non-affiliates
-
-For those not affiliated with Duke, the containers will be deactivated before the fall semester. If you want to save any files from the course that you have modified, you must follow the instructions for [Maintaining Personal Files](#Maintaining-Personal-Files) as soon as possible.
+# Course Data
+The data we used in the 2021 MIC course was from GEO Accession number GSE159344.  The FASTQ files were downloaded from SRA and the metadata table was built using information from GEO and SRA. Both of these were done with the [download_data_sra.Rmd](../bioinformatics/setup/download_data_sra.Rmd) script.
 
 ## Running the Docker Image Elsewhere
 

@@ -37,7 +37,7 @@ PE_TRIM_DIR="${PE_OUT_DIR}/trimmed_fastq"
 PE_STAROUT_DIR="${PE_OUT_DIR}/starout"
 
 # Generalizing
-GENERAL_OUT_DIR=$OUTBASE/bioinf_pipeline
+GENERAL_OUT_DIR=$OUTBASE/bioinf_generalize
 GENERAL_TRIM_DIR="${GENERAL_OUT_DIR}/trimmed_fastq"
 GENERAL_STAROUT_DIR="${GENERAL_OUT_DIR}/starout"
 

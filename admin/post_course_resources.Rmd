@@ -51,18 +51,6 @@ find ~/2021-mic  \
     | tar -cvzf ~/2021-mic-notebooks.tar.gz -T -
 ```
 
-```{bash}
-tar \
-    --exclude='.ipynb_checkpoints' \
-    --exclude='.git' \
-    --exclude='*.pdf' \
-    --exclude='*.RDS' \
-    --exclude='*.rds' \
-    --exclude='*.rpt' \
-    --exclude='*.RData' \
-    -cvzf ~/2021-mic.tar.gz ~/2021-mic 
-```
-
 #### Tarring: Only Notebooks with a common name
 
 If you want only modified notebooks **and** you saved them with a standard naming scheme, e.g. leaving `-Copy1` in the name, for example, renaming `demultiplex.Rmd` to `demultiplex-Copy1.Rmd`, you could use the following to only grab the modified files from 2021-mic

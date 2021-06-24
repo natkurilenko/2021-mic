@@ -349,7 +349,7 @@ ddsobj <- PRJNA668393ddsData
 
 ### add group variable combining the cell line and treatment effect
 ```{r}
-ddsobj$group <- as.factor(paste0(dds1$trt, dds1$cline))
+ddsobj$group <- as.factor(paste0(ddsobj$trt, ddsobj$cline))
 ```
 
 
@@ -374,7 +374,7 @@ DESeq2::results(ddsGRP, tidy = TRUE, contrast = c("group","antiPD1Parental","iso
 
 ### Tabulate results within the UV2 cell line
 ```{r}
-DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
+DESeq2::results(ddsGRP, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
   dplyr::arrange(padj) %>%
   head(10)
 ```

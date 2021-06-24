@@ -28,6 +28,11 @@ library(foreach)
 library(fgsea)
 ```
 
+### Set random seed
+```{r}
+set.seed(123441)
+```
+
 ### Set input files and directories
 
 
@@ -56,12 +61,14 @@ tools::md5sum(srametafile)
 
 #### MGI Annotation file
 ```{r}
+# http://www.informatics.jax.org
 mgifile <- file.path(annodir, "MGI_Gene_Model_Coord.rpt")
 tools::md5sum(mgifile)
 ```
 
 #### Msigdb pathway file
 ```{r}
+# http://bioinf.wehi.edu.au/MSigDB/index.html
 msigdbfile <- file.path(annodir, "Mm.h.all.v7.1.entrez.rds")
 tools::md5sum(msigdbfile)
 ```
@@ -284,7 +291,7 @@ DESeq2::results(ddsADD, tidy = TRUE) %>%
 ddsobj <- PRJNA668393ddsData
 ```
 
-### Specify design (additive model)
+### Specify design (multiplicative model)
 
 ```{r}
 design(ddsobj) <- formula(~ cline + trt + cline:trt)
@@ -330,6 +337,49 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
   ggplot2::geom_point() +
   ggplot2::theme_bw()
 ```
+
+## Estimate effect size within cell line
+
+### Create a new copy of the DESEq2 data object 
+
+```{r}
+ddsobj <- PRJNA668393ddsData
+```
+
+
+### add group variable combining the cell line and treatment effect
+```{r}
+ddsobj$group <- as.factor(paste0(dds1$trt, dds1$cline))
+```
+
+
+### Specify design
+
+```{r}
+design(ddsobj) <- formula(~ group)
+```
+
+### Differential Expression analysis
+
+```{r}
+ddsGRP <- DESeq2::DESeq(ddsobj)
+```
+
+### Tabulate results within the parental cell line
+```{r}
+DESeq2::results(ddsGRP, tidy = TRUE, contrast = c("group","antiPD1Parental","isotypeParental")) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+### Tabulate results within the UV2 cell line
+```{r}
+DESeq2::results(dds1mod, tidy = TRUE, contrast = c("group","antiPD1UV2","isotypeUV2")) %>%
+  dplyr::arrange(padj) %>%
+  head(10)
+```
+
+
 
 ## Pathway level analysis
 
@@ -388,37 +438,39 @@ DESeq2::results(ddsADD, tidy = TRUE) %>%
 addstat
 ```
 
+#### GSEA analysis for additive model
 ```{r}
-set.seed(1234)
-fgseaRes <- fgsea(Mm.H, addstat, minSize = 15, maxSize = 500)
+fgseaADD <- fgsea(Mm.H, addstat, minSize = 15, maxSize = 500)
+```
+#### GSEA analysis for additive modelTop 10 hits
+```{r}
+head(fgseaADD[order(padj, -abs(NES)), ], n = 10)
 ```
 
-```{r}
-head(fgseaRes[order(padj, -abs(NES)), ], n = 10)
-```
+#### Illustrate pathway
 ```{r}
 plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], addstat)
 ```
-
+#### Illustrate pathway
 ```{r}
-
 plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], addstat)
 ```
 
+#### Illustrate top pathways
 ```{r}
-topUp <- fgseaRes %>%
+topUp <- fgseaADD %>%
   filter(ES > 0) %>%
   top_n(10, wt = -padj)
-topDown <- fgseaRes %>%
+topDown <- fgseaADD %>%
   filter(ES < 0) %>%
   top_n(10, wt = -padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
-plotGseaTable(Mm.H[topPathways$pathway], addstat, fgseaRes, gseaParam = 0.5)
+plotGseaTable(Mm.H[topPathways$pathway], addstat, fgseaADD, gseaParam = 0.5)
 ```
+### Pathway analysis for multiplicative model
+#### Create named (by NCBI id) vectors of statistics from multiplicative model
 
-
-### Create named (by NCBI id) vectors of statistics from multiplicative model
 ```{r}
 DESeq2::results(ddsMULT, tidy = TRUE) %>%
   tidyr::drop_na(pvalue) %>%
@@ -429,7 +481,38 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 multstat
 ```
 
+#### GSEA analysis for multstat model
+```{r}
+fgseaMULT <- fgsea(Mm.H, multstat, minSize = 15, maxSize = 500)
+```
+#### GSEA analysis for multstat modelTop 10 hits
+```{r}
+head(fgseaMULT[order(padj, -abs(NES)), ], n = 10)
+```
 
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], multstat)
+```
+#### Illustrate pathway
+```{r}
+plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], multstat)
+```
+
+#### Illustrate top pathways
+```{r}
+topUp <- fgseaMULT %>%
+  filter(ES > 0) %>%
+    top_n(10, wt = -padj)
+
+topDown <- fgseaMULT %>%
+  filter(ES < 0) %>%
+  top_n(10, wt = -padj)
+
+topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
+plot.new()
+plotGseaTable(Mm.H[topPathways$pathway], multstat, fgseaMULT, gseaParam = 0.5)
+```
 
 
 ## Session Information

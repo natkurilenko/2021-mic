@@ -31,10 +31,10 @@ TRIM_DIR="${OUT_DIR}/trimmed_fastq"
 STAROUT_DIR="${OUT_DIR}/starout"
 
 # # Paired-end
-# PE_OUT_DIR=$OUTBASE/bioinf_pe_analysis
-# PE_QC=$PE_OUT_DIR/qc_output
-# PE_TRIM_DIR="${PE_OUT_DIR}/trimmed_fastq"
-# PE_STAROUT_DIR="${PE_OUT_DIR}/starout"
+PE_OUT_DIR=$OUTBASE/bioinf_inclass_pe
+PE_QC=$PE_OUT_DIR/qc_output
+PE_TRIM_DIR="${PE_OUT_DIR}/trimmed_fastq"
+PE_STAROUT_DIR="${PE_OUT_DIR}/starout"
 
 # # Generalizing
 # GENERAL_OUT_DIR=$OUTBASE/bioinf_pipeline

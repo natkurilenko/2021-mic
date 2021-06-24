@@ -17,6 +17,7 @@ library(purrr)
 library(tibble)
 library(tools)
 library(tidyr)
+library(here)
 
 # sra_tmp=file.path("/workspace", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
 # sra_dir=file.path("/data", "sra_data"); dir.create(sra_dir, recursive = TRUE)
@@ -31,7 +32,6 @@ accessions_file = file.path(sra_dir,"accession_table.csv")
 bioproject_accession="PRJNA668393"
 geo_accession="GSE159344"
 
-library(here)
 srafastq_md5file = here("info/sra_fastq_md5checksums.txt")
 ```
 
@@ -106,45 +106,6 @@ accessions_with_meta
   - https://github.com/ncbi/sra-tools/issues/409#issuecomment-801344783
     - https://github.com/ncbi/sra-tools/blob/e2117adf073f748cc48412c55acdc9bfe679a2d1/build/docker/Dockerfile.delite#L50-L52    
 
-```{bash}
-NCBI_CONFIG=${HOME}/.ncbi/user-settings.mkfg
-if [ -f "$NCBI_CONFIG" ]; then
-    echo "$NCBI_CONFIG exists."
-    cat $NCBI_CONFIG
-else 
-    echo "Need to make $NCBI_CONFIG . . ."
-    mkdir -p $(basename $NCBI_CONFIG)
-    vdb-config --set "/LIBS/GUID =`uuidgen`"
-    vdb-config --set "/repository/user/main/public/root =/workspace/sra_cache" 
-    cat $NCBI_CONFIG
-fi
-```
-
-```{r}
-system2("vdb-config", 
-        args = c("--set", paste("/LIBS/GUID =", uuid::UUIDgenerate())),
-        stdout = TRUE,stderr = TRUE)
-
-```
-
-```{r}
-paste("/LIBS/GUID =", uuid::UUIDgenerate())
-```
-
-```{r}
-system2("vdb-config", 
-        args = paste0("--set ", '"/LIBS/GUID =', uuid::UUIDgenerate(),'"'),
-        stdout = TRUE,stderr = TRUE)
-
-```
-
-```{r}
-system2("vdb-config", 
-        args = paste0("--set ", '"/repository/user/main/public/root =', sra_cache,'"'),
-        stdout = TRUE,stderr = TRUE)
-
-```
-
 ```{r}
 if(file.exists(ncbi_config)){
     print(paste("NCBI config exists:", ncbi_config))
@@ -170,55 +131,6 @@ if(file.exists(ncbi_config)){
         read_file %>%
         cat
 }
-
-
-```
-
-```{r}
-cat(ncbi_config)
-```
-
-```{r}
-?cat
-```
-
-```{r}
-system2("uuidgen")
-```
-
-```{r}
-"~/.ncbi/user-settings.mkfg" %>%
-    path.expand %>%
-    read_file
-
-
-# %>%
-#     read_file
-```
-
-```{r}
-library(uuid)
-ids::uuid()
-uuid()
-```
-
-```{r}
-?uuid::UUIDgenerate
-```
-
-```{r}
-uuid::UUIDgenerate()
-```
-
-```{r}
-my_uuid <- system("uuid",intern=T)
-
-```
-
-```{r}
-"~/scratch/" %>%
-    path.expand %>%
-    list.files
 ```
 
 ## fasterqDump Definition
@@ -228,7 +140,7 @@ fasterqDump = function(accession,
                        tempdir = NULL,
                        gzip = TRUE,
                        md5_df = NULL) {
-  warning("Not handling MD5sum check correctly for paired-end data")
+  warning("Might be  handling MD5sum check correctly for paired-end data??")
   # Check if file is downloaded and OK
   accession %>%
     path_ext_set("fastq") ->
@@ -258,20 +170,62 @@ fasterqDump = function(accession,
       basename ->
       final_file
     
-    final_path %>%
-      md5sum ->
-      observed_md5
     
-    md5_df %>%
-      filter(filename == final_file) %>%
-      pull(md5sum) ->
-      true_md5
     
-    if (file.exists(final_path) && true_md5 == observed_md5){
-      cat("MD5sum match", fastq_gz_path, true_md5, fill = TRUE)
-      return(final_path)
+    if (file.exists(final_path)){
+        final_path %>%
+            md5sum ->
+            observed_md5
+        md5_df %>%
+          filter(filename == final_file) %>%
+          pull(md5sum) ->
+          true_md5
+
+        if(true_md5 == observed_md5){
+            cat("MD5sum match", fastq_gz_path, true_md5, fill = TRUE)
+            return(final_path)
+        }
     }
-  }
+    else {
+        # check for paired-end data
+        accession %>%
+            paste0("_1.fastq") %>%
+            file.path(outdir, .) ->
+            r1_fastq_path
+        accession %>%
+            paste0("_2.fastq") %>%
+            file.path(outdir, .) ->
+            r2_fastq_path
+        if (gzip == TRUE) {
+            r1_fastq_path
+            final_r1_path = paste0(r1_fastq_path, ".gz")
+            final_r2_path = paste0(r2_fastq_path, ".gz")
+        } else {
+            final_r1_path = r1_fastq_path
+            final_r2_path = r2_fastq_path
+        }
+        if (file.exists(final_r1_path) &&
+            file.exists(final_r2_path)){
+            r1_observed_md5 = md5sum(final_r1_path)
+            r2_observed_md5 = md5sum(final_r2_path)
+                
+            md5_df %>%
+                filter(filename == basename(final_r1_path)) %>%
+                pull(md5sum) ->
+                r1_true_md5
+            md5_df %>%
+                filter(filename == basename(final_r2_path)) %>%
+                pull(md5sum) ->
+                r2_true_md5
+            if(r1_true_md5 == r1_observed_md5 &&
+               r2_true_md5 == r2_observed_md5){
+                cat("MD5sum match", final_r1_path, r1_true_md5, fill = TRUE)
+                cat("MD5sum match", final_r2_path, r2_true_md5, fill = TRUE)
+                return(c(final_r1_path,final_r2_path))
+            }
+        }
+    }
+    }
   cat("Need to download", accession, fill = TRUE)
   fasterq_args =  c(accession, "--outdir", outdir)
   if (!is.null(tempdir)){
@@ -323,6 +277,10 @@ srafastq_md5file %>%
 ```
 
 ```{r}
+# fasterqDump(accession="SRR12804463", outdir=sra_dir, tempdir=sra_tmp,md5_df=srafastq_md5s)
+```
+
+```{r}
 accessions_with_meta %>%
   pull(Run) %>%
   map(function(x) fasterqDump(accession=x, outdir=sra_dir, tempdir=sra_tmp, md5_df=srafastq_md5s)) ->
@@ -333,14 +291,16 @@ accessions_with_meta %>%
 ## Generate MD5 table
 Only need to do this at the beginning
 ```{r}
-downloaded_fastqs %>%
-  unlist %>%
-  md5sum %>%
-  enframe %>%
-  dplyr::rename(fullpath=name, md5sum=value) %>%
-  mutate(filename=basename(fullpath)) %>%
-  select(md5sum, filename) %>%
-  write_delim(file.path(srafastq_md5file), col_names = FALSE)
+if(!file.exists(srafastq_md5file)){
+    downloaded_fastqs %>%
+      unlist %>%
+      md5sum %>%
+      enframe %>%
+      dplyr::rename(fullpath=name, md5sum=value) %>%
+      mutate(filename=basename(fullpath)) %>%
+      select(md5sum, filename) %>%
+      write_delim(srafastq_md5file, col_names = FALSE)
+    }
 ```
 
 # SessionInfo

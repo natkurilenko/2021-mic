@@ -71,12 +71,12 @@ myinteractplot2by2 <- function(mydds, geneid, mergevar) {
     
     genedat %>%
         ggplot2::ggplot(aes(x = cline, y = value/sizeFactor, color = trt)) +
-            ggplot2::geom_point() + 
+            ggplot2::geom_jitter(width = 0.1) + 
                 ggplot2::xlab("Cell line") + ggplot2::ylab(paste(geneid, "(normalized count)")) +
                 ggplot2::scale_colour_manual(name = "", values = c("red3", "blue3")) +
                 ggplot2::theme_bw()
 }
-
+```
 
 ## Import meta and count data
 ### Import meta data file
@@ -215,7 +215,7 @@ DESeq2::results(ddsADD, tidy = TRUE, contrast = c("trt", "antiPD1", "isotype")) 
 ```{r}
 DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
 ```
-### Visualize effect size based on normalized counts for ENSMUSG00000110537.2 and ENSMUSG00000022564.8
+### Visualize treatrment differential effect size based on normalized counts for ENSMUSG00000110537.2 and ENSMUSG00000022564.8
 
 #### Simple plots
 
@@ -230,11 +230,11 @@ DESeq2::plotCounts(ddsobj, "ENSMUSG00000022564.8", intgroup = "trt", normalized 
 
 #### Custom plots
 ```{r}
-myinteractplot(ddsobj, "ENSMUSG00000110537.2")
+myinteractplot2by2(ddsADD, "ENSMUSG00000110537.2")
 ```
 
 ```{r}
-myinteractplot(ddsobj, "ENSMUSG00000022564.8")
+myinteractplot2by2(ddsADD, "ENSMUSG00000022564.8")
 ```
 
 ### Volcano plot
@@ -281,33 +281,23 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 ### Summary of results (using FDR of 0.2)
 
 ```{r}
-DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+DESeq2::summary(results(ddsMULT, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
 ```
-### Visualize effect size based on normalized counts for ENSMUSG00000022351.15 and ENSMUSG00000025964.16
+### Visualize interaction effect size based on normalized counts for ENSMUSG00000022351.15 and ENSMUSG00000025964.16
 
-
-#### Simple plots
-
-```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000022351.15", intgroup = "trt", normalized = TRUE)
-
-```
-
-```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000025964.16", intgroup = "trt", normalized = TRUE)
-```
 
 #### Custom plots
 ```{r}
-myinteractplot(ddsobj, "ENSMUSG00000022351.15")
+myinteractplot2by2(ddsMULT, "ENSMUSG00000022351.15")
 ```
 
 ```{r}
-myinteractplot(ddsobj, "ENSMUSG00000025964.16")
-```{r}
+myinteractplot2by2(ddsMULT, "ENSMUSG00000025964.16")
+```
+
+### Volcano plot 
 
 ```{r}
-### Volcano plot for treatment effect
 DESeq2::results(ddsMULT, tidy = TRUE) %>%
     dplyr::filter(!is.na(pvalue)) %>%
         ggplot2::ggplot(aes(x = log2FoldChange, y = -log10(pvalue))) + 
@@ -317,6 +307,6 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 
 ## Session Information
 
-
+```{r}
 sessionInfo()
 ```

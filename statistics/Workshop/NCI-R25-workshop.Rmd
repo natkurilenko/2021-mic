@@ -335,7 +335,7 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 
 ### Import pathway file
 ```{r}
-Mm.H <- readRDS(msigdb)
+Mm.H <- readRDS(msigdbfile)
 ```
 
 ###  MGI annotation data
@@ -379,7 +379,7 @@ length(setdiff(unlist(Mm.H), mgidat[["6. Entrez gene id"]]))
 ### Pathway analysis for additive model
 #### Create named (by NCBI id) vectors of statistics from additive model
 ```{r}
-DESeq2::results(ddsADD = TRUE) %>%
+DESeq2::results(ddsADD, tidy = TRUE) %>%
   tidyr::drop_na(pvalue) %>%
   dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
   dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%
@@ -390,19 +390,19 @@ addstat
 
 ```{r}
 set.seed(1234)
-fgseaRes <- fgsea(Mm.H, ranks, minSize = 15, maxSize = 500)
+fgseaRes <- fgsea(Mm.H, addstat, minSize = 15, maxSize = 500)
 ```
 
 ```{r}
 head(fgseaRes[order(padj, -abs(NES)), ], n = 10)
 ```
 ```{r}
-plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], ranks)
+plotEnrichment(Mm.H[["HALLMARK_ESTROGEN_RESPONSE_EARLY"]], addstat)
 ```
 
 ```{r}
-# significant
-plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], ranks)
+
+plotEnrichment(Mm.H[["HALLMARK_E2F_TARGETS"]], addstat)
 ```
 
 ```{r}
@@ -414,13 +414,13 @@ topDown <- fgseaRes %>%
   top_n(10, wt = -padj)
 topPathways <- bind_rows(topUp, topDown) %>% arrange(-ES)
 plot.new()
-plotGseaTable(Mm.H[topPathways$pathway], ranks, fgseaRes, gseaParam = 0.5)
+plotGseaTable(Mm.H[topPathways$pathway], addstat, fgseaRes, gseaParam = 0.5)
 ```
 
 
 ### Create named (by NCBI id) vectors of statistics from multiplicative model
 ```{r}
-DESeq2::results(ddsMULT = TRUE) %>%
+DESeq2::results(ddsMULT, tidy = TRUE) %>%
   tidyr::drop_na(pvalue) %>%
   dplyr::mutate(ensid = str_remove(row, ".[0-9][0-9]{0,2}$")) %>%
   dplyr::inner_join(mgidat, by = c("ensid" = "11. Ensembl gene id")) %>%

@@ -1,0 +1,64 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.3
+  kernelspec:
+    display_name: Bash
+    language: bash
+    name: bash
+---
+
+```{bash}
+source bioinf_config_inclass.sh
+mkdir -p $GENERAL_TRIM_DIR $GENERAL_STAROUT_DIR
+ls -l $GENERAL_OUT_DIR 
+```
+
+```{bash}
+SRA_ACCESSION="SRR12804464"
+echo "This is my accession number $SRA_ACCESSION"
+```
+
+```{bash}
+ls $RAW_FASTQ_DIR/${SRA_ACCESSION}_1.fastq.gz
+```
+
+```{bash}
+SRA_ACCESSION="SRR12804464"
+echo "Now Trimming: $SRA_ACCESSION"
+TrimmomaticPE \
+    -threads $TOTAL_THREADS \
+    -phred33 \
+    $RAW_FASTQ_DIR/${SRA_ACCESSION}_1.fastq.gz \
+    $RAW_FASTQ_DIR/${SRA_ACCESSION}_2.fastq.gz \
+    $GENERAL_TRIM_DIR/${SRA_ACCESSION}_1_trimmed.fastq.gz \
+    $GENERAL_TRIM_DIR/${SRA_ACCESSION}_1_unpaired.fastq.gz \
+    $GENERAL_TRIM_DIR/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+    $GENERAL_TRIM_DIR/${SRA_ACCESSION}_2_unpaired.fastq.gz \
+    ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:keepBothReads SLIDINGWINDOW:4:15 LEADING:3 TRAILING:3 MINLEN:36 
+    
+```
+
+```{bash}
+SRA_ACCESSION="SRR12804464"
+echo "Now Mapping: $SRA_ACCESSION"
+
+STAR \
+    --runMode alignReads \
+    --twopassMode None \
+    --genomeDir $GENOME_DIR \
+    --readFilesCommand gunzip -c \
+    --readFilesIn $GENERAL_TRIM_DIR/${SRA_ACCESSION}_1_trimmed.fastq.gz $GENERAL_TRIM_DIR/${SRA_ACCESSION}_2_trimmed.fastq.gz \
+    --outFileNamePrefix ${GENERAL_STAROUT_DIR}/${SRA_ACCESSION}_ \
+    --quantMode GeneCounts \
+    --outSAMtype None \
+    --runThreadN $TOTAL_THREADS
+```
+
+```{bash}
+ls ${GENERAL_OUT_DIR}/*
+```

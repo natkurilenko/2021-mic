@@ -18,8 +18,14 @@ library(tibble)
 library(tools)
 library(tidyr)
 
-sra_tmp=file.path("/workspace", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
-sra_dir=file.path("/data", "sra_data"); dir.create(sra_dir, recursive = TRUE)
+# sra_tmp=file.path("/workspace", "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
+# sra_dir=file.path("/data", "sra_data"); dir.create(sra_dir, recursive = TRUE)
+scratch_dir=path.expand("~/scratch")
+sra_cache=file.path(scratch_dir, "sra_cache")
+sra_tmp=file.path(scratch_dir, "sra_tmp"); dir.create(sra_tmp, recursive = TRUE)
+sra_dir=file.path(scratch_dir, "sra_data"); dir.create(sra_dir, recursive = TRUE)
+ncbi_config = path.expand("~/.ncbi/user-settings.mkfg")
+
 accessions_file = file.path(sra_dir,"accession_table.csv")
 
 bioproject_accession="PRJNA668393"
@@ -94,9 +100,6 @@ accessions_with_meta %>%
   write_csv(accessions_file)
 accessions_with_meta
 ```
-
-
-
 # Download FASTQs from SRA
 ## Make NCBI config File
 
@@ -115,6 +118,107 @@ else
     vdb-config --set "/repository/user/main/public/root =/workspace/sra_cache" 
     cat $NCBI_CONFIG
 fi
+```
+
+```{r}
+system2("vdb-config", 
+        args = c("--set", paste("/LIBS/GUID =", uuid::UUIDgenerate())),
+        stdout = TRUE,stderr = TRUE)
+
+```
+
+```{r}
+paste("/LIBS/GUID =", uuid::UUIDgenerate())
+```
+
+```{r}
+system2("vdb-config", 
+        args = paste0("--set ", '"/LIBS/GUID =', uuid::UUIDgenerate(),'"'),
+        stdout = TRUE,stderr = TRUE)
+
+```
+
+```{r}
+system2("vdb-config", 
+        args = paste0("--set ", '"/repository/user/main/public/root =', sra_cache,'"'),
+        stdout = TRUE,stderr = TRUE)
+
+```
+
+```{r}
+if(file.exists(ncbi_config)){
+    print(paste("NCBI config exists:", ncbi_config))
+
+    ncbi_config %>%
+        read_file %>%
+        cat
+} else {
+    print(paste("Need to make NCBI config:", ncbi_config))
+#     mkdir -p $(basename $NCBI_CONFIG)
+    ncbi_config %>%
+        dirname %>%
+        dir.create(recursive = TRUE)
+
+    system2("vdb-config", 
+        args = paste0("--set ", '"/LIBS/GUID =', uuid::UUIDgenerate(),'"'),
+        stdout = TRUE,stderr = TRUE)
+    system2("vdb-config", 
+        args = paste0("--set ", '"/repository/user/main/public/root =', sra_cache,'"'),
+        stdout = TRUE,stderr = TRUE)
+
+    ncbi_config %>%
+        read_file %>%
+        cat
+}
+
+
+```
+
+```{r}
+cat(ncbi_config)
+```
+
+```{r}
+?cat
+```
+
+```{r}
+system2("uuidgen")
+```
+
+```{r}
+"~/.ncbi/user-settings.mkfg" %>%
+    path.expand %>%
+    read_file
+
+
+# %>%
+#     read_file
+```
+
+```{r}
+library(uuid)
+ids::uuid()
+uuid()
+```
+
+```{r}
+?uuid::UUIDgenerate
+```
+
+```{r}
+uuid::UUIDgenerate()
+```
+
+```{r}
+my_uuid <- system("uuid",intern=T)
+
+```
+
+```{r}
+"~/scratch/" %>%
+    path.expand %>%
+    list.files
 ```
 
 ## fasterqDump Definition
@@ -203,7 +307,7 @@ fasterqDump = function(accession,
 ```
 
 
-```{r eval=FALSE, include=FALSE}
+```{r include=FALSE, eval=FALSE}
 
 # fasterqDump(accession="SRR12804463", outdir=sra_dir, tempdir=sra_tmp)
 ```

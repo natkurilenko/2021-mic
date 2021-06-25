@@ -44,6 +44,10 @@ PRJNA668393rlog <- DESeq2::rlog(PRJNA668393ddsData, blind = TRUE)
 ## Inspect objects
 
 ```{r}
+PRJNA668393ddsData
+```
+
+```{r}
 PRJNA668393vst
 ```
 

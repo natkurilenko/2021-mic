@@ -18,12 +18,18 @@ jupyter:
 3. [Course Data](#Course-Data): How to download the data we used in the MIC Course
 5. [MIC Computing Environment](#MIC-Computing-Environment): Downloading and running the HTS Image in Docker or Singularity
 
+```{bash}
+pwd
+```
+
 <!-- #region -->
 # High Priority
 
 If you have **created or modified files** in your Jupyter container that you would like to preserve, we recommend that you follow the instructions for [Maintaining Personal Files](#Maintaining-Personal-Files).
 -   We recommend you do this before *as soon as possible*, certainly by July 2nd, 2021. After July 2nd, 2021 the container system we used during the course will be shut down.
 -   Keep in mind that you only need to worry about this for files that you have  **created or modified**.  The course material that we created and shared with you will continue to be publicly available.
+
+Here are instruction to [download the gene count tables]()
 
 ## Important Notes
 

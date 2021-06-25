@@ -16,7 +16,7 @@ jupyter:
 1. [Personal Notebooks](#Maintaining-Personal-Files): Downloading notebooks that you modified
 2. [MIC Course Material](#Accessing-Course-Material): Downloading official course material: notebooks, lecture slides, etc
 3. [Course Data](#Course-Data): How to download the data we used in the MIC Course
-4. [MIC Computing Environment](#Docker-Containers): Downloading and running the HTS Image in Docker or Singularity
+5. [MIC Computing Environment](#MIC-Computing-Environment): Downloading and running the HTS Image in Docker or Singularity
 
 <!-- #region -->
 # High Priority
@@ -87,6 +87,21 @@ You can access the course material in three different ways:
 
 # Course Data
 The data we used in the 2021 MIC course was from GEO Accession number GSE159344.  The FASTQ files were downloaded from SRA and the metadata table was built using information from GEO and SRA. Both of these were done with the [download_data_sra.Rmd](../bioinformatics/setup/download_data_sra.Rmd) script.
+
+
+# MIC Computing Environment
+The computing environment that we used in the MIC course was based on a Docker image. The MIC Course Docker image is available [here on DockerHub](https://hub.docker.com/repository/docker/miccourse/jupyter-mic-2021). If you install Docker, the image can be downloaded with the command `docker pull miccourse/jupyter-mic-2021:2021_final`.  The Dockerfile (i.e. recipe) used to build it is in the [Jupyter MIC 2021 GitLab Repository](https://gitlab.oit.duke.edu/mic-course/jupyter-MIC-2021). 
+
+There are detailed instuctions on the [Jupyter MIC 2021 GitLab Repository](https://gitlab.oit.duke.edu/mic-course/jupyter-MIC-2021) for several different ways to run this computing environment:
+
+1. [Run on a SLURM cluster](https://gitlab.oit.duke.edu/mic-course/jupyter-MIC-2021#running-the-course-image-on-a-slurm-cluster), like the [Duke Computer Cluster](https://rc.duke.edu/dcc/).
+2. [Run on your local computer](https://gitlab.oit.duke.edu/mic-course/jupyter-MIC-2021#run-image-on-your-local-computer)
+3. If you are at Duke, you can run things on the Duke Computer Cluster by cloning the git repo and cd'ing into the course repo directory, then following the [Run on a SLURM cluster](https://gitlab.oit.duke.edu/mic-course/jupyter-MIC-2021#running-the-course-image-on-a-slurm-cluster) instructions, but substituting the following for the command in step 3
+```
+export SINGULARITY_CACHEDIR="/work/${USER}/singularity_cache"; srun --cpus-per-task=20 --mem=50G admin/run_singularity/run_singularity_jupyter.sh
+```
+
+> It takes about 40GB of RAM to run the notebooks as they are. It might be less if you run with fewer threads.
 
 ## Running the Docker Image Elsewhere
 

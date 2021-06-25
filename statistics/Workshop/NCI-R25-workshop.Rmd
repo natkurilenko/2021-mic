@@ -223,19 +223,19 @@ PRJNA668393ddsData <- DESeq2::DESeqDataSetFromMatrix(
 ### Create a new copy of the DESEq2 data object 
 
 ```{r}
-ddsobj <- PRJNA668393ddsData
+ddsADD <- PRJNA668393ddsData
 ```
 
 ### Specify design (additive model)
 
 ```{r}
-design(ddsobj) <- formula(~ cline + trt)
+design(ddsADD) <- formula(~ cline + trt)
 ```
 
 ### Differential Expression analysis
 
 ```{r}
-ddsADD <- DESeq2::DESeq(ddsobj)
+ddsADD <- DESeq2::DESeq(ddsADD)
 ```
 
 ### Tabulate results (sorted by adjusted P-value)
@@ -256,11 +256,11 @@ DESeq2::summary(results(ddsADD, contrast = c("trt", "antiPD1", "isotype")), alph
 #### Simple plots
 
 ```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000110537.2", intgroup = "trt", normalized = TRUE)
+DESeq2::plotCounts(ddsADD, "ENSMUSG00000110537.2", intgroup = "trt", normalized = TRUE)
 ```
 
 ```{r}
-DESeq2::plotCounts(ddsobj, "ENSMUSG00000022564.8", intgroup = "trt", normalized = TRUE)
+DESeq2::plotCounts(ddsADD, "ENSMUSG00000022564.8", intgroup = "trt", normalized = TRUE)
 ```
 
 #### Custom plots
@@ -290,19 +290,19 @@ DESeq2::results(ddsADD, tidy = TRUE) %>%
 ### Create a new copy of the DESEq2 data object 
 
 ```{r}
-ddsobj <- PRJNA668393ddsData
+ddsMULT <- PRJNA668393ddsData
 ```
 
 ### Specify design (multiplicative model)
 
 ```{r}
-design(ddsobj) <- formula(~ cline + trt + cline:trt)
+design(ddsMULT) <- formula(~ cline + trt + cline:trt)
 ```
 
 ### Differential Expression analysis
 
 ```{r}
-ddsMULT <- DESeq2::DESeq(ddsobj)
+ddsMULT <- DESeq2::DESeq(ddsMULT)
 ```
 
 ### Tabulate results (sorted by adjusted P-value)
@@ -316,7 +316,7 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 ### Summary of results (using FDR of 0.2)
 
 ```{r}
-DESeq2::summary(results(ddsMULT, contrast = c("trt", "antiPD1", "isotype")), alpha = 0.2)
+DESeq2::summary(results(ddsMULT), alpha = 0.2)
 ```
 ### Visualize interaction effect size based on normalized counts for ENSMUSG00000022351.15 and ENSMUSG00000025964.16
 
@@ -345,26 +345,26 @@ DESeq2::results(ddsMULT, tidy = TRUE) %>%
 ### Create a new copy of the DESEq2 data object 
 
 ```{r}
-ddsobj <- PRJNA668393ddsData
+ddsGRP <- PRJNA668393ddsData
 ```
 
 
 ### add group variable combining the cell line and treatment effect
 ```{r}
-ddsobj$group <- as.factor(paste0(ddsobj$trt, ddsobj$cline))
+ddsGRP$group <- as.factor(paste0(ddsGRP$trt, ddsGRP$cline))
 ```
 
 
 ### Specify design
 
 ```{r}
-design(ddsobj) <- formula(~ group)
+design(ddsGRP) <- formula(~ group)
 ```
 
 ### Differential Expression analysis
 
 ```{r}
-ddsGRP <- DESeq2::DESeq(ddsobj)
+ddsGRP <- DESeq2::DESeq(ddsGRP)
 ```
 
 ### Tabulate results within the parental cell line

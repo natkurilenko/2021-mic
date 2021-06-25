@@ -1,5 +1,4 @@
 ---
-title: Transform Counts using DESeq2::vst and DESeq2::rlog
 jupyter:
   jupytext:
     text_representation:
@@ -14,16 +13,17 @@ jupyter:
 ---
 
 
-## Objective: Carry out a basic set of DE analyses using DESeq2 and visualize the results
+# Apply vst and rlog transformations to gene counts
 
 
-### Load packages
+## Load packages
 
 ```{r}
+library(tidyverse)
 library(DESeq2)
 ```
 
-### Load the PRJNA668393 dds object from image file
+## Load the PRJNA668393 dds object from image file
 
 ```{r}
 procdir <- normalizePath("./proc/")
@@ -34,11 +34,34 @@ PRJNA668393ddsData <- readRDS(ddsfile)
 tools::md5sum(ddsfile)
 ```
 
+## Apply VST and rlog transformation to the count data
+
 ```{r}
 PRJNA668393vst <- DESeq2::vst(PRJNA668393ddsData, blind = TRUE)
 PRJNA668393rlog <- DESeq2::rlog(PRJNA668393ddsData, blind = TRUE)
-
 ```
+
+## Inspect objects
+
+```{r}
+PRJNA668393ddsData
+```
+
+```{r}
+PRJNA668393vst
+```
+
+```{r}
+PRJNA668393rlog
+```
+
+## Extract expressions
+
+```{r}
+SummarizedExperiment::assay(PRJNA668393vst)[100:110,1:3]
+```
+
+## Output image files
 
 ```{r}
 outdir <- "./proc/"
@@ -47,6 +70,39 @@ expfile <- file.path(outdir, "PRJNA668393-expdat.RData")
 save(PRJNA668393ddsData, PRJNA668393vst, PRJNA668393rlog, file = expfile)
 tools::md5sum(expfile)
 ```
+## Output VST expression as csv file
+
+
+### Steps to convert expression matrix to exportable data frame
+
+```{r}
+SummarizedExperiment::assay(PRJNA668393vst)[107:110,1:3]
+```
+
+```{r}
+SummarizedExperiment::assay(PRJNA668393vst)[107:110,1:3] %>%
+    data.frame()
+```
+
+```{r}
+SummarizedExperiment::assay(PRJNA668393vst)[107:110,1:3] %>%
+    data.frame() %>%
+        tibble::rownames_to_column("geneid") 
+```
+
+### Export to csv file
+
+```{r}
+outcsv <- file.path(outdir, "PRJNA668393-expdat-vst.csv")
+
+SummarizedExperiment::assay(PRJNA668393vst) %>%
+    data.frame() %>%
+    tibble::rownames_to_column("geneid") %>%
+    readr::write_csv(outcsv)
+
+tools::md5sum(outcsv)
+```
+
 
 
 

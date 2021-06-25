@@ -60,6 +60,8 @@ MULTI_STAROUT_DIR="${MULTI_OUT_DIR}/starout"
 GLOB_OUT_DIR=$OUTBASE/bioinf_glob_inclass
 GLOB_TRIM_DIR="${GLOB_OUT_DIR}/trimmed_fastq"
 GLOB_STAROUT_DIR="${GLOB_OUT_DIR}/starout"
+GLOB_QC=$GLOB_OUT_DIR/qc_output
+
 
 # +
 # Genome
